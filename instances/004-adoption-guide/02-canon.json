@@ -1,0 +1,198 @@
+{
+  "target": "guia de adoção do cooperatio",
+  "note": "single source of numbers, names, variants and rules; every section has an owner and a version",
+  "sections": [
+    {
+      "name": "canonical numbers",
+      "owner": "verifier",
+      "version": "v1",
+      "state": "ready"
+    },
+    {
+      "name": "accepted variants",
+      "owner": "verifier",
+      "version": "v1",
+      "state": "ready"
+    },
+    {
+      "name": "names and terms",
+      "owner": "verifier",
+      "version": "v1",
+      "state": "ready"
+    },
+    {
+      "name": "rules",
+      "owner": "verifier",
+      "version": "v1",
+      "state": "ready"
+    }
+  ],
+  "canonical numbers": [
+    {
+      "value": 4,
+      "unit": "condições de aplicação do método",
+      "spelling": {"table": "4", "prose": "quatro condições", "code": ""},
+      "nature": "fact",
+      "source": "01-principle.md, abertura"
+    },
+    {
+      "value": 11,
+      "unit": "componentes do método",
+      "spelling": {"table": "11", "prose": "onze componentes", "code": ""},
+      "nature": "fact",
+      "source": "01-principle.md, seção 4"
+    },
+    {
+      "value": 10,
+      "unit": "regras de ouro",
+      "spelling": {"table": "10", "prose": "dez regras de ouro", "code": ""},
+      "nature": "fact",
+      "source": "01-principle.md, seção 5"
+    },
+    {
+      "value": 15,
+      "unit": "passos do recipe genérico",
+      "spelling": {"table": "15", "prose": "quinze passos", "code": ""},
+      "nature": "fact",
+      "source": "02-reflexive-application/10-generic-recipe.md, abertura"
+    },
+    {
+      "value": 3,
+      "unit": "vereditos de revisão",
+      "spelling": {"table": "3", "prose": "três vereditos", "code": ""},
+      "nature": "fact",
+      "source": "01-canon do corpus, termo verdict"
+    },
+    {
+      "value": "0.2.2",
+      "unit": "versão do método",
+      "spelling": {"table": "0.2.2", "prose": "versão 0.2.2", "code": ""},
+      "nature": "fact",
+      "source": "VERSION"
+    },
+    {
+      "value": "900 a 1400",
+      "unit": "palavras do deliverable",
+      "spelling": {"table": "900 a 1400", "prose": "de 900 a 1400 palavras", "code": ""},
+      "nature": "fact",
+      "source": "00-brief.md desta célula"
+    },
+    {
+      "value": 18,
+      "unit": "papéis com cartão na instância registrada 000",
+      "spelling": {"table": "18", "prose": "18 papéis", "code": ""},
+      "nature": "fact",
+      "source": "documento de método de 000-av-production, seção 2.1; no guia, com a marca [prior:000-av-production]"
+    },
+    {
+      "value": 49,
+      "unit": "artefatos no grafo da instância registrada 000",
+      "spelling": {"table": "49", "prose": "49 artefatos", "code": ""},
+      "nature": "fact",
+      "source": "documento de método de 000-av-production, seção 2.1; no guia, com a marca [prior:000-av-production]"
+    }
+  ],
+  "accepted variants": [
+    {
+      "variant": "célula de produção",
+      "holds where": "todo o material",
+      "why": "nome canônico desde a v0.2 do corpus"
+    },
+    {
+      "variant": "gate",
+      "holds where": "todo o material",
+      "why": "tradução do termo canônico do corpus na prosa do guia; o artefato e o código usam o termo original"
+    },
+    {
+      "variant": "onda",
+      "holds where": "execução desta instância",
+      "why": "passagem de produção dentro da fase de produção; a rodada de revisão é despacho fora das ondas"
+    }
+  ],
+  "names and terms": [
+    {
+      "name": "cooperatio",
+      "prefer": "o método",
+      "gloss marker": ""
+    },
+    {
+      "name": "production cell",
+      "prefer": "célula de produção",
+      "gloss marker": ""
+    },
+    {
+      "name": "canon",
+      "prefer": "canon",
+      "gloss marker": "definido na primeira uso no guia"
+    },
+    {
+      "name": "prior instance",
+      "prefer": "instância anterior",
+      "gloss marker": "[prior:000-av-production]"
+    }
+  ],
+  "rules": [
+    "todo fato sobre o método no guia tem fonte no corpus, citada por caminho relativo",
+    "nenhum identificador local no deliverable; a lista proibida está em state/forbidden.txt",
+    "toda afirmação numérica sobre a instância anterior leva a marca [prior:000-av-production] e é verificada no documento de método dela",
+    "termos do método definidos na primeira uso; um termo por conceito",
+    "o guia declara a hipótese de trabalho e os limites do método como o corpus os declara"
+  ],
+  "terms to avoid": [
+    "revolucionário",
+    "revolucionária",
+    "garantir",
+    "garante",
+    "garantem",
+    "garantia",
+    "garantido",
+    "garantida",
+    "infalível",
+    "milagroso",
+    "milagrosa",
+    "mágico",
+    "mágica",
+    "revolutionary",
+    "guarantee",
+    "guaranteed"
+  ],
+  "instantiation table rows": [],
+  "mandatory sections": [],
+  "role card fields": [
+    "Decides",
+    "Does not decide",
+    "Inputs",
+    "Outputs",
+    "Exit gate",
+    "Notes it emits",
+    "Code-conversion degree"
+  ],
+  "origin labels": [
+    "[method]",
+    "[brief]",
+    "[hypothesis]",
+    "[corpus]"
+  ],
+  "method components": [
+    "artifact graph",
+    "role card",
+    "contract",
+    "gate",
+    "note",
+    "canon",
+    "validator",
+    "independent review",
+    "instrument",
+    "stopping criterion",
+    "gate sensitivity test"
+  ],
+  "prior-statement triggers": [
+    "a primeira instância",
+    "instância anterior",
+    "a produção anterior",
+    "produção audiovisual",
+    "caso de referência",
+    "instância de referência"
+  ],
+  "recorded facts": []
+}

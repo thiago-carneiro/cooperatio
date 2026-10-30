@@ -1,0 +1,18 @@
+[
+  {
+    "target_artifact": "wave-reports",
+    "severity": "medium",
+    "text": "o gate global p-sensitivity ficou pendente no instrumento real: o validador procura o registro de sensibilidade num caminho fixo (constante SENSITIVITY_FILE, derivada de VALIDATOR_DIR), que ignora o --layout da célula; o arquivo desta célula está em 08-validator/sensitivity.md e o binário procura 80-validator/sensitivity.md; o estado final real é: os gates declarados na célula passaram e um gate global do instrumento ficou pendente — encaminhado upstream ao dono do corpus do método, cujo canal de edição a célula não usa",
+    "origin": "fechamento da produção (consolidação da nota medium da rodada de revisão 1)",
+    "evidence": "08-validator/report.md, linha p-sensitivity ('80-validator/sensitivity.md', not measured, pending); 08-validator/validator.py, linhas 41-43 e 1397-1401; review/round-1-notes.md, finding medium",
+    "round": 1
+  },
+  {
+    "target_artifact": "guia-de-adocao",
+    "severity": "low",
+    "text": "'preencha os contratos' no guia usa 'contratos' como guarda-chuva para os documentos fundadores, enquanto o corpus reserva 'contrato' para o esquema que valida um artefato; a nota não é endereçada: o deliverable não é editado depois da aceitação (disciplina de uma rodada, veredito accepted) — fica aberta para a próxima produção que reutilizar este guia como ponto de partida",
+    "origin": "fechamento da produção (nota low da rodada de revisão 1, não endereçada por disciplina pós-aceitação)",
+    "evidence": "guia-de-adocao.md, seção 'Como rodar uma produção'; corpus, 02-reflexive-application/01-canon.md, termo 'contract'",
+    "round": 1
+  }
+]

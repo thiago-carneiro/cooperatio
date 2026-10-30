@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "round-record.schema.json",
+  "contract_version": "1",
+  "title": "Round record contract",
+  "description": "One JSON line per round of the method, appended to state/round-record.jsonl. The rubric_hash ties the round to the frozen sha256 of the 'Rubric' section the verdict applied to; the verdict enum mirrors the mechanical rule of that section (rejected, accepted, accepted with conditions); rubric_author names who wrote that rubric.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["method_version", "round", "models", "summary"],
+  "properties": {
+    "method_version": {
+      "type": "string",
+      "description": "Semantic version of the method this round ran under."
+    },
+    "round": {
+      "type": "string",
+      "description": "Round identifier, e.g. v0.2."
+    },
+    "models": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["role", "model"],
+        "additionalProperties": false,
+        "properties": {
+          "role": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string",
+            "description": "The executor of the role, by family (a letter kept stable across the material, e.g. 'family A') and effort, never by model identifier: a product identifier changes and leaks the provider, and the family is what the rule of independence uses. The map from letter to identifier stays with the owner, outside the material. A route or alias is not a family: two executors differ when what their names map to differs. Since v0.5.0 a reviewer is described by its relation to the producer ('reviewer, same family as the producer' or 'reviewer, another family'), never as 'independent' when the family is the same; the lines written before are never rewritten."
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "string",
+      "description": "What the round did, one line."
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["rejected", "accepted", "accepted with conditions"]
+    },
+    "rubric_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "rubric_author": {
+      "type": "string",
+      "description": "Who wrote the rubric the round applies: a role name, or 'producer', 'reviewer side' or 'owner'. Step 8 of the recipe gives the rubric to the owner and the reviewing side; a rubric written by the producer is recorded as such, never left implicit."
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{"ref": "notes:1", "status": "fixed", "closed_in": "0.4.0", "summary": "sensitivity coverage: every gate but p-sensitivity has a perturbation since 0.4.0, and the report carries its provenance since 0.3.0"}
+{"ref": "notes:2", "status": "fixed", "closed_in": "0.4.0", "summary": "a prior number is checked in the sections its recorded-fact row cites, and a number without a row fails (0.4.0); the claim around the number is not checked, as 06-gate-semantics.md declares"}
+{"ref": "notes:3", "status": "fixed", "closed_in": "0.2.2", "summary": "the validator reads the canon's recorded facts, and 0.15 s and 24 h were checked in their sections and given rows"}
+{"ref": "notes:4", "status": "open", "summary": "HPC instance: the fix in the example of a regression that escaped does not match its symptom"}
+{"ref": "notes:5", "status": "open", "summary": "HPC instance: gates said to be born in the loop are already in the initial state"}
+{"ref": "notes:6", "status": "open", "summary": "text instance: the validator already reads numbers written out in words, so the example regression cannot happen"}
+{"ref": "notes:7", "status": "open", "summary": "text instance: the justification of t-source-density does not support calling 4 per thousand a floor"}
+{"ref": "notes:8", "status": "open", "summary": "recipe: the orchestrator, a step that decides nothing, is the author of artifacts in steps 4, 5 and 14"}
+{"ref": "notes:9", "status": "fixed", "closed_in": "0.4.0", "summary": "the rubric written by the producer is declared in 06-gate-semantics.md, and the round record names the rubric author"}
+{"ref": "notes:10", "status": "fixed", "closed_in": "0.2.0", "summary": "the two numbers of the principle that diverged from the first prior were aligned with its recorded facts"}
+{"ref": "notes:11", "status": "fixed", "closed_in": "0.2.0", "summary": "the seven statements of the principle about the first prior without support were removed or aligned; a later residue of the same class was fixed in 0.5.0 (panel finding IM5)"}
+{"ref": "notes:12", "status": "open", "summary": "canon: an artifact with one owner, but the recorded-facts section belongs to the verifier"}
+{"ref": "notes:13", "status": "open", "summary": "cards: the outputs of the verifier and validator cards do not list the sensitivity script and its report"}
+{"ref": "notes:14", "status": "open", "summary": "canon: the list of method components shortens the principle's names, so p-components reads a word, not the practice"}
+{"ref": "notes:15", "status": "open", "summary": "car instance: the drawing of the graph does not match its table"}
+{"ref": "notes:16", "status": "open", "summary": "car instance: the gate of the budgets artifact has no row in the gate table"}
+{"ref": "notes:17", "status": "open", "summary": "text instance: two artifact gates have no row in the gate table"}
+{"ref": "notes:18", "status": "open", "summary": "HPC instance: three artifact gates have no magnitude and no row in the gate table"}
+{"ref": "notes:19", "status": "open", "summary": "HPC instance: the justification of h-noise names the wrong risk"}
+{"ref": "notes:20", "status": "open", "summary": "HPC instance: the brief does not point to the stopping criterion of section 11"}
+{"ref": "notes:21", "status": "open", "summary": "validator: the self-test docstring promises a case per rule that several rules lack"}
+{"ref": "notes:22", "status": "open", "summary": "canon: the terms to avoid have no accepted variant by place and reason"}
+{"ref": "panel:0.4.2:CR1", "status": "fixed", "closed_in": "0.5.0", "summary": "the sensitivity report pins the gate section and the canon, its table has to add up, and the gate table mirrors the artifact table under p-references"}
+{"ref": "panel:0.4.2:CR2", "status": "fixed", "closed_in": "0.5.0", "summary": "a mark or a trigger inside a code span is notation for the mark gates"}
+{"ref": "panel:0.4.2:CR3", "status": "fixed", "closed_in": "0.5.0", "summary": "an empty list of the canon leaves its gate pending, a placeholder fails, the card template has the form p-card reads, and the scaffold ships the sensitivity script and its perturbations as data"}
+{"ref": "panel:0.4.2:CR4", "status": "open", "summary": "the distributed validator measures documents; declared in the principle and the README, the choice of scope is the owner's"}
+{"ref": "panel:0.4.2:CR5", "status": "open", "summary": "the rule of independence is labeled a hypothesis with the datum against it; its status as a norm or a gate is the owner's decision"}
+{"ref": "panel:0.4.2:CR6", "status": "open", "summary": "the maintenance rounds are declared in the brief; a protocol for them is the owner's decision"}
+{"ref": "panel:0.4.2:CR7", "status": "fixed", "closed_in": "0.5.0", "summary": "the lessons are under the efficacy gate from a declared heading on, five founding phrases are triggers and labeled, and the gate is declared lexical"}
+{"ref": "panel:0.4.2:IM1", "status": "fixed", "closed_in": "0.5.0", "summary": "section 8 of the method document of the second instance aligned with sections 3 and 4.5, re-pinned"}
+{"ref": "panel:0.4.2:IM2", "status": "fixed", "closed_in": "0.5.0", "summary": "the truncated run of E1 counted as a tool failure, not a verdict"}
+{"ref": "panel:0.4.2:IM3", "status": "fixed", "closed_in": "0.5.0", "summary": "the effect of E3 attributed to the review apparatus removed as a block"}
+{"ref": "panel:0.4.2:IM5", "status": "fixed", "closed_in": "0.5.0", "summary": "a marked unit of the principle says what the first prior says, without qualifiers it lacks"}
+{"ref": "panel:0.4.2:IM6", "status": "fixed", "closed_in": "0.5.0", "summary": "the counts of perturbations corrected, and the 0.4.0 count rectified in the changelog"}
+{"ref": "panel:0.4.2:IM7", "status": "open", "summary": "the registry records the method version the second instance ran under; a migration of executed cells is not written"}
+{"ref": "panel:0.4.2:IM9", "status": "open", "summary": "the policy that pins and old round-record lines are not rewritten is declared; a command that refuses a re-pin is not written"}
+{"ref": "panel:0.4.2:IM10", "status": "fixed", "closed_in": "0.5.0", "summary": "this state ledger, read by p-notes"}
+{"ref": "panel:0.4.2:IM11", "status": "fixed", "closed_in": "0.5.0", "summary": "the root README and the skill are artifacts under four gates, and the claim that the skill copied alone loses nothing is corrected"}
+{"ref": "panel:0.4.2:IM15", "status": "fixed", "closed_in": "0.5.0", "summary": "exit 4 for a pending the caller did not accept with --allow-pending"}
+{"ref": "panel:0.4.2:IM16", "status": "fixed", "closed_in": "0.5.0", "summary": "the limits of p-limit and p-recipe are read from the gate table, and the artifact table is the one source of the gate map"}
+{"ref": "panel:0.4.2:IM17", "status": "fixed", "closed_in": "0.5.0", "summary": "a truncated row, a missing sensitivity script or any unexpected error exits 2"}
+{"ref": "panel:0.4.2:IM18", "status": "fixed", "closed_in": "0.5.0", "summary": "p-anonymity reads dates with the month's name or dots, one-segment roots, file URLs and home folders by user name"}
+{"ref": "panel:0.4.2:IM21", "status": "fixed", "closed_in": "0.5.0", "summary": "every contract declares its version, the round of a note is a string, and the scaffold ships the note and round contracts"}
+{"ref": "panel:0.4.2:SUG4", "status": "fixed", "closed_in": "0.5.0", "summary": "the counts of the v2 round of the first prior worded as the prior gives them"}
+{"ref": "panel:0.4.2:SUG6", "status": "fixed", "closed_in": "0.5.0", "summary": "the abbreviation of the old pin of the second instance corrected"}
+{"ref": "panel:0.4.2:SUG7", "status": "fixed", "closed_in": "0.5.0", "summary": "the share of reasoning tokens and the inference about the effective limit stated as measured and inferred"}
+{"ref": "panel:0.4.2:SUG8", "status": "fixed", "closed_in": "0.5.0", "summary": "two citations of the first prior point at what its document says"}
+{"ref": "panel:0.4.2:SUG11", "status": "fixed", "closed_in": "0.5.0", "summary": "the size-range table of the scaffold has a separator of three columns"}

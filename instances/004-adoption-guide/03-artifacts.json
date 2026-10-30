@@ -1,0 +1,156 @@
+[
+  {
+    "name": "guia-de-adocao",
+    "owner": "writer",
+    "paths": ["guia-de-adocao.md"],
+    "depends_on": ["02-canon"],
+    "schema": null,
+    "command": null,
+    "gates": ["p-size", "p-form", "p-terms", "p-anonymity", "p-prior", "p-prior-mark"],
+    "resource": "agent",
+    "proposed": false
+  },
+  {
+    "name": "02-canon",
+    "owner": "verifier",
+    "paths": ["02-canon.json"],
+    "depends_on": [],
+    "schema": "05-contracts/02-canon.schema.json",
+    "command": null,
+    "gates": ["p-contract-shape"],
+    "resource": "agent",
+    "proposed": false
+  },
+  {
+    "name": "brief",
+    "owner": "owner",
+    "paths": ["00-brief.md"],
+    "depends_on": [],
+    "schema": null,
+    "command": null,
+    "gates": ["p-canon-link", "p-terms", "p-anonymity"],
+    "resource": "human",
+    "proposed": false
+  },
+  {
+    "name": "sources-of-truth",
+    "owner": "verifier",
+    "paths": ["01-sources-of-truth.md"],
+    "depends_on": ["02-canon"],
+    "schema": null,
+    "command": null,
+    "gates": ["p-canon-link", "p-terms", "p-anonymity"],
+    "resource": "agent",
+    "proposed": false
+  },
+  {
+    "name": "role-cards",
+    "owner": "owner",
+    "paths": ["04-roles/*.md"],
+    "depends_on": ["03-artifacts", "02-canon"],
+    "schema": null,
+    "command": null,
+    "gates": ["p-card", "p-canon-link", "p-terms"],
+    "resource": "agent",
+    "proposed": false
+  },
+  {
+    "name": "gates-doc",
+    "owner": "owner",
+    "paths": ["06-gates.md"],
+    "depends_on": ["02-canon"],
+    "schema": null,
+    "command": null,
+    "gates": ["p-limit", "p-references", "p-terms", "p-anonymity"],
+    "resource": "human",
+    "proposed": false
+  },
+  {
+    "name": "rubric",
+    "owner": "owner",
+    "paths": ["07-rubric.md"],
+    "depends_on": ["gates-doc"],
+    "schema": null,
+    "command": null,
+    "gates": ["p-terms"],
+    "resource": "human",
+    "proposed": false
+  },
+  {
+    "name": "03-artifacts",
+    "owner": "owner",
+    "paths": ["03-artifacts.json"],
+    "depends_on": [],
+    "schema": null,
+    "command": null,
+    "gates": ["p-references"],
+    "resource": "agent",
+    "proposed": false
+  },
+  {
+    "name": "priors",
+    "owner": "owner",
+    "paths": ["priors.json"],
+    "depends_on": [],
+    "schema": null,
+    "command": null,
+    "gates": ["p-prior-pin"],
+    "resource": "agent",
+    "proposed": false
+  },
+  {
+    "name": "notes-ledger",
+    "owner": "owner",
+    "paths": ["state/notes.jsonl"],
+    "depends_on": ["03-artifacts"],
+    "schema": null,
+    "command": null,
+    "gates": ["p-notes"],
+    "resource": "agent",
+    "proposed": false
+  },
+  {
+    "name": "round-record",
+    "owner": "owner",
+    "paths": ["state/round-record.jsonl"],
+    "depends_on": ["03-artifacts"],
+    "schema": "05-contracts/round-record.schema.json",
+    "command": null,
+    "gates": ["p-contract-shape"],
+    "resource": "agent",
+    "proposed": false
+  },
+  {
+    "name": "wave-reports",
+    "owner": "validator",
+    "paths": ["review/wave-*.md"],
+    "depends_on": ["guia-de-adocao"],
+    "schema": null,
+    "command": null,
+    "gates": ["p-form", "p-terms", "p-anonymity"],
+    "resource": "agent",
+    "proposed": false
+  },
+  {
+    "name": "round-report",
+    "owner": "reviewer",
+    "paths": ["review/round-report.md"],
+    "depends_on": ["guia-de-adocao", "gates-doc"],
+    "schema": null,
+    "command": null,
+    "gates": ["p-form"],
+    "resource": "agent",
+    "proposed": true
+  },
+  {
+    "name": "method-doc",
+    "owner": "writer",
+    "paths": ["metodo-de-producao.md"],
+    "depends_on": ["guia-de-adocao", "round-record", "notes-ledger"],
+    "schema": null,
+    "command": null,
+    "gates": ["p-size", "p-form", "p-terms", "p-anonymity", "p-prior", "p-prior-mark"],
+    "resource": "agent",
+    "proposed": false
+  }
+]

@@ -1,0 +1,39 @@
+{
+  "instances": [
+    {
+      "id": "000-av-production",
+      "status": "executed",
+      "document": "4-comunicacao/7-producao/estudio/metodo-de-producao.md",
+      "sha256": "02f61349c00de94d93c64abcbbdf401f64216a555071bdb86e7d4bea643d25a0",
+      "locator": "owner-held, not distributable",
+      "number_format": "comma-decimal"
+    },
+    {
+      "id": "001-car",
+      "status": "designed",
+      "document": null,
+      "sha256": null
+    },
+    {
+      "id": "002-text-2027",
+      "status": "designed",
+      "document": null,
+      "sha256": null
+    },
+    {
+      "id": "003-hpc",
+      "status": "designed",
+      "document": null,
+      "sha256": null
+    },
+    {
+      "id": "004-adoption-guide",
+      "status": "executed",
+      "document": "metodo-de-producao.md",
+      "sha256": "2cf08aeb245953bfc54d7c9b15250b649dee7b498a7be4fcddd3a9278a110ed4",
+      "locator": "instances/004-adoption-guide",
+      "number_format": "comma-decimal",
+      "method_version": "0.2.2"
+    }
+  ]
+}

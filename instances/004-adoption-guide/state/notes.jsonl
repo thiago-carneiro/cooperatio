@@ -1,0 +1,42 @@
+[
+  {
+    "target_artifact": "guia-de-adocao",
+    "severity": "low",
+    "text": "a seção de evidência fala ao leitor interno ('as regras que agora lhe entrego') em vez de ao adotante externo; trocar por formulação voltada ao próprio guia",
+    "origin": "self-review da onda 1 (writer)",
+    "evidence": "guia-de-adocao.md, seção 'O que a evidência mostra'",
+    "round": 1
+  },
+  {
+    "target_artifact": "guia-de-adocao",
+    "severity": "low",
+    "text": "'os achados viram notas no contrato' arrisca ler-se como se a nota morasse num contrato; o método diz registro de notas; corrigir a terminologia",
+    "origin": "self-review da onda 1 (writer)",
+    "evidence": "guia-de-adocao.md, seção 'Como rodar uma produção'",
+    "round": 1
+  },
+  {
+    "target_artifact": "wave-reports",
+    "severity": "medium",
+    "text": "o binário do validador não executou nesta produção até aqui; as medidas dos relatórios de onda vêm de replicação mecânica das regras do fonte; re-executar o binário com o documento do prior antes da rodada de revisão",
+    "origin": "ambiente do dispatch do writer sem execução de shell",
+    "evidence": "review/wave-1-report.md, parágrafo de proveniência",
+    "round": 1
+  },
+  {
+    "target_artifact": "guia-de-adocao",
+    "severity": "low",
+    "text": "'preencha os contratos' usa 'contratos' como guarda-chuva para os documentos fundadores (brief, fontes de verdade, canon, lista de artefatos, cartões de papel, gates); o corpus reserva 'contrato' para o esquema que valida um artefato — sentido que o próprio guia usa em 'dono único, contrato e gate mensurável' — e o termo entra sem definição na primeira uso; trocar por 'preencha os documentos da célula' ou definir 'contrato' na anatomia e reservar a palavra para o esquema",
+    "origin": "rodada de revisão 1 (reviewer)",
+    "evidence": "guia-de-adocao.md, seções 'A ideia numa frase' e 'Como rodar uma produção'; corpus, 02-reflexive-application/01-canon.md, termo 'contract'",
+    "round": 1
+  },
+  {
+    "target_artifact": "wave-reports",
+    "severity": "medium",
+    "text": "o run real do validador deixou p-sensitivity pendente: o binário procura 80-validator/sensitivity.md (constante SENSITIVITY_FILE, derivada de VALIDATOR_DIR hardcoded, fora do --layout) e o arquivo da célula está em 08-validator/sensitivity.md; o relatório da onda 2 previu 'os dois únicos pendentes' e o run real revelou um terceiro — o fechamento deve registrar o estado final real (p-sensitivity pendente no instrumento real, não pass), levar a causa como nota aberta upstream ao corpus e não claimar 'todos os gates pass' (os gates declarados na célula passaram; um gate global do instrumento ficou pendente)",
+    "origin": "rodada de revisão 1 (reviewer)",
+    "evidence": "08-validator/report.md, linha p-sensitivity ('80-validator/sensitivity.md', not measured, pending); 08-validator/validator.py, linhas 41-43 e 1397-1401; review/wave-2-report.md, seção 'Pendências' ('os dois únicos pendentes')",
+    "round": 1
+  }
+]

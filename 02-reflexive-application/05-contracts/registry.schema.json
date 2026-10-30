@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "registry.schema.json",
+  "contract_version": "1",
+  "title": "Instance registry contract",
+  "description": "The registry of known instances of the method: one list, whatever the status. 'document' is the path of the instance's method document relative to that document's own repository root; it stays outside this material. 'sha256' pins the document when the instance was executed. Contract by status: an executed entry carries document, sha256, locator and number_format, none of them null; a designed entry keeps the four null or absent. This schema states that contract and does not enforce it (the stdlib mini-validator applies no if/then): the validator enforces it under p-contract-shape.",
+  "type": "object",
+  "required": ["instances"],
+  "additionalProperties": false,
+  "properties": {
+    "instances": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "status", "document", "sha256"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[0-9]{3}-[a-z0-9-]+$",
+            "description": "Stable identifier cited by [prior:<id>] marks."
+          },
+          "status": {
+            "type": "string",
+            "enum": ["executed", "designed"]
+          },
+          "document": {
+            "type": ["string", "null"]
+          },
+          "sha256": {
+            "type": ["string", "null"],
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "locator": {
+            "type": ["string", "null"],
+            "description": "Where an adopter can find the document: a path relative to the root of this material (the directory that contains instances/, so a cell kept in the material is instances/<id> and a sibling cell is ../sibling-cell — no leading slash), or the string 'owner-held, not distributable' when the owner keeps it. Required on an executed entry; null or omitted only while the instance is designed."
+          },
+          "number_format": {
+            "type": ["string", "null"],
+            "enum": ["point-decimal", "comma-decimal", null],
+            "description": "How the numbers of the method document are written: point-decimal (1,200.5) or comma-decimal (1.200,5). Each token of the document is read in this format only. Null or omitted only while the instance is designed; the validator reports an executed instance without it under p-contract-shape (there is no silent default)."
+          },
+          "method_version": {
+            "type": ["string", "null"],
+            "description": "Optional: the version of the method the instance was executed under. An executed cell is history: it runs under that version's validator, and under a later one only after a migration (the migration notes of the changelog)."
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "artifacts": {
+    "canon": "02-canon.json",
+    "artifacts": "03-artifacts.json",
+    "gates-and-rubric": "06-gates.md",
+    "roles-dir": "04-roles"
+  },
+  "gates": {
+    "p-terms": "builtin-json-canon",
+    "p-canon-link": "builtin-json-canon",
+    "p-anonymity": "builtin-json-canon",
+    "p-form": "builtin-json-canon",
+    "p-size": "builtin-json-canon",
+    "p-table": "builtin-json-canon",
+    "p-sections": "builtin-json-canon",
+    "p-card": "builtin-json-canon",
+    "p-limit": "builtin-json-canon",
+    "p-references": "builtin-json-canon",
+    "p-prior": "builtin-json-canon",
+    "p-prior-mark": "builtin-json-canon",
+    "p-prior-pin": "builtin-json-canon",
+    "p-contract-shape": "builtin-json-canon",
+    "p-recipe": "builtin-json-canon",
+    "p-components": "builtin-json-canon"
+  },
+  "registry": "priors.json"
+}

@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "notes.schema.json",
+  "contract_version": "1",
+  "title": "Note contract",
+  "description": "The only change request between roles. A note is a JSON list of objects with these six fields, all required, and two optional ones that carry its state (status, closed_in). The legacy target name 'bible' is accepted as an alias of 'canon' by the validator. The state of a note in a frozen ledger, which is never edited, lives in the state ledger of the notes (notes-status.schema.json).",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["target_artifact", "severity", "text", "origin", "evidence", "round"],
+    "additionalProperties": false,
+    "properties": {
+      "target_artifact": {
+        "type": "string",
+        "description": "Artifact name as declared in the artifact table, or 'corpus'."
+      },
+      "severity": {
+        "type": "string",
+        "enum": ["low", "medium", "high", "blocking"]
+      },
+      "text": {
+        "type": "string",
+        "description": "What is wrong and what is expected."
+      },
+      "origin": {
+        "type": "string",
+        "description": "Role or instrument that emitted the note."
+      },
+      "evidence": {
+        "type": "string",
+        "description": "File, excerpt or measured magnitude."
+      },
+      "round": {
+        "type": ["string", "integer"],
+        "minimum": 1,
+        "description": "The round that emitted the note, a string such as 'v0.5.0', the same type as the round of the round record. A positive integer is the legacy form the frozen ledger of round 1 keeps (round 1 is the review of the first version); a frozen ledger is never rewritten to the new type."
+      },
+      "status": {
+        "type": "string",
+        "enum": ["open", "fixed", "disputed", "out of scope"],
+        "description": "Optional: the state of the note. Absent means open."
+      },
+      "closed_in": {
+        "type": "string",
+        "description": "Optional: the method version that closed the note (fixed or out of scope)."
+      }
+    }
+  }
+}

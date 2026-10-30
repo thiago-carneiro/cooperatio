@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "02-canon.schema.json",
+  "title": "Canon contract",
+  "description": "The canon of a target. The sections the validator consumes are lists of strings; the target's own sections (numbers, variants, names, rules) are free.",
+  "type": "object",
+  "required": ["terms to avoid", "instantiation table rows", "mandatory sections", "role card fields", "origin labels", "method components", "prior-statement triggers", "recorded facts"],
+  "properties": {
+    "terms to avoid": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "instantiation table rows": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "mandatory sections": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "role card fields": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "origin labels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "method components": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "prior-statement triggers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "recorded facts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

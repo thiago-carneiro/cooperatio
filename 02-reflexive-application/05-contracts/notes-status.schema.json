@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "notes-status.schema.json",
+  "contract_version": "1",
+  "title": "State ledger of the notes",
+  "description": "One JSON line per tracked note in state/notes-status.jsonl: the state of a note of a frozen ledger, which is never edited, or of a finding of a critical panel that became a correction. The validator (p-notes) requires exactly one line per note of the ledger passed with --notes, and a version in closed_in for a closing status. It is living state, not history: a change of status edits the line of that note, and the changelog records the change.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["ref", "status", "summary"],
+  "properties": {
+    "ref": {
+      "type": "string",
+      "pattern": "^(notes:[1-9][0-9]*|panel:[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z]+[0-9]+)$",
+      "description": "'notes:<n>', the n-th note (1-based, in file order) of the ledger passed with --notes, or 'panel:<version>:<id>', a finding of the critical panel that reviewed that version."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["open", "fixed", "disputed", "out of scope"]
+    },
+    "closed_in": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "The method version that closed it; required for fixed and out of scope."
+    },
+    "summary": {
+      "type": "string",
+      "description": "What the note asked and where it was closed, or why it stays open; one line."
+    }
+  }
+}

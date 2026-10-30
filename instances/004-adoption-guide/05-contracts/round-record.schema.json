@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "round-record.schema.json",
+  "title": "Round record contract",
+  "description": "One JSON line per round of the method, appended to state/round-record.jsonl. The rubric_hash ties the round to the frozen sha256 of the 'Rubric' section the verdict applied to; the verdict enum mirrors the mechanical rule of that section (rejected, accepted with conditions, accepted).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["method_version", "round", "models", "summary"],
+  "properties": {
+    "method_version": {
+      "type": "string",
+      "description": "Semantic version of the method this round ran under."
+    },
+    "round": {
+      "type": "string",
+      "description": "Round identifier, e.g. v0.2."
+    },
+    "models": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["role", "model"],
+        "additionalProperties": false,
+        "properties": {
+          "role": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "string",
+      "description": "What the round did, one line."
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["rejected", "accepted", "accepted with conditions"]
+    },
+    "rubric_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

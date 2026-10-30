@@ -1,0 +1,11 @@
+{
+  "instances": [
+    {
+      "id": "000-av-production",
+      "status": "executed",
+      "document": "4-comunicacao/7-producao/estudio/metodo-de-producao.md",
+      "sha256": "02f61349c00de94d93c64abcbbdf401f64216a555071bdb86e7d4bea643d25a0",
+      "locator": "owner-held, not distributable"
+    }
+  ]
+}
