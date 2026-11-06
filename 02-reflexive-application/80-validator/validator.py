@@ -26,15 +26,24 @@ gate was not measured (pending) and the caller did not accept it with
 --allow-pending (v0.5.0: exit 0 used to mix "all passed" with "nothing was
 measured"). The report is deterministic: no date, relative paths, sorted
 output.
+
+Gates of the target's domain (ids 'd-<name>') are not run here: the cell's
+own code measures them and writes a result file in the contract
+domain-result.schema.json, which the layout names under 'domain-results';
+this validator reads each result, checks the sha256 of its inputs and turns
+it into a row (v0.6.0). Requires Python 3.9 or later (exit 2 below that).
 """
 
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import hashlib
 import json
 import os
+import posixpath
 import re
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -46,12 +55,20 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
 # No bytecode cache in the material (v0.4.2). This module imports the
-# sensitivity script at run time (a local module, written next to it), and
+# perturbation set at run time (perturbation_set.py, a local module written
+# next to it; since v0.6.0 it no longer imports the sensitivity script), and
 # a -B on the caller's command line does not reach every run: the switch
 # lives here, before that import, and every child process gets -B
 # explicitly (python_command), since a child inherits neither.
 sys.dont_write_bytecode = True
 NO_BYTECODE_FLAG = "-B"
+# The oldest interpreter the instrument is tested on (v0.6.0). An older one
+# that still compiles this file gets exit 2 from main(); below 3.7 the
+# interpreter itself refuses the file before any line of it runs.
+MIN_PYTHON = (3, 9)
+# Every child process writes UTF-8 whatever the console's code page is: a
+# cp1252 console used to end a run in UnicodeEncodeError (exit 2) on '≥'.
+CHILD_ENCODING = "utf-8"
 
 CANON_FILE = "01-canon.md"
 ARTIFACTS_FILE = "02-artifacts.md"
@@ -63,28 +80,59 @@ REPORT_FILE = f"{VALIDATOR_DIR}/report.md"
 # it at its own sensitivity report (e.g. 08-validator/sensitivity.md).
 SENSITIVITY_FILE = f"{VALIDATOR_DIR}/sensitivity.md"
 # The sha256 recorded in the provenance header of a sensitivity report
-# (v0.3.0, C3 of the panel): the gate refuses a report the running
+# (since v0.3.0): the gate refuses a report the running
 # instrument cannot have produced.
 SENSITIVITY_SHA_LINE = re.compile(r"^validator sha256: ([0-9a-f]{64})$", re.M)
 SENSITIVITY_SET_LINE = re.compile(r"^perturbations: (\d+) \((.*)\)$", re.M)
-# Since v0.5.0 (CR1 of the panel that reviewed v0.4.2) the provenance also
-# pins the inputs that define what is measured: the gate section of the
-# gates file and the canon. Deleting the gate table used to leave the report
-# green, because only the validator's own sha was compared.
+# Since v0.5.0 the provenance also pins the inputs that define what is
+# measured: the gate section of the gates file and the canon. Deleting the
+# gate table used to leave the report green, because only the validator's
+# own sha was compared.
 SENSITIVITY_INPUT_LINES = {
     "gates": re.compile(r"^gates sha256: ([0-9a-f]{64})$", re.M),
     "canon": re.compile(r"^canon sha256: ([0-9a-f]{64})$", re.M),
+    # v0.6.0: the resolved map from gate to document (sorted pairs of gate
+    # and path), so repointing a file of an artifact makes the report stale.
+    "map": re.compile(r"^map sha256: ([0-9a-f]{64})$", re.M),
 }
+# Specificity and coverage by pair, written by sensitivity.py (v0.6.0).
+SENSITIVITY_NOISY_LINE = re.compile(r"^Noisy: (\d+) of (\d+)\.$", re.M)
+SENSITIVITY_PAIRS_LINE = re.compile(r"^Pairs covered: (\d+) of (\d+)\.$", re.M)
+# The prior documents a report was made with (v0.6.0, rework): a synthetic
+# prior is told by its sha256 differing from the registry's pin, never by a
+# line that declares it.
+SENSITIVITY_CASE_LINE = re.compile(r"^case sha256: (?:none|(\S+) ([0-9a-f]{64}))$", re.M)
+SYNTHETIC_GATE = "p-sensitivity-synthetic"
+# The closing pass of v0.6.0: a case line holds a public pin, so a hand edit
+# could copy it; the attestation hashes the document's text itself with the
+# report's provenance, which nobody computes without the document.
+SENSITIVITY_ATTESTATION_LINE = re.compile(r"^case attestation: (\S+) ([0-9a-f]{64})$", re.M)
+
+
+def case_attestation(text: str, digests: dict[str, str], validator_sha: str) -> str:
+    """The attestation of one prior document in a sensitivity report: the
+    sha256 of its text followed by the validator, gates, canon and map
+    digests the report records, one per line. Only whoever holds the text
+    computes it; a run with the document recomputes and compares it."""
+    tail = "\n".join((validator_sha, digests["gates"], digests["canon"], digests["map"]))
+    return sha256_text(text + "\n" + tail + "\n")
+# [hypothesis] the floor of the (document, gate) pairs a report has to
+# perturb before its "every gate covered" is read as calibration: the panel
+# that reviewed v0.5.0 measured 18 %; a quarter is the first floor this
+# version commits to, to be raised, never lowered. Below it the gate is
+# pending with the reason.
+PAIR_COVERAGE_MINIMUM_PERCENT = 25
 SENSITIVITY_ROW_RESULT = re.compile(r"^\|.*\| (caught|MISSED|not measured) \|$", re.M)
 # The expected gate of a row of the report's table (the third cell).
 SENSITIVITY_ROW_GATE = re.compile(
     r"^\| .+ \| `[^`]*` \| `([^`]+)` \| (?:caught|MISSED|not measured) \|$", re.M)
-# Coverage per gate (M1 of the review of v0.5.0): every gate the artifact
+# Coverage per gate (v0.5.0): every gate the artifact
 # table assigns needs a perturbation, except p-sensitivity itself (its
 # perturbation would be circular) and the measurements of the instrument.
 SENSITIVITY_GATE = "p-sensitivity"
 MEASUREMENT_PREFIX = "m-"
-SENSITIVITY_LIMIT = "every gate covered, 0 missed"
+SENSITIVITY_LIMIT = (f"every gate covered, ≥ {PAIR_COVERAGE_MINIMUM_PERCENT} % of pairs, "
+                     "0 missed, 0 noisy")
 GATES_HEADING = "## Gates"
 RUBRIC_HEADING = "## Rubric"
 # The placeholder a scaffolded cell ships in its rubric pin until the owner
@@ -93,8 +141,12 @@ RUBRIC_UNFROZEN = "not-frozen"
 # The review ledger is frozen history: vocabulary rules apply to living
 # documents, never retroactively to `90-review/` (exemption by design).
 FROZEN_LEDGER_PREFIX = "90-review/"
-PRIOR_TAG = re.compile(r"\[prior:([0-9a-z-]+)\]")
-PRIOR_MARK = "[prior:"
+# One reading of a prior mark for every gate (v0.6.0): any bracketed
+# '[prior:...]' is a mark, and its id has to follow the grammar of a
+# registered id. Three readings used to coexist, so '[prior:000-AV-x]'
+# satisfied p-prior-mark while p-prior checked none of the unit's numbers.
+PRIOR_MARK = re.compile(r"\[prior:([^\]]*)\]")
+PRIOR_ID = re.compile(r"[0-9a-z-]+")
 # Headings of the prior method document that open a numbered section
 # ("## 1.4 ..." / "### Passo 15 ..."); used by the section check of p-prior.
 CASE_SECTION_HEADING = re.compile(r"^#{1,6}\s+(?:Passo\s+)?(\d+(?:\.\d+)*)", re.M)
@@ -109,12 +161,12 @@ ARTIFACT_ALIASES = {"bible": "canon"}
 # "omitted" note follows); it never decides a pass or a fail.
 MAX_NOTES_PER_GATE = 50
 # The numeric limits of p-limit and p-recipe are read from their rows of the
-# gate table (IM16, v0.5.0): the script used to keep 6 and 12 as constants
+# gate table (v0.5.0): the script used to keep 6 and 12 as constants
 # and print them whatever the table said.
 MIN_WORDS_IN_ROW = re.compile(r"fewer than (\d+) words")
 MIN_STEPS_IN_ROW = re.compile(r"≥\s*(\d+) steps")
 # A placeholder left in a card field, a gate row, an instantiation cell or
-# an artifact record (CR3, v0.5.0): '<fill in>' and any '<word ...>', or the
+# an artifact record (v0.5.0): '<fill in>' and any '<word ...>', or the
 # markers TBD and TODO. Read outside code spans, where '<id>' is notation.
 PLACEHOLDER = re.compile(r"<[A-Za-z][^<>\n]*>|\bTBD\b|\bTODO\b")
 VALID_SEVERITIES = ("low", "medium", "high", "blocking")
@@ -128,7 +180,7 @@ AVOID_ALTERNATIVE_SEPARATOR = " / "
 WORD_CHARS = r"0-9A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF_"
 EXIT_OK, EXIT_BLOCKING, EXIT_TOOL_FAILURE = 0, 1, 2
 # A gate not measured that the caller did not accept with --allow-pending
-# (IM15, v0.5.0): distinct from 1 (notes) and 2 (tool failure).
+# (v0.5.0): distinct from 1 (notes) and 2 (tool failure).
 EXIT_PENDING = 4
 REGISTRY_DEFAULT_REL = "../instances/registry.json"
 # The registry path is resolved against the production folder (not the root
@@ -143,7 +195,7 @@ SUPPORTED_KEYWORDS = frozenset(
     ("$schema", "$id", "title", "description", "type", "enum", "pattern",
      "required", "properties", "additionalProperties", "items", "minimum",
      "contract_version"))
-# Every contract declares the version of its shape at its top level (IM21,
+# Every contract declares the version of its shape at its top level (since
 # v0.5.0), and this validator reads one version: a contract without it, or
 # of another version, is a note of p-contract-shape, never read as if it
 # were the shape the code expects.
@@ -155,6 +207,18 @@ BUILTIN_GATES = ("p-terms", "p-canon-link", "p-anonymity", "p-form", "p-size",
                  "p-recipe", "p-components", "p-efficacy-mark")
 # The gates measured once per run, not per document (check_global).
 GLOBAL_GATES = ("p-notes", "p-frozen-rubric", "p-sensitivity", "p-declared")
+# A gate of the target's domain (v0.6.0): never run here, read from the
+# result file the cell's code writes (see the module docstring).
+DOMAIN_GATE = re.compile(r"d-[a-z0-9][a-z0-9-]*")
+DOMAIN_RESULTS = ("pass", "fail", "tool-failure")
+DOMAIN_RESULT_KEYS = ("contract_version", "gate", "magnitude", "limit", "result", "inputs")
+# The only gates whose pending a caller may accept by name (v0.6.0): the
+# halves that need an input the material does not distribute (the
+# forbidden list, the owner-held prior document). Every other gate is
+# measured or the run is not green; accepting p-sensitivity by name made
+# deleting the report cheaper than keeping it current.
+ACCEPTABLE_PENDING = ("p-anonymity", "p-prior", "p-prior-pin", "p-sensitivity-synthetic")
+OWNER_HELD_NOTICE = "owner-held evidence, not measured here"
 # The record of the experiments about the method itself (v0.4.0): the
 # [experiment:<id>] label of p-efficacy-mark cites an id registered there.
 EXPERIMENTS_FILE = "60-experiments.md"
@@ -163,11 +227,24 @@ EXPERIMENTS_FILE = "60-experiments.md"
 # table from it; it is measured as a document under the gates of its own
 # artifact row. The key is known so that a cell may name its own.
 GATE_SEMANTICS_FILE = "06-gate-semantics.md"
-# The state of each note (IM10, v0.5.0): one JSON line per tracked note or
+# The state of each note (v0.5.0): one JSON line per tracked note or
 # panel finding, with its status and the version that closed it. The frozen
 # ledger is never edited; its state lives here, and p-notes reads it.
 NOTES_STATUS_FILE = "state/notes-status.jsonl"
 NOTE_STATUSES = ("open", "fixed", "disputed", "out of scope")
+# The round record, the lessons and the validator report, as layout keys
+# (v0.6.0): the ledger chain, the [lessons:<title>] label and the
+# m-determinism row read them through the layout, never a fixed path.
+ROUND_RECORD_FILE = "state/round-record.jsonl"
+# v0.6.0: the brief, whose non-negotiables carry ids ('nn-<name>') a note
+# names in 'affects', and the ledger of the owner's decisions.
+BRIEF_FILE = "00-brief.md"
+OWNER_DECISIONS_FILE = "state/owner-decisions.jsonl"
+DECIDED = "decided"
+LESSONS_FILE = "99-lessons.md"
+ROUND_KINDS = ("production", "maintenance")
+REVIEWER_RELATIONS = ("another family", "same family, separate session",
+                      "same model, separate route", "none")
 # A reference to a note of the ledger passed with --notes ('notes:<n>',
 # 1-based, the order of the file) or to a finding of a critical panel
 # ('panel:<version>:<id>', e.g. 'panel:0.4.2:CR1').
@@ -183,42 +260,69 @@ DEFAULT_LAYOUT: dict = {
         "experiments": EXPERIMENTS_FILE,
         "gate-semantics": GATE_SEMANTICS_FILE,
         "notes-status": NOTES_STATUS_FILE,
+        "round-record": ROUND_RECORD_FILE,
+        "lessons": LESSONS_FILE,
+        "report": REPORT_FILE,
+        "brief": BRIEF_FILE,
+        "owner-decisions": OWNER_DECISIONS_FILE,
     },
     "gates": {gate: "builtin-markdown" for gate in BUILTIN_GATES},
     "registry": REGISTRY_DEFAULT_REL,
+    "domain-results": [],
 }
-# The closed key sets of a layout file (I12 of the panel): a key this
+# The closed key sets of a layout file (v0.4.0): a key this
 # validator never reads is a typo until proven otherwise, so it is refused
 # (exit 2) instead of silently falling back to the default it meant to
 # override. 'rubric' and 'perturbations' are the artifact keys with no
 # default: a cell names its dedicated rubric file, the corpus falls back to
 # the gates file; a cell names the data file of its perturbations (v0.5.0),
 # the corpus keeps its set in sensitivity.py.
-LAYOUT_TOP_KEYS = ("version", "artifacts", "gates", "registry")
+LAYOUT_TOP_KEYS = ("version", "artifacts", "gates", "registry", "domain-results", "version-label")
 LAYOUT_ARTIFACT_KEYS = (*DEFAULT_LAYOUT["artifacts"], "rubric", "perturbations")
-# The number formats a registered prior declares (I16 of the panel): a token
+# The number formats a registered prior declares (v0.4.0): a token
 # of a prior method document has one value reading, in its own format. The
 # documents of this production are point-decimal (form rule 1, English).
 NUMBER_FORMATS = ("point-decimal", "comma-decimal")
 DOCUMENT_NUMBER_FORMAT = "point-decimal"
 FORMAT_SEPARATORS = {"point-decimal": (",", "."), "comma-decimal": (".", ",")}
-# The labels that back a claim of efficacy about the method (I10): a prior,
+# The labels that back a claim of efficacy about the method (v0.4.0): a prior,
 # an experiment of the experiments record, the lessons of this application,
 # or an explicit hypothesis.
-EXPERIMENT_TAG = re.compile(r"\[experiment:([0-9A-Za-z-]+)\]")
-EFFICACY_LABEL = re.compile(r"\[(?:prior:[0-9a-z-]+|experiment:[0-9A-Za-z-]+|lessons|hypothesis)\]")
+EXPERIMENT_TAG = re.compile(r"\[(?:experiment|against):([0-9A-Za-z-]+)\]")
+# Since v0.6.0 the lessons label names the entry it rests on, by the title
+# of its heading in the lessons file ('[lessons:<title>]'), and the gate
+# checks that the heading exists; a bare '[lessons]' pointed at a whole file.
+LESSONS_TAG = re.compile(r"\[lessons:([^\]]+)\]")
+BARE_LESSONS = "[lessons]"
+# '[against:<id>]' (v0.6.0) cites an executed experiment whose result goes
+# against the claim: counter-evidence is labeled like evidence.
+EFFICACY_LABEL = re.compile(r"\[(?:prior:[0-9a-z-]+|(?:experiment|against):[0-9A-Za-z-]+|lessons:[^\]]+"
+                            r"|hypothesis)\]")
+HYPOTHESIS_LABEL = "[hypothesis]"
+# A hypothesis that states a number or a universal quantifier is a claim
+# with the shape of a measurement and no measurement behind it (v0.6.0): a
+# low note, the label stays valid.
+UNIVERSAL_CLAIM = re.compile(r"(?<![\w])(?:every|always|none)(?![\w])|\d+\s*%", re.I)
 # Every bracketed mark is removed before the numbers of a unit are read, so
-# that the digits of an id ('000-...', 'E1') are never checked as numbers.
-MARK_TAGS = re.compile(r"\[(?:prior|experiment):[0-9A-Za-z-]+\]")
+# that the digits of an id ('000-...', 'E1') are never checked as numbers;
+# a malformed id is reported as such, never read as numbers either.
+MARK_TAGS = re.compile(r"\[(?:prior|experiment):[^\]]*\]")
 # An experiment of the experiments record is a level-2 heading 'E<n> — ...'
 # whose block declares its status, as a 'Status' row of its field table or a
-# 'Status:' line (S4 of the v0.4.0 review: any heading word used to register
-# an id, and a designed experiment backed a claim as well as an executed one).
+# 'Status:' line (since v0.4.1: any heading word used to register an id, and
+# a designed experiment backed a claim as well as an executed one).
 EXPERIMENT_HEADING = re.compile(r"^##\s+(E\d+)\s+[—-]\s", re.M)
 EXPERIMENT_STATUS = re.compile(r"^(?:\|\s*Status\s*\||Status:)\s*`?([a-z]+)", re.M)
 LEVEL_TWO_HEADING = re.compile(r"^##\s", re.M)
 EXECUTED = "executed"
-# The contract of a registry entry by status (C16, v0.4.1): one list is the
+# An executed experiment backs a label only with its provenance (v0.6.0): a
+# '### Provenance' table in its block with at least one input and one output
+# file, each with its sha256. A status is a word the producer writes; the
+# hashes are what an owner holding the raw files can re-verify.
+PROVENANCE_HEADING = "### Provenance"
+PROVENANCE_KINDS = ("input", "output")
+SHA256_HEX = re.compile(r"\b[0-9a-f]{64}\b")
+# The contract of a registry entry by status (v0.4.1): one list is the
 # single source of instances, and the status decides the fields an entry
 # carries. The mini-validator applies no if/then, so the rule lives here and
 # is reported under p-contract-shape: an executed entry carries all four
@@ -258,11 +362,57 @@ class Measurement:
 
 # ---------------------------------------------------------------- parsing
 
+# The one reader of fenced blocks (v0.6.0), in the CommonMark rules: a fence
+# of three or more backticks or tildes, indented by up to three spaces,
+# closed by a line of the same character at least as long. Three readers
+# used to know only a backtick fence at column 0, so a '~~~' block or an
+# indented one inside a list item went unread.
+FENCE_OPEN = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
+
+
+@dataclass(frozen=True)
+class Fence:
+    start: int        # 0-based index of the opening line
+    end: int          # index of the closing line (the last line if unclosed)
+    info: str         # the info string after the opening fence, stripped
+    closed: bool
+
+
+def fence_opening(line: str) -> tuple[str, str] | None:
+    """The fence string and info string of an opening line, or None."""
+    m = FENCE_OPEN.match(line)
+    if m is None or (m.group(1)[0] == "`" and "`" in m.group(2)):
+        return None
+    return m.group(1), m.group(2).strip()
+
+
+def fences(lines: list[str]) -> list[Fence]:
+    """Every fenced block of the lines, in order."""
+    out, i = [], 0
+    while i < len(lines):
+        opening = fence_opening(lines[i])
+        if opening is None:
+            i += 1
+            continue
+        fence, info = opening
+        close = re.compile(rf"^ {{0,3}}{re.escape(fence[0])}{{{len(fence)},}}[ \t]*$")
+        end = next((j for j in range(i + 1, len(lines)) if close.match(lines[j])), None)
+        out.append(Fence(i, end if end is not None else len(lines) - 1, info, end is not None))
+        i = (end if end is not None else len(lines)) + 1
+    return out
+
+
+def fenced_line_indexes(lines: list[str]) -> set[int]:
+    """The indexes of the lines that belong to a fenced block, fences included."""
+    return {k for f in fences(lines) for k in range(f.start, f.end + 1)}
+
+
 def blank_fences(text: str) -> str:
     """Replace every fenced block by its line breaks, so that a line number
     measured on the result is the line number of the document."""
-    return re.sub(r"^```.*?^```[ \t]*$", lambda m: "\n" * m.group(0).count("\n"), text,
-                  flags=re.S | re.M)
+    lines = text.split("\n")
+    inside = fenced_line_indexes(lines)
+    return "\n".join("" if k in inside else line for k, line in enumerate(lines))
 
 
 def strip_code(text: str) -> str:
@@ -299,12 +449,11 @@ def parse_tables(text: str) -> list[list[list[str]]]:
     """Return every Markdown table as a list of rows (header first), cells stripped."""
     tables: list[list[list[str]]] = []
     current: list[list[str]] = []
-    in_fence = False
-    for line in text.splitlines():
-        if line.startswith("```"):
-            in_fence = not in_fence
+    lines = text.splitlines()
+    fenced = fenced_line_indexes(lines)
+    for k, line in enumerate(lines):
         stripped = line.strip()
-        if not in_fence and stripped.startswith("|") and stripped.endswith("|"):
+        if k not in fenced and stripped.startswith("|") and stripped.endswith("|"):
             cells = [c.strip() for c in stripped[1:-1].split("|")]
             if all(re.fullmatch(r":?-{3,}:?", c) for c in cells):
                 continue
@@ -332,7 +481,7 @@ def column(table: list[list[str]], name: str) -> int:
 
 
 def cell_at(row: list[str], index: int, where: str) -> str:
-    """One cell of a table row; a truncated row is malformed input (IM17,
+    """One cell of a table row; a truncated row is malformed input (since
     v0.5.0): it used to raise IndexError and leave with exit 1, the code
     of a blocking note, instead of 2."""
     if index >= len(row):
@@ -347,6 +496,16 @@ def backticked(cell: str) -> list[str]:
 
 def clean_cell(cell: str) -> str:
     return re.sub(r"[*`]", "", cell).strip()
+
+
+def prior_ids(text: str) -> list[str]:
+    """The ids of the well-formed prior marks of the text, in order."""
+    return [pid for pid in PRIOR_MARK.findall(text) if PRIOR_ID.fullmatch(pid)]
+
+
+def malformed_prior_marks(text: str) -> list[str]:
+    """The prior marks whose id breaks the grammar of a registered id."""
+    return [m.group(0) for m in PRIOR_MARK.finditer(text) if not PRIOR_ID.fullmatch(m.group(1))]
 
 
 @dataclass
@@ -372,8 +531,155 @@ class Canon:
     recorded_facts: list[RecordedFact]
     efficacy_triggers: list[str] = dataclass_field(default_factory=list)
     # Append-only documents measured by p-efficacy-mark from a declared
-    # heading on (CR7, v0.5.0): document -> heading line.
+    # heading on (v0.5.0): document -> heading line.
     efficacy_starts: dict[str, str] = dataclass_field(default_factory=dict)
+    # v0.6.0: the documents of the folder outside every artifact, by glob;
+    # the ledgers whose lines after the first n carry the chain; the sha256
+    # of each cited section of a prior's method document.
+    exempt_documents: list[str] = dataclass_field(default_factory=list)
+    chained_ledgers: dict[str, int] = dataclass_field(default_factory=dict)
+    section_commitments: list[SectionCommitment] = dataclass_field(default_factory=list)
+    # v0.6.0: document -> paths that are declared false positives of p-anonymity.
+    accepted_paths: dict[str, list[str]] = dataclass_field(default_factory=dict)
+    # v0.6.0: frozen records -> (sha256, the heading the frozen part stops
+    # before, or "" for the whole file).
+    frozen_files: dict[str, tuple[str, str]] = dataclass_field(default_factory=dict)
+    # Rework of v0.6.0: the month names and the one-segment machine roots a
+    # cell adds to what p-anonymity knows.
+    anonymity: AnonymityTables = dataclass_field(default_factory=lambda: AnonymityTables())
+
+
+@dataclass(frozen=True)
+class AnonymityTables:
+    """The canon's additions to p-anonymity (rework of v0.6.0): the month
+    names of a language the validator does not carry ('Month names'), and
+    the roots of one segment that name a machine here ('Machine roots')."""
+    month_names: dict[str, list[str]] = dataclass_field(default_factory=dict)
+    machine_roots: list[str] = dataclass_field(default_factory=list)
+
+
+MONTH_NAMES_HEADING = r"^Month names$"
+MACHINE_ROOTS_HEADING = r"^Machine roots$"
+
+
+def load_anonymity_tables(text: str) -> AnonymityTables:
+    """The optional tables 'Month names' (a language code, its twelve month
+    names in code spans) and 'Machine roots' (a root like `/scr01`)."""
+    where = "canon: the table of month names"
+    months: dict[str, list[str]] = {}
+    for row in optional_table(text, MONTH_NAMES_HEADING, 3):
+        names = backticked(cell_at(row, 1, where))
+        if len(names) != MONTHS_PER_YEAR:
+            raise InputError(f"{where}: each language lists {MONTHS_PER_YEAR} names in code spans")
+        months[clean_cell(cell_at(row, 0, where)).lower()] = names
+    where = "canon: the table of machine roots"
+    roots = [root for row in optional_table(text, MACHINE_ROOTS_HEADING, 3)
+             for root in backticked(cell_at(row, 0, where))]
+    shapeless = [root for root in roots if not re.fullmatch(r"/[\w.-]+", root)]
+    if shapeless:
+        raise InputError(f"{where}: a root is one segment, like `/scr01` (not "
+                         f"{', '.join(map(repr, shapeless))})")
+    return AnonymityTables(months, roots)
+
+
+@dataclass(frozen=True)
+class SectionCommitment:
+    """One row of the canon's 'Section commitments' table: the sha256 of the
+    text of one section of a prior's method document, as the section reader
+    of p-prior delimits it."""
+    prior_id: str
+    section: str
+    sha256: str
+
+
+EXEMPT_DOCUMENTS_HEADING = r"^Documents outside the artifact table$"
+CHAINED_LEDGERS_HEADING = r"^Chained ledgers$"
+SECTION_COMMITMENTS_HEADING = r"^Section commitments$"
+
+
+def optional_table(text: str, heading: str, level: int) -> list[list[str]]:
+    """The rows (header excluded) of the first table under an optional
+    heading; an absent heading or an empty table gives no rows."""
+    try:
+        return first_table(section(text, heading, level))[1:]
+    except InputError:
+        return []
+
+
+ACCEPTED_PATHS_HEADING = r"^Accepted paths$"
+FROZEN_FILES_HEADING = r"^Frozen records$"
+
+
+def load_frozen_files(text: str) -> dict[str, tuple[str, str]]:
+    """The canon's table of frozen records (v0.6.0): a file, the sha256 of
+    its text, and optionally the heading its frozen part stops before (the
+    history of an append-only document)."""
+    where = "canon: the table of frozen records"
+    frozen = {}
+    for row in optional_table(text, FROZEN_FILES_HEADING, 3):
+        files, digest = backticked(cell_at(row, 0, where)), clean_cell(cell_at(row, 1, where))
+        upto = backticked(row[2]) if len(row) > 2 else []
+        if len(files) != 1 or not SHA256_HEX.fullmatch(digest):
+            raise InputError(f"{where}: each row names one file in a code span and a sha256")
+        frozen[files[0]] = (digest, upto[0] if upto else "")
+    return frozen
+
+
+def frozen_part(text: str, upto: str) -> str | None:
+    """The frozen part of a record: all of it, or the lines above the
+    heading; None when the heading is not a line of the text."""
+    if not upto:
+        return text
+    lines = text.split("\n")
+    return "\n".join(lines[:lines.index(upto)]) if upto in lines else None
+
+
+def load_accepted_paths(text: str) -> dict[str, list[str]]:
+    """The canon's table of paths p-anonymity accepts, per document, each
+    in a code span, with the reason in a third column."""
+    where = "canon: the table of accepted paths"
+    accepted: dict[str, list[str]] = {}
+    for row in optional_table(text, ACCEPTED_PATHS_HEADING, 3):
+        docs, paths = backticked(cell_at(row, 0, where)), backticked(cell_at(row, 1, where))
+        if len(docs) != 1 or not paths:
+            raise InputError(f"{where}: each row names one document and its paths, in code spans")
+        shapeless = [path for path in paths if not accepted_path_entry(path)]
+        if shapeless:
+            raise InputError(f"{where}: an accepted entry is a path, nothing else (not "
+                             f"{', '.join(map(repr, shapeless))})")
+        accepted.setdefault(docs[0], []).extend(paths)
+    return accepted
+
+
+def load_exempt_documents(text: str) -> list[str]:
+    where = "canon: the table of documents outside the artifact table"
+    return [glob for row in optional_table(text, EXEMPT_DOCUMENTS_HEADING, 3)
+            for glob in backticked(cell_at(row, 0, where))]
+
+
+def load_chained_ledgers(text: str) -> dict[str, int]:
+    where = "canon: the table of chained ledgers"
+    ledgers = {}
+    for row in optional_table(text, CHAINED_LEDGERS_HEADING, 3):
+        names, count = backticked(cell_at(row, 0, where)), clean_cell(cell_at(row, 1, where))
+        if len(names) != 1 or not count.isdigit():
+            raise InputError(f"{where}: each row names one ledger in a code span and the "
+                             "number of its lines written before the chain")
+        ledgers[names[0]] = int(count)
+    return ledgers
+
+
+def load_section_commitments(text: str) -> list[SectionCommitment]:
+    where = "canon: the table of section commitments"
+    rows = []
+    for row in optional_table(text, SECTION_COMMITMENTS_HEADING, 3):
+        ids, label = prior_ids(cell_at(row, 0, where)), clean_cell(cell_at(row, 1, where))
+        digest = clean_cell(cell_at(row, 2, where))
+        if len(ids) != 1 or not SECTION_TOKEN.fullmatch(label) or not SHA256_HEX.fullmatch(digest):
+            raise InputError(f"{where}: each row names one prior mark, one section label and "
+                             "one sha256")
+        rows.append(SectionCommitment(ids[0], label, digest))
+    return rows
 
 
 def split_alternatives(cell: str) -> list[str]:
@@ -390,7 +696,7 @@ def load_recorded_facts(text: str) -> list[RecordedFact]:
     facts = []
     where = "canon: the 'Recorded facts' table"
     for row in table[1:]:
-        ids = PRIOR_TAG.findall(cell_at(row, 1, where))
+        ids = prior_ids(cell_at(row, 1, where))
         # The Number cell is read as numbers ('1,200' is one token), the
         # section cell as section labels.
         facts.append(RecordedFact(
@@ -432,6 +738,12 @@ def load_canon(path: Path) -> Canon:
         recorded_facts=load_recorded_facts(text),
         efficacy_triggers=optional_column(r"^Efficacy triggers$", 3),
         efficacy_starts=load_efficacy_starts(text),
+        exempt_documents=load_exempt_documents(text),
+        chained_ledgers=load_chained_ledgers(text),
+        section_commitments=load_section_commitments(text),
+        accepted_paths=load_accepted_paths(text),
+        frozen_files=load_frozen_files(text),
+        anonymity=load_anonymity_tables(text),
     )
 
 
@@ -465,8 +777,8 @@ JSON_CANON_KEYS = ("terms to avoid", "instantiation table rows",
                    "recorded facts")
 # Optional keys of the JSON canon: added after cells were already running
 # (v0.4.0), so a canon without them still loads, with the list empty.
-JSON_CANON_OPTIONAL_KEYS = ("efficacy triggers",)
-# The canon schema version this validator consumes (I5 of the panel): a
+JSON_CANON_OPTIONAL_KEYS = ("efficacy triggers", "documents outside the artifact list")
+# The canon schema version this validator consumes (v0.3.1): a
 # canon that declares a different version is refused, not misread — the
 # requirement the recipe's validator step states. The markdown corpus
 # canon declares it in the "Canon schema" row of its Sections table; a
@@ -519,6 +831,7 @@ def load_canon_json(path: Path) -> Canon:
         prior_triggers=data["prior-statement triggers"],
         recorded_facts=json_recorded_facts(data["recorded facts"]),
         efficacy_triggers=data.get("efficacy triggers", []),
+        exempt_documents=data.get("documents outside the artifact list", []),
     )
 
 
@@ -545,7 +858,7 @@ def json_recorded_facts(items: object) -> list[RecordedFact]:
         if not numbers or not sections:
             raise InputError(f"canon: 'recorded facts' item {i} needs a number in 'number' "
                              f"and a section label in 'section'; expected {expected}")
-        ids = PRIOR_TAG.findall(item["context"])
+        ids = prior_ids(item["context"])
         facts.append(RecordedFact(numbers, sections, ids[0] if ids else None))
     return facts
 
@@ -557,12 +870,15 @@ class Artifact:
     owner: str
     deps: list[str]
     schema: str = ""  # first *.schema.json cited in the Schema cell, if any
-    proposed: bool = False  # declared but not yet produced (C2, panel v0.2.3)
+    proposed: bool = False  # declared but not yet produced (v0.3.0)
     # The gates the artifact list assigns (v0.5.0: the one source of the
     # map from gate to artifact; the gate table's Artifact column mirrors it).
     gates: list[str] = dataclass_field(default_factory=list)
-    # Every raw field, for the placeholder check of p-references (CR3).
+    # Every raw field, for the placeholder check of p-references (v0.5.0).
     fields: list[str] = dataclass_field(default_factory=list)
+    # The command that produces the artifact (a JSON record's 'command',
+    # v0.6.0: resolved against the paths it names, never run).
+    command: str = ""
 
 
 def column_if_present(table: list[list[str]], name: str) -> int | None:
@@ -609,9 +925,10 @@ def load_artifact_records(data: object) -> dict[str, Artifact]:
         if not isinstance(proposed, bool):
             raise InputError(f"artifacts: 'proposed' of '{rec['name']}' has to be a boolean")
         fields = [str(value) for value in (rec["name"], owner, *paths, *deps, *gates)]
+        command = rec.get("command")
         artifacts[rec["name"]] = Artifact(rec["name"], list(paths), str(owner).lower(),
                                          list(deps), schema, proposed, [str(g) for g in gates],
-                                         fields)
+                                         fields, command if isinstance(command, str) else "")
     return artifacts
 
 
@@ -665,7 +982,7 @@ def load_registry(path: Path) -> dict:
 
 
 def check_layout_keys(override: dict, artifacts: dict) -> None:
-    """Refuse a layout key this validator never reads (I12 of the panel):
+    """Refuse a layout key this validator never reads (v0.4.0):
     a misspelled key would otherwise leave the default in force in silence."""
     for where, keys, known in (("top-level", override, LAYOUT_TOP_KEYS),
                                ("'artifacts'", artifacts, LAYOUT_ARTIFACT_KEYS)):
@@ -711,6 +1028,16 @@ def merge_layout(base: dict, override: dict) -> dict:
         if not isinstance(override["registry"], str):
             raise InputError("layout: 'registry' has to be a path string")
         merged["registry"] = override["registry"]
+    if "domain-results" in override:
+        results = override["domain-results"]
+        if not isinstance(results, list) or not all(isinstance(p, str) for p in results):
+            raise InputError("layout: 'domain-results' has to be a list of path strings "
+                             "(the result files the cell's domain gates write)")
+        merged["domain-results"] = list(results)
+    if "version-label" in override:
+        if not isinstance(override["version-label"], str) or not override["version-label"]:
+            raise InputError("layout: 'version-label' has to be a non-empty string (e.g. 'v2')")
+        merged["version-label"] = override["version-label"]
     return merged
 
 
@@ -812,11 +1139,21 @@ def check_against_schema(value: object, schema: dict, path: str) -> list[str]:
 
 def validate_data_text(text: str, schema: dict, origin: str) -> list[str]:
     """Validate one JSON document (or each line of a JSONL file)."""
+    repeated: list[str] = []
     try:
-        data = json.loads(text)
+        data = json.loads(text, object_pairs_hook=lambda pairs: no_repeated_keys(pairs, repeated))
     except json.JSONDecodeError as exc:
         return [f"{origin}: not valid JSON ({exc.msg}, line {exc.lineno})"]
-    return [f"{origin}: {hit}" for hit in check_against_schema(data, schema, "$")]
+    hits = [f"{origin}: key '{key}' appears twice in one object" for key in repeated]
+    return hits + [f"{origin}: {hit}" for hit in check_against_schema(data, schema, "$")]
+
+
+def no_repeated_keys(pairs: list[tuple[str, object]], repeated: list[str]) -> dict:
+    """An object of a JSON document, its repeated keys recorded (v0.6.0: the
+    last value used to win in silence)."""
+    keys = [key for key, _ in pairs]
+    repeated += sorted({key for key in keys if keys.count(key) > 1})
+    return dict(pairs)
 
 
 def role_name(card: Path) -> str:
@@ -830,12 +1167,16 @@ def role_name(card: Path) -> str:
 
 
 def read(path: Path) -> str:
+    """The text of a file under the one hash policy of the material (v0.6.0):
+    UTF-8, a byte-order mark dropped, every line break read as LF. Every
+    sha256 the instrument computes (documents, --case, rubric, validator)
+    is the sha256 of this text, so a CRLF checkout or a BOM changes no pin."""
     try:
-        return path.read_text(encoding="utf-8")
+        return path.read_text(encoding="utf-8-sig")
     except OSError as exc:
         raise InputError(f"could not read {path.name}: {exc.strerror}") from exc
     except UnicodeDecodeError as exc:
-        # I15 of the panel: undecodable bytes are a tool failure (exit 2),
+        # Since v0.4.0: undecodable bytes are a tool failure (exit 2),
         # never a finding about the document's content.
         raise InputError(f"could not decode {path.name} as UTF-8 at byte {exc.start} "
                          f"({exc.reason}); the documents are read as UTF-8 only") from exc
@@ -846,23 +1187,63 @@ def read(path: Path) -> str:
 ABS_PATH = re.compile(rf"(?<![{WORD_CHARS}.\]/~-])/(?:[{WORD_CHARS}.-]+/)+[{WORD_CHARS}.-]*|~/|\b[A-Z]:\\")
 ISO_DATE = re.compile(r"\b(?:19|20)\d{2}-\d{2}-\d{2}\b")
 DMY_DATE = re.compile(r"\b\d{1,2}/\d{1,2}/\d{2,4}\b")
-MONTH = (r"(?:January|February|March|April|May|June|July|August|September|October|November|December"
-         r"|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\b")
+# The languages whose month names the validator carries (rework of v0.6.0:
+# English, Portuguese and Spanish since v0.6.0, French, German and Italian
+# added). A language a brief declares outside these needs the canon's table
+# 'Month names', or the dates in it are pending by name.
+MONTHS_PER_YEAR = 12
+BUILTIN_MONTHS = {
+    "en": "January February March April May June July August September October November December "
+          "Jan Feb Mar Apr Jun Jul Aug Sep Sept Oct Nov Dec",
+    "pt": "janeiro fevereiro mar\u00e7o abril maio junho julho agosto setembro outubro novembro "
+          "dezembro",
+    "es": "enero febrero marzo abril mayo junio julio agosto septiembre setiembre octubre "
+          "noviembre diciembre",
+    "fr": "janvier f\u00e9vrier mars avril mai juin juillet ao\u00fbt septembre octobre novembre "
+          "d\u00e9cembre",
+    "de": "Januar Februar M\u00e4rz April Mai Juni Juli August September Oktober November Dezember",
+    "it": "gennaio febbraio marzo aprile maggio giugno luglio agosto settembre ottobre novembre "
+          "dicembre",
+}
+
+
+def month_alternation(names: list[str]) -> str:
+    """A regex group of month names, longest first, whole words only."""
+    unique = sorted({n for n in names}, key=lambda n: (-len(n), n))
+    return "(?:" + "|".join(re.escape(n) for n in unique) + r")\b"
+
+
+def named_date_pattern(month: str) -> re.Pattern[str]:
+    """A date with the month's name, day first ('29 October 2026', '29 de
+    outubro de 2026', '29. Oktober 2026') or month first ('October 29, 2026')."""
+    return re.compile(rf"\b\d{{1,2}}\.?\s+(?:de\s+)?{month}\.?,?\s+(?:de\s+)?(?:19|20)\d{{2}}\b"
+                      rf"|\b{month}\.?\s+\d{{1,2}},?\s+(?:19|20)\d{{2}}\b", re.I)
+
+
+MONTH = month_alternation([n for names in BUILTIN_MONTHS.values() for n in names.split()])
 MADE_ON = re.compile(rf"\b(?:made|written|generated)\s+on\s+(?:\d|{MONTH})", re.I)
-# IM18 (v0.5.0): the forms the gate let through — a date written with the
+# Since v0.5.0: the forms the gate let through — a date written with the
 # month's name ("29 October 2026", "October 29, 2026", "Oct 29 2026") or
 # with dots ("29.10.2026"), an absolute path of one segment under a common
 # root ("/tmp", "/scratch"), a file URL, and a home folder by user name
 # ("~joe/work"). A month and a year with no day is not a date.
-NAMED_DATE = re.compile(rf"\b\d{{1,2}}\s+{MONTH}\.?,?\s+(?:19|20)\d{{2}}\b"
-                        rf"|\b{MONTH}\.?\s+\d{{1,2}},?\s+(?:19|20)\d{{2}}\b")
+NAMED_DATE = named_date_pattern(MONTH)
+# v0.6.0: a date year first with slashes, a UNC path, an e-mail address and
+# a host name under a private suffix (the forms the panel let through).
+YMD_SLASH_DATE = re.compile(r"\b(?:19|20)\d{2}/\d{1,2}/\d{1,2}\b")
+UNC_PATH = re.compile(r"\\\\[A-Za-z0-9_.$-]+\\[^\s\\`|]+")
+EMAIL = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+\b")
+HOSTNAME = re.compile(r"\b[a-z][a-z0-9-]*(?:\.[a-z0-9-]+)*\.(?:local|lan|internal|intranet|corp)\b", re.I)
+HASHED_ENTRY = re.compile(r"^sha256:([0-9a-f]{64})$")
 DOTTED_DATE = re.compile(r"\b\d{1,2}\.\d{1,2}\.(?:19|20)\d{2}\b")
 ROOT_SEGMENT = re.compile(rf"(?<![{WORD_CHARS}.\]/~-])/(?:tmp|etc|home|users?|usr|var|opt|root"
                           rf"|srv|mnt|media|scratch|data|proj|private|Volumes)(?![{WORD_CHARS}./-])",
                           re.I)
 FILE_URL = re.compile(r"\bfile:/+", re.I)
-USER_HOME = re.compile(rf"(?<![{WORD_CHARS}/])~[a-z_][a-z0-9_.-]*", re.I)
-HTML_TAG = re.compile(r"</?[A-Za-z][A-Za-z0-9-]*(?:\s[^<>\n]*)?/?>")
+# A tilde after a tilde is a fence ('~~~python'), not a home folder (v0.6.0).
+USER_HOME = re.compile(rf"(?<![{WORD_CHARS}/~])~[a-z_][a-z0-9_.-]*", re.I)
+# An HTML comment hides text from every reader but this gate (v0.6.0).
+HTML_TAG = re.compile(r"<!--|</?[A-Za-z][A-Za-z0-9-]*(?:\s[^<>\n]*)?/?>")
 # A number with optional decimal/thousands separators; a group joined by a
 # no-break space or a narrow no-break space is a thousands group.
 NUMBER = re.compile(r"\d{1,3}(?:[\u00A0\u202F]\d{3})+(?![\d.,])|\d+(?:[.,]\d+)*")
@@ -879,7 +1260,7 @@ DOCUMENT_NUMBER = re.compile(rf"(?<![{WORD_CHARS}.,])(?:{NUMBER.pattern})")
 # 'section 1.4 and 7 rounds' the 7 counts rounds (re-review of v0.4.0).
 SECTION_REF = re.compile(r"\b(?:sections?|steps?)\s+(\d+(?:\.\d+)*(?:(?:\s*,\s*|\s+and\s+|\s+or\s+)"
                          r"\d+(?:\.\d+)*(?=\s*(?:[,.;:)\]]|$)|\s+(?:and|or|of)\b))*)", re.I)
-# The two spaces of a formatted reading (I6 of the v0.4.0 review): a value
+# The two spaces of a formatted reading: a value
 # only meets a value, a literal only meets a literal.
 VALUE_TAG, LITERAL_TAG = "value:", "literal:"
 PLURAL_SUFFIX = "(?:s|es)?"
@@ -900,13 +1281,94 @@ def count_avoid_terms(text: str, terms: list[str]) -> list[tuple[str, int]]:
     return found
 
 
-def anonymity_hits(text: str, forbidden: list[str] | None) -> list[str]:
-    hits = [f"absolute path '{m.group(0)}'" for pattern in (ABS_PATH, ROOT_SEGMENT, FILE_URL, USER_HOME)
-            for m in pattern.finditer(text)]
-    hits += [f"date '{m.group(0)}'" for pattern in (ISO_DATE, DMY_DATE, NAMED_DATE, DOTTED_DATE)
+def anonymity_hits(text: str, forbidden: list[str] | None, accepted: tuple[str, ...] = (),
+                   extra: tuple[tuple[str, re.Pattern[str]], ...] = ()) -> list[str]:
+    """The paths, dates, addresses and forbidden identifiers of a text. A
+    path the canon accepts for the document is dropped by equality with the
+    whole match (rework of v0.6.0); nothing is blanked before the checks, so
+    an accepted entry hides no identifier and no date. 'extra' holds the
+    canon's own forms, each with its kind ('absolute path', 'date')."""
+    paths = (ABS_PATH, ROOT_SEGMENT, FILE_URL, USER_HOME, UNC_PATH)
+    # The closing pass of v0.6.0: a sentence's final period is no part of
+    # the path it ends ('/usr/share/doc.' is the accepted '/usr/share/doc').
+    hits = [f"absolute path '{m.group(0)}'" for pattern in paths for m in pattern.finditer(text)
+            if m.group(0).rstrip(".") not in accepted]
+    hits += [f"{kind} '{m.group(0)}'" for kind, pattern in extra for m in pattern.finditer(text)
+             if m.group(0).rstrip(".") not in accepted]
+    hits += [f"date '{m.group(0)}'" for pattern in (ISO_DATE, DMY_DATE, NAMED_DATE, DOTTED_DATE,
+                                                    YMD_SLASH_DATE)
              for m in pattern.finditer(text)]
     hits += [f"authoring date '{m.group(0)}'" for m in MADE_ON.finditer(text)]
-    for item in forbidden or []:
+    hits += [f"e-mail address '{m.group(0)}'" for m in EMAIL.finditer(text)]
+    hits += [f"host name '{m.group(0)}'" for m in HOSTNAME.finditer(text)]
+    return hits + forbidden_hits(text, forbidden or [])
+
+
+TABLE_TOKEN = re.compile(r"[|:-]+")
+
+
+def anonymity_scope(text: str) -> str:
+    """The text p-anonymity reads (v0.6.0): an interpreter line ('#!') on
+    line 1 is no path of a machine and is blanked, the line numbers kept.
+    The paths the canon accepts are dropped by anonymity_hits, by equality."""
+    lines = text.split("\n")
+    if lines and lines[0].startswith("#!"):
+        lines[0] = ""
+    return "\n".join(lines)
+
+
+def canon_anonymity_patterns(tables: AnonymityTables) -> tuple[tuple[str, re.Pattern[str]], ...]:
+    """The forms the canon adds to p-anonymity (rework of v0.6.0): a date
+    with a month name of a language it lists, and a root of one segment it
+    names. A root of one segment the canon does not name is read only when
+    another segment follows (ABS_PATH) or it is one of ROOT_SEGMENT's."""
+    out = []
+    months = [name for names in tables.month_names.values() for name in names]
+    if months:
+        out.append(("date", named_date_pattern(month_alternation(months))))
+    if tables.machine_roots:
+        roots = "|".join(re.escape(r) for r in sorted(tables.machine_roots, key=len, reverse=True))
+        out.append(("absolute path", re.compile(
+            rf"(?<![{WORD_CHARS}.\]/~-])(?:{roots})(?![{WORD_CHARS}.-])")))
+    return tuple(out)
+
+
+BRIEF_LANGUAGES = re.compile(r"^Languages?:\s*(.*)$", re.M)
+LANGUAGE_GATE = "p-anonymity-language"
+LANGUAGE_LIST = re.compile(r"[a-z]{2}(?:,\s*[a-z]{2})*")
+
+
+def brief_languages(text: str) -> list[str]:
+    """The languages a brief declares on its line 'Languages: en, pt' (ISO
+    639-1 codes); a line of another shape is a tool failure, never ignored."""
+    m = BRIEF_LANGUAGES.search(text)
+    if m is None:
+        return []
+    value = m.group(1).strip()
+    if not LANGUAGE_LIST.fullmatch(value):
+        raise InputError(f"brief: the line 'Languages:' lists two-letter codes separated by "
+                         f"commas ('en, pt'), not {value!r}")
+    return [code.strip() for code in value.split(",")]
+
+
+def accepted_path_entry(path: str) -> bool:
+    """An entry of 'Accepted paths' is a path and nothing else (rework of
+    v0.6.0): the whole entry has the shape of an absolute, root or UNC path."""
+    return any(pattern.fullmatch(path) for pattern in (ABS_PATH, ROOT_SEGMENT, UNC_PATH))
+
+
+def forbidden_hits(text: str, forbidden: list[str]) -> list[str]:
+    """The identifiers of the external list found in the text. An entry
+    'sha256:<hex>' (v0.6.0) is compared with the sha256 of each word of the
+    text, lowercased, so a list can measure without containing what it
+    forbids; such an entry matches one word, never a phrase."""
+    hashed = {m.group(1) for item in forbidden if (m := HASHED_ENTRY.match(item))}
+    words = {sha256_text(w.lower().strip(".-")) for w in re.findall(rf"[{WORD_CHARS}.@-]+", text)} if hashed else set()
+    hits = ["forbidden identifier (from the external list, by its sha256)"
+            for digest in sorted(hashed & words)]
+    for item in forbidden:
+        if HASHED_ENTRY.match(item):
+            continue
         pattern = rf"(?<![{WORD_CHARS}]){re.escape(item)}(?![{WORD_CHARS}])"
         if re.search(pattern, text, flags=re.I):
             hits.append("forbidden identifier (from the external list)")
@@ -915,14 +1377,11 @@ def anonymity_hits(text: str, forbidden: list[str] | None) -> list[str]:
 
 def form_hits(text: str) -> list[str]:
     hits = [f"HTML tag '{m.group(0)}'" for m in HTML_TAG.finditer(strip_code(text))]
-    in_fence = False
-    for n, line in enumerate(text.splitlines(), 1):
-        if line.startswith("```"):
-            if not in_fence and line.strip() != "```text":
-                hits.append(f"fenced block without the text mark at line {n}")
-            in_fence = not in_fence
-    if in_fence:
-        hits.append("unclosed fenced block")
+    for fence in fences(text.splitlines()):
+        if fence.info != "text":
+            hits.append(f"fenced block without the text mark at line {fence.start + 1}")
+        if not fence.closed:
+            hits.append("unclosed fenced block")
     return hits
 
 
@@ -983,7 +1442,7 @@ def format_value(token: str, number_format: str) -> str | None:
 def number_readings(token: str, number_format: str | None = None) -> set[str]:
     """Every value a number token can denote, as canonical decimal text.
 
-    With a declared format (I16 of the panel) the token has one value
+    With a declared format (v0.4.0) the token has one value
     reading, in that format, or its literal spelling only when it does not
     parse there \u2014 so a comma-decimal '1.200' is 1200 and never 1.2, and
     '1.10' still matches itself. Values and literals live in separate
@@ -1041,7 +1500,7 @@ def prior_mark_hits(text: str, triggers: list[str]) -> list[str]:
     require the mark come from the canon's 'Prior-statement triggers' table,
     not from a rule of this script.
 
-    Since v0.5.0 (CR2 of the panel that reviewed v0.4.2) the trigger and the
+    Since v0.5.0 the trigger and the
     mark are both read outside code, the reading p-prior gives the mark: a
     trigger in a code span is notation (the canon exempts it), and a mark in
     a code span is no mark. A mark between backticks used to satisfy this
@@ -1051,15 +1510,19 @@ def prior_mark_hits(text: str, triggers: list[str]) -> list[str]:
     hits = []
     for n, unit in text_units(blank_fences(text)):
         body = strip_code(unit)
-        if PRIOR_MARK in body:
+        if prior_ids(body):
             continue
         trigger = first_trigger(body, triggers)
         if trigger is None:
             continue
-        where = (" (the mark is inside a code span, which is not a mark)"
-                 if PRIOR_MARK in unit else "")
+        if malformed_prior_marks(body):
+            where = f" (the mark {malformed_prior_marks(body)[0]} has a malformed id)"
+        elif PRIOR_MARK.search(unit):
+            where = " (the mark is inside a code span, which is not a mark)"
+        else:
+            where = ""
         hits.append(f"line {n}: statement about the prior ('{trigger}') "
-                    f"without a {PRIOR_MARK}<id>] mark{where}")
+                    f"without a [prior:<id>] mark{where}")
     return hits
 
 
@@ -1079,12 +1542,21 @@ def case_section_indexes(case_text: str,
     runs to the next such heading; headings inside fenced blocks do not
     count (a comment line in a command block is not a section).
     """
+    return {label: case_number_index("\n".join(lines), number_format)
+            for label, lines in case_sections(case_text).items()}
+
+
+def case_sections(case_text: str) -> dict[str, list[str]]:
+    """The lines of each numbered section of a prior method document: the
+    one section reader of p-prior and of the section commitments. A heading
+    inside a fenced block opens no section; a label met twice keeps the
+    last section that carries it."""
+    lines = case_text.splitlines()
+    fenced = fenced_line_indexes(lines)
     sections: dict[str, list[str]] = {}
-    current, buf, in_fence = None, [], False
-    for line in case_text.splitlines():
-        if line.startswith("```"):
-            in_fence = not in_fence
-        m = None if in_fence else CASE_SECTION_HEADING.match(line)
+    current, buf = None, []
+    for k, line in enumerate(lines):
+        m = None if k in fenced else CASE_SECTION_HEADING.match(line)
         if m:
             if current is not None:
                 sections[current] = buf
@@ -1093,8 +1565,14 @@ def case_section_indexes(case_text: str,
             buf.append(line)
     if current is not None:
         sections[current] = buf
-    return {label: case_number_index("\n".join(lines), number_format)
-            for label, lines in sections.items()}
+    return sections
+
+
+def section_digests(case_text: str) -> dict[str, str]:
+    """The sha256 of the text of each numbered section (its lines joined by
+    LF, the heading excluded), as the section commitments of the canon
+    record them."""
+    return {label: sha256_text("\n".join(lines)) for label, lines in case_sections(case_text).items()}
 
 
 @dataclass(frozen=True)
@@ -1104,11 +1582,13 @@ class CaseDocument:
     index: frozenset[str]
     sections: dict[str, set[str]]
     number_format: str | None = None
+    digests: dict[str, str] = dataclass_field(default_factory=dict)
 
 
 def case_document(case_text: str, number_format: str | None = None) -> CaseDocument:
     return CaseDocument(frozenset(case_number_index(case_text, number_format)),
-                        case_section_indexes(case_text, number_format), number_format)
+                        case_section_indexes(case_text, number_format), number_format,
+                        section_digests(case_text))
 
 
 def fact_rows_for(readings: set[str], facts: list[RecordedFact],
@@ -1176,7 +1656,7 @@ def prior_number_findings(text: str, case_index: set[str],
     hits: list[str] = []
     global_checks = 0
     for n, unit in text_units(strip_code(text)):
-        if PRIOR_MARK not in unit:
+        if not PRIOR_MARK.search(unit):
             continue
         for number in NUMBER.findall(MARK_TAGS.sub("", unit)):
             found, was_global = number_hits(f"line {n}", number, doc, facts or [])
@@ -1223,12 +1703,15 @@ def unit_number_check(n: int, unit: str, docs: dict[str, CaseDocument],
                       facts: list[RecordedFact], out: PriorCheck,
                       instance_ids: frozenset[str] = frozenset()) -> None:
     """Check one marked unit against the document of each prior it cites
-    (I14 of the panel): every number and every cited section is verified in
+    (v0.4.0): every number and every cited section is verified in
     the document of each id, never in the document of another id; an id with
     no document passed leaves the unit unmeasured for that id, by name. A
-    full registered id in the text names an instance and is not read."""
-    ids = sorted(set(PRIOR_TAG.findall(unit)))
-    labels, body = section_references(without_instance_ids(MARK_TAGS.sub("", unit), instance_ids))
+    full registered id in the text names an instance and is not read. The
+    unit is marked by a mark outside code spans; its numbers are read inside
+    code spans too (v0.6.0: a number between backticks used to pass unread)."""
+    ids = sorted(set(prior_ids(strip_code(unit))))
+    opened = open_code_spans(unit)
+    labels, body = section_references(without_instance_ids(MARK_TAGS.sub("", opened), instance_ids))
     numbers = DOCUMENT_NUMBER.findall(body)
     if not ids or not (labels or numbers):
         return
@@ -1251,9 +1734,19 @@ def multi_prior_findings(text: str, docs: dict[str, CaseDocument], facts: list[R
                          instance_ids: frozenset[str] = frozenset()) -> PriorCheck:
     """Numbers in [prior:<id>] units, each checked in the document of <id>."""
     out = PriorCheck()
-    for n, unit in text_units(strip_code(text)):
+    for n, unit in text_units(strip_fences_and_links(text)):
         unit_number_check(n, unit, docs, facts, out, instance_ids)
     return out
+
+
+def strip_fences_and_links(text: str) -> str:
+    """Fenced blocks blanked and link targets removed, code spans kept."""
+    return re.sub(r"\]\([^)]*\)", "]", blank_fences(text))
+
+
+def open_code_spans(text: str) -> str:
+    """The text with the backticks of its code spans removed, their content kept."""
+    return re.sub(r"`([^`\n]*)`", r"\1", text)
 
 
 def instance_ids_of(registry: dict) -> frozenset[str]:
@@ -1265,8 +1758,8 @@ def instance_ids_of(registry: dict) -> frozenset[str]:
                      if isinstance(inst, dict) and inst.get("id"))
 
 
-def pin_findings(cited_ids: set[str], registry: dict | None,
-                 case_digests: set[str] | None) -> tuple[list[str], int]:
+def pin_findings(cited_ids: set[str], registry: dict | None, case_digests: set[str] | None,
+                 held: frozenset[str] = frozenset()) -> tuple[list[str], int]:
     """The sha256 pin of every executed prior cited in the corpus.
 
     The gate `p-prior-pin` was created after the critical panel found that a
@@ -1274,8 +1767,10 @@ def pin_findings(cited_ids: set[str], registry: dict | None,
     was never compared with the documents actually passed as priors. A cited
     executed instance with no pinned sha256, or pinned to a sha256 that none
     of the --case documents has, is a blocking note; so is a --case document
-    that is the pin of no executed instance (I14). Without any prior document
-    the gate is pending, never a pass.
+    that is the pin of no executed instance. Without any prior document
+    the gate is pending, never a pass. Since the rework of v0.6.0 a cited
+    prior in `held` (owner-held) with no document is left to the caller as
+    pending, unless a stray document was passed (it may be that prior).
     """
     if registry is None:
         return [], 0
@@ -1285,7 +1780,7 @@ def pin_findings(cited_ids: set[str], registry: dict | None,
     pinned = {inst.get("sha256") for inst in executed.values()}
     stray = sorted((case_digests or set()) - pinned)
     # A document passed that pins nothing suggests a wrong or edited prior;
-    # with none, the cited prior's document was simply not passed (S5).
+    # with none, the cited prior's document was simply not passed.
     cause = ("wrong or edited prior document" if stray
              else "its method document was not passed")
     hits: list[str] = []
@@ -1295,6 +1790,8 @@ def pin_findings(cited_ids: set[str], registry: dict | None,
             hits.append(f"cited prior '{pid}' is executed and has no sha256 "
                         "pinned in the registry")
         elif case_digests is not None and recorded not in case_digests:
+            if pid in held and not stray:
+                continue
             hits.append(f"cited prior '{pid}': no document passed as --case matches the "
                         f"sha256 pinned for it ({cause})")
     for digest in stray:
@@ -1320,7 +1817,7 @@ def canon_links(doc_path: Path, text: str, canon_path: Path) -> tuple[int, list[
 
 def efficacy_mark_hits(text: str, triggers: list[str]) -> list[str]:
     """Every unit that claims the method's efficacy carries its evidence
-    label (I10 of the panel): [prior:<id>], [experiment:<id>], [lessons] or
+    label (v0.4.0): [prior:<id>], [experiment:<id>], [lessons] or
     [hypothesis]. The triggers and the labels are read outside code spans,
     link targets and fenced blocks (v0.5.0: one reading for the three mark
     gates; a label between backticks is notation, not a label). The gate
@@ -1333,9 +1830,42 @@ def efficacy_mark_hits(text: str, triggers: list[str]) -> list[str]:
             continue
         trigger = first_trigger(body, triggers)
         if trigger is not None:
+            bare = (" (a bare [lessons] names no entry: write [lessons:<title of the entry>])"
+                    if BARE_LESSONS in body else "")
             hits.append(f"line {n}: claim of efficacy ('{trigger}') without one of the "
-                        "labels [prior:<id>], [experiment:<id>], [lessons], [hypothesis]")
+                        f"labels [prior:<id>], [experiment:<id>], [lessons:<title>], "
+                        f"[hypothesis]{bare}")
     return hits
+
+
+def hypothesis_advisories(text: str, triggers: list[str]) -> list[str]:
+    """Claims of efficacy labeled [hypothesis] that state a number or a
+    universal quantifier (v0.6.0): the label stays valid, a low note says
+    the claim has the shape of a measurement with none behind it."""
+    out = []
+    for n, unit in text_units(blank_fences(text)):
+        body = strip_code(unit)
+        if HYPOTHESIS_LABEL not in body or first_trigger(body, triggers) is None:
+            continue
+        # The number of an ordered list item is no number of the claim.
+        claim = re.sub(r"^\s*(?:[-*]|\d+\.)\s+", "", MARK_TAGS.sub("", body).replace(HYPOTHESIS_LABEL, ""))
+        if UNIVERSAL_CLAIM.search(claim) or DOCUMENT_NUMBER.search(claim):
+            out.append(f"line {n}: a [hypothesis] claim of efficacy states a number or a "
+                       "universal quantifier; a hypothesis carries no measured shape")
+    return out
+
+
+def lessons_titles(text: str) -> set[str]:
+    """The titles of the entries of the lessons file (its level-2 and
+    level-3 headings), as a [lessons:<title>] label cites them."""
+    return {m.group(1).strip() for m in re.finditer(r"^#{2,3} (?!#)(.+)$", text, re.M)}
+
+
+def lessons_label_hits(text: str, titles: set[str], lessons_file: str) -> list[str]:
+    """Every [lessons:<title>] label names an entry of the lessons file."""
+    return [f"[lessons:{title}] names no entry (heading) of {lessons_file}"
+            for title in sorted(set(LESSONS_TAG.findall(strip_code(text))))
+            if title.strip() not in titles]
 
 
 def from_heading(text: str, heading: str) -> str | None:
@@ -1352,30 +1882,77 @@ def experiment_statuses(text: str) -> dict[str, str | None]:
     """Every experiment of the record and the status its block declares
     (None when it declares none). The block of '## E1 — ...' runs to the next
     level-2 heading; a subheading ('### Question') never names an id."""
-    headings = list(EXPERIMENT_HEADING.finditer(text))
     statuses: dict[str, str | None] = {}
-    for m in headings:
+    for eid, block in experiment_blocks(text).items():
+        status = EXPERIMENT_STATUS.search(block)
+        statuses[eid] = status.group(1) if status else None
+    return statuses
+
+
+def experiment_blocks(text: str) -> dict[str, str]:
+    """The block of each '## E<n> — ...' heading, up to the next level-2 heading."""
+    blocks = {}
+    for m in EXPERIMENT_HEADING.finditer(text):
         block = text[m.end():]
         end = LEVEL_TWO_HEADING.search(block)
-        status = EXPERIMENT_STATUS.search(block[:end.start()] if end else block)
-        statuses[m.group(1)] = status.group(1) if status else None
-    return statuses
+        blocks[m.group(1)] = block[:end.start()] if end else block
+    return blocks
+
+
+def provenanced_experiments(text: str) -> set[str]:
+    """The experiments whose block carries a provenance table (v0.6.0): under
+    '### Provenance', rows whose Kind is input or output and whose sha256
+    cell holds a sha256, with at least one input and one output."""
+    out = set()
+    for eid, block in experiment_blocks(text).items():
+        body = heading_section_at(block, PROVENANCE_HEADING, 3)
+        tables = parse_tables(body) if body is not None else []
+        if not tables:
+            continue
+        table = tables[0]
+        i_kind, i_sha = column_if_present(table, "Kind"), column_if_present(table, "sha256")
+        if i_kind is None or i_sha is None:
+            continue
+        kinds = {clean_cell(r[i_kind]).lower() for r in table[1:]
+                 if max(i_kind, i_sha) < len(r) and SHA256_HEX.search(r[i_sha])}
+        if set(PROVENANCE_KINDS) <= kinds:
+            out.add(eid)
+    return out
+
+
+def heading_section_at(text: str, heading: str, level: int) -> str | None:
+    """The body under the heading line, up to the next heading of that level
+    or higher, or None when the heading is not a line of the text."""
+    lines = text.split("\n")
+    if heading not in lines:
+        return None
+    body = lines[lines.index(heading) + 1:]
+    stop = re.compile(rf"^#{{1,{level}}} (?!#)")
+    end = next((k for k, line in enumerate(body) if stop.match(line)), len(body))
+    return "\n".join(body[:end])
 
 
 def registered_experiments(text: str) -> set[str]:
     """The ids the experiments record registers as evidence: the experiments
-    whose block declares the status 'executed' (S4 of the v0.4.0 review)."""
+    whose block declares the status 'executed' (v0.4.1)."""
     return {eid for eid, status in experiment_statuses(text).items() if status == EXECUTED}
 
 
-def experiment_label_hits(eid: str, statuses: dict[str, str | None], record: str) -> list[str]:
+def experiment_label_hits(eid: str, statuses: dict[str, str | None], record: str,
+                          provenanced: set[str] | None = None) -> list[str]:
     """An [experiment:<id>] label backs a claim only with an executed
     experiment: an unknown id is not registered, and a designed (or pending)
-    one is not evidence yet."""
+    one is not evidence yet. Since v0.6.0 an executed one also needs its
+    provenance table; without it the label reads as [hypothesis], with a
+    note (None skips the provenance part, for the legacy callers)."""
     if eid not in statuses:
         return [f"[experiment:{eid}] is not registered in {record}"]
     status = statuses[eid]
     if status == EXECUTED:
+        if provenanced is not None and eid not in provenanced:
+            return [f"[experiment:{eid}] cites an executed experiment with no provenance "
+                    f"table (sha256 of its inputs and outputs) in {record}; the label reads "
+                    "as [hypothesis]"]
         return []
     kind = f"a {status}" if status else "an undeclared-status"
     return [f"[experiment:{eid}] cites {kind} experiment as evidence; only an executed "
@@ -1385,7 +1962,7 @@ def experiment_label_hits(eid: str, statuses: dict[str, str | None], record: str
 def executed_entry_hits(where: str, inst: dict) -> list[str]:
     """An executed entry carries its document, its sha256 pin, its locator (a
     relative path or the reserved owner-held string) and its number format
-    (I16 of the panel: never a silent default)."""
+    (v0.4.0: never a silent default)."""
     hits = [f"{where}: executed instance '{inst.get('id')}' declares no {name}"
             for name in ("document", "sha256", "locator")
             if not isinstance(inst.get(name), str) or not inst[name]]
@@ -1410,7 +1987,7 @@ def designed_entry_hits(where: str, inst: dict) -> list[str]:
 
 
 def registry_status_hits(text: str) -> list[str]:
-    """The contract of each registry entry by its status (C16, v0.4.1)."""
+    """The contract of each registry entry by its status (v0.4.1)."""
     try:
         data = json.loads(text)
     except json.JSONDecodeError:
@@ -1460,10 +2037,22 @@ def gate_tables(text: str) -> list[list[list[str]]]:
     return [t for t in parse_tables(text) if t and clean_cell(t[0][0]).lower() == "gate"]
 
 
+def merged_gate_table(tables: list[list[list[str]]], where: str) -> list[list[str]]:
+    """Every gate table of the gates file as one table (v0.6.0): a cell may
+    keep its domain gates in a table of their own, and a row of a second
+    table used to be read by no gate. The tables share their columns."""
+    header = [h.lower() for h in tables[0][0]]
+    for table in tables[1:]:
+        if [h.lower() for h in table[0]] != header:
+            raise InputError(f"{where}: every gate table has the columns {tables[0][0]}; "
+                             f"one has {table[0]}")
+    return [tables[0][0]] + [row for table in tables for row in table[1:]]
+
+
 def limit_hits(text: str, tags: list[str], min_words: int) -> list[str]:
     """Gate rows with an empty field, a justification without an origin
     label or shorter than min_words (read from the p-limit row of the gate
-    table, IM16), or a placeholder in any field (CR3, v0.5.0)."""
+    table), or a placeholder in any field (v0.5.0)."""
     hits = []
     for table in gate_tables(text):
         i_mag, i_lim, i_just = (column(table, c) for c in ("Magnitude", "Limit", "Justification"))
@@ -1482,7 +2071,7 @@ def limit_hits(text: str, tags: list[str], min_words: int) -> list[str]:
 
 
 def placeholders(text: str) -> list[str]:
-    """The placeholders of a field, outside code spans, quoted (CR3)."""
+    """The placeholders of a field, outside code spans, quoted (v0.5.0)."""
     return [f"'{m.group(0)}'" for m in PLACEHOLDER.finditer(strip_code(text))]
 
 
@@ -1509,7 +2098,7 @@ def card_hits(text: str, fields: list[str], whole_document: bool) -> list[str]:
         for field in fields:
             if f"**{field}:**" not in block:
                 hits.append(f"{role}: field '{field}' missing")
-        # CR3 (v0.5.0): a card whose fields still say '<fill in>' used to
+        # Since v0.5.0: a card whose fields still say '<fill in>' used to
         # pass with "0 fields missing"; a placeholder is an unfilled field.
         hits += [f"{role}: placeholder {p} in the card" for p in placeholders(blank_fences(block))]
     return hits
@@ -1554,7 +2143,9 @@ def instance_reference_hits(text: str) -> list[str]:
     artifacts = load_artifact_table(art_tables[0])
     blocks = role_blocks(text)
     roles = set(blocks) | {OWNER_HUMAN}
-    hits = reference_hits(artifacts, roles, gate_tables(text))
+    # v0.6.0: the placeholder check of an artifact record applies to the
+    # artifact table of an instance as it does to the corpus's own.
+    hits = reference_hits(artifacts, roles, gate_tables(text)) + artifact_placeholder_hits(artifacts)
     for role, block in sorted(blocks.items()):
         hits += note_target_hits(block, set(artifacts), role)
     return hits
@@ -1617,8 +2208,8 @@ def declared_gate_map(artifacts: dict[str, Artifact]) -> dict[str, list[str]]:
 
 
 def gate_map_hits(artifacts: dict[str, Artifact], table: list[list[str]]) -> list[str]:
-    """The Artifact column of the gate table against the artifact list (CR1
-    and IM16, v0.5.0): a gate the list assigns with no row, or a row that
+    """The Artifact column of the gate table against the artifact list
+    (v0.5.0): a gate the list assigns with no row, or a row that
     names another set of artifacts, is a finding. Deleting the gate table
     used to leave every gate silently unmeasured and the report green."""
     declared = declared_gate_map(artifacts)
@@ -1642,7 +2233,7 @@ def gate_map_hits(artifacts: dict[str, Artifact], table: list[list[str]]) -> lis
 
 
 def artifact_placeholder_hits(artifacts: dict[str, Artifact]) -> list[str]:
-    """CR3 (v0.5.0): an artifact record that still carries a placeholder."""
+    """Since v0.5.0: an artifact record that still carries a placeholder."""
     return [f"artifact '{art.name}': placeholder {p}"
             for art in sorted(artifacts.values(), key=lambda a: a.name)
             for p in placeholders(" | ".join(art.fields))]
@@ -1704,15 +2295,109 @@ def rubric_hash(gates_text: str, gates_file: str = GATES_FILE) -> str:
 
 
 def provenance_inputs(folder: Path, layout: dict) -> dict[str, str]:
-    """The sha256 of the inputs that define what the gates measure (CR1,
-    v0.5.0): the gate section of the gates file (its '## Gates' section,
+    """The sha256 of the inputs that define what the gates measure
+    (v0.5.0): the gate section of the gates file (its '## Gates' section,
     or the whole file when it has none, as in a cell's gates file) and the
     canon file. A sensitivity report records both, and p-sensitivity
     refuses a report made against other ones."""
     gates_text = read(folder / layout["artifacts"]["gates-and-rubric"])
     gates_section = heading_section(gates_text, GATES_HEADING)
+    _, artifacts = load_control_documents(folder, layout)
     return {"gates": sha256_text(gates_text if gates_section is None else gates_section),
-            "canon": sha256_text(read(folder / layout["artifacts"]["canon"]))}
+            "canon": sha256_text(read(folder / layout["artifacts"]["canon"])),
+            "map": map_digest(gate_map_pairs(folder, artifacts))}
+
+
+def resolve_patterns(folder: Path, patterns: list[str]) -> list[str]:
+    """The files a list of declared paths names, relative to the folder. A
+    pattern with '../' is a literal path out of the folder (no wildcard
+    expansion), so a document above the folder can be measured without
+    sweeping outside it; any other pattern is a glob."""
+    out = []
+    for pattern in patterns:
+        if pattern.startswith("../"):
+            literal = folder / pattern
+            if literal.is_file():
+                out.append(Path(os.path.relpath(literal, folder)).as_posix())
+            continue
+        out.extend(sorted(p.relative_to(folder).as_posix() for p in folder.glob(pattern)))
+    return out
+
+
+def gate_map_pairs(folder: Path, artifacts: dict[str, Artifact]) -> list[tuple[str, str]]:
+    """The resolved map: every (gate, document path) the artifact list
+    assigns, sorted and without repetition."""
+    pairs = {(gate, path) for gate, arts in declared_gate_map(artifacts).items()
+             for art in arts for path in resolve_patterns(folder, artifacts[art].files)}
+    return sorted(pairs)
+
+
+def map_digest(pairs: list[tuple[str, str]]) -> str:
+    """The sha256 of the resolved map, one 'gate<TAB>path' line per pair:
+    a reformatted artifact table keeps it, a repointed file changes it."""
+    return sha256_text("".join(f"{gate}\t{path}\n" for gate, path in pairs))
+
+
+def load_control_documents(folder: Path, layout: dict) -> tuple[Canon, dict[str, Artifact]]:
+    """The canon and the artifact list, through the layout's parser."""
+    parser = layout_parser(layout)
+    canon_path = folder / layout["artifacts"]["canon"]
+    artifacts_path = folder / layout["artifacts"]["artifacts"]
+    if parser == "builtin-json-canon":
+        try:
+            data = json.loads(read(artifacts_path))
+        except json.JSONDecodeError as exc:
+            raise InputError(f"artifacts: invalid JSON ({exc.msg}, line {exc.lineno})") from exc
+        artifacts = load_artifact_records(data)
+        return load_canon_json(canon_path), with_version(artifacts, layout.get("version-label"))
+    table = first_table(section(read(artifacts_path), r"^Table$"))
+    return load_canon(canon_path), with_version(load_artifact_table(table), layout.get("version-label"))
+
+
+VERSION_FIELD = "{version}"
+
+
+def with_version(artifacts: dict[str, Artifact], label: object) -> dict[str, Artifact]:
+    """The paths and commands of the artifacts with '{version}' replaced by
+    the cell's version label (layout key 'version-label', v0.6.0): a cell
+    that moves from v1 to v2 changes one key, not every path, and its old
+    version's artifacts no longer fall out of the gates in silence."""
+    uses = [a.name for a in artifacts.values()
+            if any(VERSION_FIELD in x for x in (*a.files, a.command))]
+    if not uses:
+        return artifacts
+    if not isinstance(label, str) or not label:
+        raise InputError(f"artifacts: {', '.join(sorted(uses))} use '{VERSION_FIELD}' and the "
+                         "layout declares no 'version-label'")
+    for art in artifacts.values():
+        art.files = [f.replace(VERSION_FIELD, label) for f in art.files]
+        art.command = art.command.replace(VERSION_FIELD, label)
+    return artifacts
+
+
+COMMAND_PATH = re.compile(r"[\w.-]*/[\w./-]*|[\w.-]+\.(?:py|sh|md|jsonl?|csv|txt)")
+
+
+def command_hits(artifacts: dict[str, Artifact], folder: Path) -> list[str]:
+    """The command of each artifact resolved against the folder (v0.6.0):
+    every path it names (the script, its inputs and outputs) has to exist.
+    The command is never run; an option, a URL or an absolute path is not
+    read as a path of the cell."""
+    hits = []
+    for art in sorted(artifacts.values(), key=lambda a: a.name):
+        try:
+            tokens = shlex.split(art.command)
+        except ValueError as exc:
+            hits.append(f"artifact '{art.name}': its command does not parse ({exc})")
+            continue
+        for token in tokens:
+            value = token.split("=", 1)[1] if token.startswith("--") and "=" in token else token
+            if value.startswith(("-", "/")) or "://" in value or not COMMAND_PATH.fullmatch(value):
+                continue
+            if not (folder / value).exists():
+                hits.append(f"artifact '{art.name}': its command names `{value}`, which does "
+                            "not exist")
+    return hits
 
 
 def rubric_digest(folder: Path, layout: dict) -> str:
@@ -1752,7 +2437,7 @@ def note_contract_hits(notes_path: Path, artifact_names: set[str]) -> tuple[int,
 
 
 def note_round_and_status_hits(i: int, note: dict) -> list[str]:
-    """The round is a string, as in the round record (IM21, v0.5.0); a
+    """The round is a string, as in the round record (since v0.5.0); a
     positive integer is the legacy form the frozen ledger of round 1 keeps.
     The optional status and closed_in fields carry the state of a note."""
     rnd = note["round"]
@@ -1769,14 +2454,260 @@ def note_round_and_status_hits(i: int, note: dict) -> list[str]:
 CLOSING_STATUSES = ("fixed", "out of scope")
 
 
+# The rules of the state of a note (v0.6.0).
+# [hypothesis] three rounds is the age past which an open note is debt that
+# needs a decision: the panel that reviewed v0.5.0 counted 16 of the 22
+# notes of round 1 still open nine rounds later. A note with a 'due'
+# version is scheduled and counts again only once that version is reached.
+NOTE_AGE_LIMIT_ROUNDS = 3
+FROZEN_LEDGER_OPENED_IN = "0.1.0"
+UNPROTECTED = "unprotected non-negotiable"
+# [hypothesis] eight words is the shortest reason not to make a gate that
+# says what moved where ("the rule moved into the contract of the notes");
+# a shorter one, or one naming no decided owner decision, is no reason
+# (rework of v0.6.0: 'no_gate': "x" closed golden rule 4).
+NO_GATE_MIN_WORDS = 8
+SEVERITY_RANK = {"low": 0, "medium": 1, "high": 2, "blocking": 3}
+# A high or blocking note opened since this version names the
+# non-negotiables it affects, an empty list when none (rework of v0.6.0).
+AFFECTS_REQUIRED_SINCE = (0, 6, 0)
+NON_NEGOTIABLE_ID = re.compile(r"nn-[a-z0-9][a-z0-9-]*")
+EVIDENCE_PATH = re.compile(r"(?<![\w/.-])(?:\.\./)*[\w.-]+(?:/[\w.-]+)*\.(?:md|jsonl?|py)\b")
+
+
+@dataclass
+class StateContext:
+    """What the rules of the state ledger read from the rest of the cell."""
+    gates: set[str]
+    non_negotiables: set[str]
+    covered: set[str]
+    round_versions: list[tuple[int, ...]]
+    severities: dict[str, str]
+    decided: set[str] = dataclass_field(default_factory=set)
+    # Over every line of a ref, not only its last (rework of v0.6.0): the
+    # highest severity a line gave it and the non-negotiables any line named.
+    line_severities: dict[str, str] = dataclass_field(default_factory=dict)
+    affected: dict[str, set[str]] = dataclass_field(default_factory=dict)
+
+
+def status_history(entries: list[dict]) -> tuple[dict[str, str], dict[str, set[str]]]:
+    """The highest severity and the union of 'affects' of each ref over all
+    its lines of the state ledger: a later line can close a note or have the
+    owner decide it, it cannot lower its severity or drop what it affects."""
+    severities: dict[str, str] = {}
+    affected: dict[str, set[str]] = {}
+    for e in entries:
+        ref = e.get("ref")
+        if not isinstance(ref, str):
+            continue
+        sev = e.get("severity")
+        if sev in SEVERITY_RANK and SEVERITY_RANK[sev] >= SEVERITY_RANK.get(severities.get(ref, ""), -1):
+            severities[ref] = sev
+        if isinstance(e.get("affects"), list):
+            affected.setdefault(ref, set()).update(x for x in e["affects"] if isinstance(x, str))
+    return severities, affected
+
+
+def version_key(version: object) -> tuple[int, ...] | None:
+    """A semantic version as a tuple, or None when it is not one."""
+    m = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)", str(version))
+    return tuple(int(g) for g in m.groups()) if m else None
+
+
+def latest_status_lines(text: str) -> dict[str, dict]:
+    """The last line of each ref of the state ledger: its state."""
+    latest: dict[str, dict] = {}
+    for line in text.splitlines():
+        entry = parse_ledger_line(line) if line.strip() else None
+        if isinstance(entry, dict) and isinstance(entry.get("ref"), str):
+            latest[entry["ref"]] = entry
+    return latest
+
+
+def escape_hits(ref: str, entry: dict, context: StateContext) -> list[str]:
+    """Golden rule 4, mechanical (v0.6.0): a regression that escaped every
+    gate ('escaped': true) closes with the gate it became, or with the
+    recorded reason not to make one ('no_gate'). Since the rework of v0.6.0
+    the gate is a row of the gate table, not any name of a domain gate, and
+    the reason has NO_GATE_MIN_WORDS distinct words (a measure of form, not
+    of content: eight words that say nothing pass) or, since the closing pass, the line's 'decision' (or the whole
+    reason) is exactly the name of a decided owner decision."""
+    if entry.get("escaped") is not True or entry.get("status") not in CLOSING_STATUSES:
+        return []
+    gate = entry.get("gate")
+    if isinstance(gate, str) and gate in context.gates:
+        return []
+    reason = entry.get("no_gate")
+    named = {entry.get("decision"), reason.strip() if isinstance(reason, str) else None}
+    if isinstance(reason, str) and (len({w.lower() for w in reason.split()}) >= NO_GATE_MIN_WORDS
+                                    or bool(named & context.decided)):
+        return []
+    return [f"{ref}: an escaped regression closed with neither a gate of the gate table "
+            f"('gate') nor a reason not to make one ('no_gate': {NO_GATE_MIN_WORDS} distinct words or "
+            "the name of a decided owner decision)"]
+
+
+def effective_severity(ref: str, entry: dict, context: StateContext) -> str | None:
+    """The higher of the ledger's severity and the line's (rework of v0.6.0):
+    a later line lowering it was enough to unprotect a non-negotiable;
+    lowering it is an owner decision, which covers the note instead."""
+    known = [s for s in (context.severities.get(ref), context.line_severities.get(ref),
+                         entry.get("severity")) if s in SEVERITY_RANK]
+    return max(known, key=SEVERITY_RANK.__getitem__, default=None)
+
+
+def affects_hits(ref: str, entry: dict, context: StateContext) -> list[str]:
+    """A note names the non-negotiables it affects by their ids in the
+    brief; an open high or blocking one is blocking at the stop unless an
+    owner decision that is decided covers it (v0.6.0)."""
+    affects = sorted(set(entry.get("affects", [])) | context.affected.get(ref, set()))
+    hits = [f"{ref}: affects '{nn}', which is no non-negotiable of the brief"
+            for nn in affects if nn not in context.non_negotiables]
+    severity = effective_severity(ref, entry, context)
+    opened = opened_version(ref, entry)
+    if ("affects" not in entry and ref not in context.affected and severity in BLOCKING
+            and opened is not None
+            and opened >= AFFECTS_REQUIRED_SINCE):
+        hits.append(f"{ref}: a {severity} note opened in {'.'.join(map(str, opened))} names "
+                    "the non-negotiables it affects ('affects', an empty list when none)")
+    if (affects and entry.get("status") == "open" and severity in BLOCKING
+            and ref not in context.covered):
+        hits.append(f"{UNPROTECTED}: {ref} is open, {severity}, and affects "
+                    f"{', '.join(affects)}; fix it or record the owner's decision on it")
+    return hits
+
+
+def opened_version(ref: str, entry: dict) -> tuple[int, ...] | None:
+    """When a tracked note was opened: its 'opened_in', the version in a
+    panel ref, or the first round for a note of the frozen ledger."""
+    if "opened_in" in entry:
+        return version_key(entry["opened_in"])
+    m = re.match(r"panel:(\d+\.\d+\.\d+):", ref)
+    return version_key(m.group(1) if m else FROZEN_LEDGER_OPENED_IN)
+
+
+def age_advisories(ref: str, entry: dict, context: StateContext) -> list[str]:
+    """An open note older than NOTE_AGE_LIMIT_ROUNDS rounds of the round
+    record, and not scheduled for a version still ahead, is a low note."""
+    opened = opened_version(ref, entry)
+    if entry.get("status") != "open" or opened is None:
+        return []
+    due = version_key(entry.get("due"))
+    current = max(context.round_versions, default=opened)
+    if due is not None and due > current:
+        return []
+    age = sum(1 for v in context.round_versions if v > opened)
+    if age <= NOTE_AGE_LIMIT_ROUNDS:
+        return []
+    return [f"{ref} has been open for {age} rounds: schedule it ('due'), dispute it or close "
+            "it with the reason"]
+
+
+def evidence_hits(notes_path: Path, folder: Path) -> list[str]:
+    """The files the evidence of each note names have to exist, relative
+    to the folder or to the material above it (v0.6.0)."""
+    try:
+        data = json.loads(read(notes_path))
+    except json.JSONDecodeError:
+        return []  # reported by the contract check of the same file
+    hits = []
+    for i, note in enumerate(data if isinstance(data, list) else []):
+        evidence = note.get("evidence", "") if isinstance(note, dict) else ""
+        for path in EVIDENCE_PATH.findall(str(evidence)):
+            if not ((folder / path).exists() or (folder.parent / path).exists()):
+                hits.append(f"note {i}: evidence names '{path}', which does not exist")
+    return hits
+
+
+def parse_ledger_line(line: str) -> object:
+    """One line of a JSONL ledger, or None when it is not JSON (the schema
+    validation of the same line reports that)."""
+    try:
+        return json.loads(line)
+    except json.JSONDecodeError:
+        return None
+
+
+def chain_prev(lines: list[str], k: int) -> str:
+    """The 'prev' the k-th line (0-based) has to carry: the sha256 of every
+    line above it, each followed by LF. For a ledger with no blank line this
+    is the sha256 of the file as it stood before the line was appended."""
+    return sha256_text("".join(line + "\n" for line in lines[:k]))
+
+
+def chain_hits(lines: list[str], entries: list[object], legacy: int) -> list[str]:
+    """The hash chain of an append-only ledger (v0.6.0). A line that carries
+    'prev' has to carry the sha256 of everything above it, so an earlier
+    line edited, removed or reordered breaks the first chained line after
+    it; every line after the first 'legacy' ones (the lines written before
+    the chain, a number the canon declares) and every line after a chained
+    one has to carry it. It detects an edit nobody announced; it does not
+    stop whoever controls the whole tree."""
+    hits, chained = [], False
+    for k, entry in enumerate(entries):
+        prev = entry.get("prev") if isinstance(entry, dict) else None
+        if prev is None:
+            if chained or k >= legacy:
+                hits.append(f"line {k + 1} carries no 'prev': every line after the first "
+                            f"{legacy} of the ledger, and after a chained line, carries the chain")
+            continue
+        chained = True
+        if prev != chain_prev(lines, k):
+            hits.append(f"line {k + 1}: 'prev' is not the sha256 of the ledger above it; an "
+                        "earlier line was edited, removed or reordered")
+    return hits
+
+
+# The salted commitment to the map of letters to families (rework of
+# v0.6.0, CR5): sha256 over UTF-8 of json.dumps(map, sort_keys=True,
+# separators=(',', ':'), ensure_ascii=False) + '\n' + salt. The validator
+# reads its form only; the owner holds map and salt and verifies it.
+FAMILY_COMMITMENT_SINCE = (0, 6, 0)
+SHA256_HEX = re.compile(r"[0-9a-f]{64}")
+
+
+def round_line_hits(entry: dict, rubric_digest: Callable[[], str]) -> list[str]:
+    """The rules of a chained line of the round record (v0.6.0): its kind; a
+    reviewer's relation to the producer; the verdict vocabulary of the canon
+    only on a production; a rubric declared applied has the frozen hash."""
+    hits = []
+    kind = entry.get("kind")
+    if kind not in ROUND_KINDS:
+        hits.append(f"'kind' is {kind!r}, not one of {', '.join(ROUND_KINDS)}")
+    roles = [m.get("role", "") for m in entry.get("models", []) if isinstance(m, dict)]
+    if any(str(role).startswith("reviewer") for role in roles) \
+            and entry.get("reviewer_relation") not in REVIEWER_RELATIONS:
+        hits.append("a line with a reviewer names its 'reviewer_relation' "
+                    f"({', '.join(REVIEWER_RELATIONS)})")
+    if "verdict" in entry and kind != "production":
+        hits.append("a verdict of the canon belongs to a production round; a maintenance "
+                    "round emits none")
+    if entry.get("rubric_applied") is True and entry.get("rubric_hash") != rubric_digest():
+        hits.append("'rubric_applied' is true and 'rubric_hash' is not the sha256 of the "
+                    "frozen rubric")
+    version = version_key(entry.get("method_version"))
+    if (version is not None and version >= FAMILY_COMMITMENT_SINCE
+            and not SHA256_HEX.fullmatch(str(entry.get("family_map_commitment", "")))):
+        hits.append("a line since 0.6.0 carries 'family_map_commitment', the sha256 of the "
+                    "owner's salted map of letters to families (64 hex characters)")
+    return hits
+
+
+def round_line_advisories(entry: dict) -> list[str]:
+    """The low notes of a chained line (rework of v0.6.0): a rubric applied
+    that the producer wrote is a verdict under the producer's own criteria."""
+    if entry.get("rubric_applied") is True and entry.get("rubric_author") == "producer":
+        return [f"round {entry.get('round', '?')}: rubric written by the producer"]
+    return []
+
+
 def notes_status_hits(text: str, note_count: int) -> tuple[dict[str, int], list[str]]:
-    """The state ledger of the notes (IM10, v0.5.0), one JSON line per note
+    """The state ledger of the notes (v0.5.0), one JSON line per note
     of the frozen ledger ('notes:<n>') or panel finding ('panel:<v>:<id>'):
     every note has exactly one line, every status is one of the four, and a
     closing status names the version that closed it. Returns the count per
     status and the hits; the shape of each line is p-contract-shape's."""
-    counts = {status: 0 for status in NOTE_STATUSES}
-    hits, seen = [], set()
+    hits, seen, latest = [], set(), {}
     for n, line in enumerate((ln for ln in text.splitlines() if ln.strip()), 1):
         try:
             entry = json.loads(line)
@@ -1784,10 +2715,13 @@ def notes_status_hits(text: str, note_count: int) -> tuple[dict[str, int], list[
             raise InputError(f"notes status: line {n} is not valid JSON ({exc.msg})") from exc
         ref, status = (entry.get(key) if isinstance(entry, dict) else None for key in ("ref", "status"))
         hits += status_line_hits(n, ref, status, entry, note_count, seen)
-        if status in counts:
-            counts[status] += 1
+        if isinstance(ref, str):
+            latest[ref] = status
     hits += [f"note {k} of the ledger has no status line" for k in range(1, note_count + 1)
              if f"notes:{k}" not in seen]
+    # The ledger is append-only since v0.6.0: a change of status is a new,
+    # chained line, and the last line of a ref is its state.
+    counts = {status: sum(1 for s in latest.values() if s == status) for status in NOTE_STATUSES}
     return counts, hits
 
 
@@ -1797,7 +2731,8 @@ def status_line_hits(n: int, ref: object, status: object, entry: object, note_co
     m = STATUS_REF.match(ref) if isinstance(ref, str) else None
     if m is None:
         return [f"line {n}: ref {ref!r} is neither 'notes:<n>' nor 'panel:<version>:<id>'"]
-    hits = [f"line {n}: ref '{ref}' appears twice"] if ref in seen else []
+    restated = isinstance(entry, dict) and "prev" in entry
+    hits = [f"line {n}: ref '{ref}' appears twice"] if ref in seen and not restated else []
     seen.add(ref)
     if m.group(1) and int(m.group(1)) > note_count:
         hits.append(f"line {n}: '{ref}' names no note of the ledger ({note_count} notes)")
@@ -1809,7 +2744,7 @@ def status_line_hits(n: int, ref: object, status: object, entry: object, note_co
 
 
 def sensitivity_row_hits(content: str, count: int) -> list[str]:
-    """The table of a sensitivity report has to add up (CR1, v0.5.0): one
+    """The table of a sensitivity report has to add up (v0.5.0): one
     row per perturbation, all measured, and as many 'caught' rows as its
     'Caught' line says. A report of a header and one line used to pass."""
     caught = re.search(r"Caught (\d+) of (\d+)\.", content)
@@ -1825,20 +2760,1040 @@ def sensitivity_row_hits(content: str, count: int) -> list[str]:
     return []
 
 
+# The contract of a domain result (v0.6.0), the one source of
+# 05-contracts/domain-result.schema.json (a test keeps the file equal).
+DOMAIN_RESULT_SCHEMA: dict = {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "domain-result.schema.json",
+    "contract_version": CONTRACT_VERSION,
+    "title": "Domain result contract",
+    "description": ("The result of one gate of the target's domain, written by the cell's own "
+                    "code and read by the validator: the gate id (d-<name>), the magnitude it "
+                    "measured, the limit it applied, the result, and the sha256 of every input "
+                    "it measured (path relative to the production folder, sha256 under the "
+                    "material's hash policy). The validator recomputes each sha256; a "
+                    "divergence makes the result stale (blocking), 'fail' is a note of the "
+                    "gate, 'tool-failure' ends the run with exit 2."),
+    "type": "object",
+    "additionalProperties": False,
+    "required": list(DOMAIN_RESULT_KEYS),
+    "properties": {
+        "contract_version": {"type": "string", "enum": [CONTRACT_VERSION]},
+        "gate": {"type": "string", "pattern": "^d-[a-z0-9][a-z0-9-]*$"},
+        "magnitude": {"type": "string"},
+        "limit": {"type": "string"},
+        "result": {"type": "string", "enum": list(DOMAIN_RESULTS)},
+        "inputs": {"type": "array", "items": {
+            "type": "object", "additionalProperties": False, "required": ["path", "sha256"],
+            "properties": {"path": {"type": "string"},
+                           "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}}},
+    },
+}
+
+
+def content_digest(path: Path) -> str:
+    """The sha256 of a file under the material's hash policy: its text as
+    read() reads it (UTF-8, no BOM, LF); a file that is not UTF-8 text is
+    hashed as its bytes."""
+    try:
+        return sha256_text(path.read_text(encoding="utf-8-sig"))
+    except UnicodeDecodeError:
+        return hashlib.sha256(path.read_bytes()).hexdigest()
+    except OSError as exc:
+        raise InputError(f"could not read {path.name}: {exc.strerror}") from exc
+
+
+def load_domain_result(path: Path, rel: str) -> dict:
+    """One result file, checked against its contract; anything else is a
+    tool failure of the cell's instrument (exit 2), never a finding."""
+    try:
+        data = json.loads(read(path))
+    except json.JSONDecodeError as exc:
+        raise InputError(f"domain result {rel}: invalid JSON ({exc.msg})") from exc
+    violations = check_against_schema(data, DOMAIN_RESULT_SCHEMA, "$")
+    if violations:
+        raise InputError(f"domain result {rel} breaks domain-result.schema.json: "
+                         + "; ".join(violations))
+    if data["result"] == "tool-failure":
+        raise InputError(f"domain result {rel}: the cell's instrument of {data['gate']} "
+                         f"reports a tool failure ({data['magnitude']})")
+    return data
+
+
+# The comparison a domain limit states, and the first number of a magnitude.
+LIMIT_COMPARISON = re.compile(r"^\s*(\u2264|<=|<|\u2265|>=|>|=|at most|at least)?\s*(-?\d+(?:\.\d+)?)\b")
+FIRST_NUMBER = re.compile(r"-?\d+(?:\.\d+)?")
+COMPARISONS: dict[str, Callable[[float, float], bool]] = {
+    "\u2264": lambda v, b: v <= b, "<=": lambda v, b: v <= b, "at most": lambda v, b: v <= b,
+    "<": lambda v, b: v < b, "\u2265": lambda v, b: v >= b, ">=": lambda v, b: v >= b,
+    "at least": lambda v, b: v >= b, ">": lambda v, b: v > b, "=": lambda v, b: v == b}
+
+
+def contradiction_hits(result: dict) -> list[str]:
+    """A result its own numbers contradict (rework of v0.6.0): compared only
+    when the limit starts with a comparison and a number, or is a bare zero
+    (a zero-tolerance count), and the magnitude has a number; the first
+    number of the magnitude is the value. Any other limit is not read."""
+    limit, value = LIMIT_COMPARISON.match(result["limit"]), FIRST_NUMBER.search(result["magnitude"])
+    if limit is None or value is None or result["result"] not in ("pass", "fail"):
+        return []
+    op, bound = limit.group(1), float(limit.group(2))
+    if op is None:
+        if bound != 0:
+            return []
+        op = "\u2264"
+    holds = COMPARISONS[op](float(value.group(0)), bound)
+    if holds == (result["result"] == "pass"):
+        return []
+    return [f"the result says {result['result']}, but its magnitude {result['magnitude']} "
+            f"against the limit {result['limit']} says {'pass' if holds else 'fail'}"]
+
+
+def stale_input_hits(folder: Path, result: dict) -> list[str]:
+    """The inputs of a result whose file is gone or whose sha256 changed."""
+    hits = []
+    for item in result["inputs"]:
+        path = folder / item["path"]
+        if not path.is_file():
+            hits.append(f"stale domain result: input `{item['path']}` does not exist")
+        elif content_digest(path) != item["sha256"]:
+            hits.append(f"stale domain result: input `{item['path']}` changed since the "
+                        "result was written (sha256 mismatch) — re-run the gate")
+    return hits
+
+
+def sensitivity_specificity(content: str) -> tuple[int, int, int]:
+    """The noisy perturbations and the (document, gate) pairs covered of a
+    report (v0.6.0); the caller has checked that both lines exist."""
+    noisy, pairs = SENSITIVITY_NOISY_LINE.search(content), SENSITIVITY_PAIRS_LINE.search(content)
+    if noisy is None or pairs is None:
+        return 0, 0, 0
+    return int(noisy.group(1)), int(pairs.group(1)), int(pairs.group(2))
+
+
 def unimplemented_gate_message(gate: str) -> str:
-    """The tool failure of a gate this validator does not implement (K8 of
-    the panel that reviewed v0.4.2): it names what the distributed
+    """The tool failure of a gate this validator does not implement
+    (since v0.5.0): it names what the distributed
     validator is, so a domain gate is not mistaken for a typo."""
     return (f"gate '{gate}' has no implementation in the validator. This validator measures "
             "documents (terms, sections, links, numbers about priors, contracts); a gate of "
-            "the target's domain (a speedup, a mass, a cost) is 'contract + agent' (step 5 of "
-            "the principle's recipe) or code of the cell's own, and this version has no "
-            "extension point for it")
+            "the target's domain (a speedup, a mass, a cost) is named 'd-<name>', measured by "
+            "the cell's own code, and read by this validator from the result file the "
+            "layout lists under 'domain-results' (contract domain-result.schema.json); "
+            "what no code can measure stays 'contract + agent' (step 5 of the principle's "
+            "recipe)")
 
 
 # ---------------------------------------------------------------- runner
 
-class Checker:
+class FormGates:
+    """The document gates of form and vocabulary: terms, the canon link, anonymity, form, size, the instantiation table, sections, cards, limits, references, the recipe, components and the efficacy mark; and the Limit column.
+
+    Every family records through the interface of CheckerCore: record() and
+    pending() for a row, the layout, the canon, the artifacts and the gate
+    table it loaded. The families share that state and nothing else.
+    """
+
+    def check_terms(self, doc: str, text: str) -> None:
+        if doc.startswith(FROZEN_LEDGER_PREFIX):
+            # Exemption by design: vocabulary rules govern living documents;
+            # the review ledger is frozen history and is never edited to
+            # satisfy a later vocabulary (regression turned into a rule).
+            self.record(doc, "p-terms", "exempt by design (frozen ledger)", "0", [])
+            return
+        if not self.canon.avoid_terms:
+            self.pending_empty(doc, "p-terms", "terms to avoid", "0")
+            return
+        body = text
+        if doc == self.canon_file:
+            # Up to the next level-2 heading, or the end (v0.5.0): a canon
+            # whose avoid table was its last section counted its own table.
+            body = re.sub(r"^## Terms to avoid$.*?(?=^## |\Z)", "", text, flags=re.S | re.M)
+        found = count_avoid_terms(body, self.canon.avoid_terms)
+        total = sum(n for _, n in found)
+        self.record(doc, "p-terms", str(total), "0", [f"'{t}' x{n}" for t, n in found])
+
+    def check_canon_link(self, doc: str, text: str) -> None:
+        resolved, unresolved = canon_links(self.folder / doc, text, self.folder / self.canon_file)
+        hits = [f"link to the canon does not resolve: `{target}`" for target in unresolved]
+        if not resolved and not unresolved:
+            hits.append("no link to the canon")
+        self.record(doc, "p-canon-link", f"{resolved} resolved, {len(unresolved)} unresolved",
+                    "\u2265 1 resolved, 0 unresolved", hits)
+
+    def check_anonymity(self, doc: str, text: str) -> None:
+        accepted = tuple(self.canon.accepted_paths.get(doc, []))
+        hits = anonymity_hits(anonymity_scope(text), self.forbidden, accepted,
+                              canon_anonymity_patterns(self.canon.anonymity))
+        if not self.forbidden and not hits:
+            # An empty list measures no identifier either (v0.5.0): it used
+            # to turn the identifier half from pending into a pass.
+            reason = "no list" if self.forbidden is None else "the list is empty"
+            self.pending(doc, "p-anonymity",
+                         f"0 paths and dates; identifiers not measured ({reason})", "0")
+            return
+        self.record(doc, "p-anonymity", str(len(hits)), "0", hits)
+
+    def check_form(self, doc: str, text: str) -> None:
+        hits = form_hits(text)
+        self.record(doc, "p-form", str(len(hits)), "0", hits)
+
+    def check_size(self, doc: str, text: str) -> None:
+        # v0.6.0: the pipes and separators of a table are no words.
+        words = sum(1 for token in text.split() if not TABLE_TOKEN.fullmatch(token))
+        bounds = self.size_ranges.get(doc)
+        if bounds is None:
+            self.record(doc, "p-size", str(words), "no range", [f"{doc} has no declared range"])
+            return
+        low, high = bounds
+        ok = low <= words <= high
+        self.record(doc, "p-size", str(words), f"{low} to {high}",
+                    [] if ok else [f"{words} words outside {low} to {high}"])
+
+    def check_table(self, doc: str, text: str) -> None:
+        rows = self.canon.instantiation_rows
+        if not rows:
+            self.pending_empty(doc, "p-table", "instantiation table rows", "all rows, 0 empty")
+            return
+        found, empty, hits = instantiation_hits(text, rows)
+        self.record(doc, "p-table", f"{found}/{len(rows)}, {empty} empty",
+                    f"{len(rows)}/{len(rows)}, 0 empty", hits)
+
+    def check_sections(self, doc: str, text: str) -> None:
+        n = len(self.canon.instance_sections)
+        if not n:
+            self.pending_empty(doc, "p-sections", "mandatory sections", "all sections")
+            return
+        titles = heading_titles(text)
+        missing = [s for s in self.canon.instance_sections if s.lower() not in titles]
+        self.record(doc, "p-sections", f"{n - len(missing)}/{n}", f"{n}/{n}",
+                    [f"section '{s}' missing" for s in missing])
+
+    def check_card(self, doc: str, text: str) -> None:
+        if not self.canon.card_fields:
+            self.pending_empty(doc, "p-card", "role card fields", "0")
+            return
+        hits = card_hits(text, self.canon.card_fields,
+                         whole_document=doc.startswith(self.roles_dir + "/"))
+        missing = sum(1 for hit in hits if hit.endswith("' missing"))
+        self.record(doc, "p-card", f"{missing} fields missing, {len(hits) - missing} placeholders",
+                    "0", hits)
+
+    def check_limit(self, doc: str, text: str) -> None:
+        if not self.canon.limit_tags:
+            # Since v0.5.0: with the list empty, every justification was
+            # reported "without an origin label" — a false red.
+            self.pending_empty(doc, "p-limit", "origin labels", "0")
+            return
+        min_words = self.row_number("p-limit", "Magnitude", MIN_WORDS_IN_ROW)
+        if min_words is None:
+            self.pending(doc, "p-limit", "not measured (the gate table's row of p-limit "
+                         "declares no minimum of words, 'fewer than N words')", "0")
+            return
+        hits = limit_hits(text, self.canon.limit_tags, min_words)
+        self.record(doc, "p-limit", str(len(hits)), "0", hits)
+
+    def check_references(self, doc: str, text: str) -> None:
+        roles = self.roles | {OWNER_HUMAN}
+        if doc == self.artifacts_file:
+            hits = (reference_hits(self.artifacts, roles, []) + artifact_placeholder_hits(self.artifacts)
+                    + command_hits(self.artifacts, self.folder))
+        elif doc == self.gates_file:
+            hits = (reference_hits(self.artifacts, roles, gate_tables(text))
+                    + gate_map_hits(self.artifacts, self.gate_table))
+        elif doc.startswith(self.roles_dir + "/"):
+            hits = note_target_hits(text, set(self.artifacts), doc)
+        else:
+            hits = instance_reference_hits(text)
+        severity = "blocking" if any(h.startswith("cycle") for h in hits) else "high"
+        self.record(doc, "p-references", str(len(hits)), "0", hits, severity=severity)
+
+    def check_recipe(self, doc: str, text: str) -> None:
+        min_steps = self.row_number("p-recipe", "Limit", MIN_STEPS_IN_ROW)
+        if min_steps is None:
+            self.pending(doc, "p-recipe", "not measured (the gate table's row of p-recipe "
+                         "declares no minimum of steps, '\u2265 N steps')", "0 missing")
+            return
+        steps, hits = recipe_hits(text)
+        if steps < min_steps:
+            hits.append(f"{steps} steps, fewer than {min_steps}")
+        self.record(doc, "p-recipe", f"{steps} steps, {len(hits)} missing",
+                    f"\u2265 {min_steps} steps, 0 missing", hits)
+
+    def check_components(self, doc: str, text: str) -> None:
+        components = self.canon.components
+        if not components:
+            self.pending_empty(doc, "p-components", "method components", "all components")
+            return
+        missing = missing_components(text, components)
+        n = len(components)
+        self.record(doc, "p-components", f"{n - len(missing)}/{n}", f"{n}/{n}",
+                    [f"component '{c}' not named" for c in missing])
+
+    def check_efficacy_mark(self, doc: str, text: str) -> None:
+        """Since v0.4.0: the method's own doctrine of evidence applied to
+        the claims about the method; an [experiment:<id>] label has to cite
+        an executed experiment of the experiments record (v0.4.1)."""
+        if doc == self.canon_file:
+            # The canon's table is the definition of the triggers, exempt.
+            self.record(doc, "p-efficacy-mark", "exempt by design (the definition page)", "0", [])
+            return
+        text, hits = self.efficacy_scope(doc, text)
+        hits += efficacy_mark_hits(text, self.canon.efficacy_triggers)
+        record = self.folder / self.experiments_file
+        record_text = read(record) if record.is_file() else ""
+        statuses, provenanced = experiment_statuses(record_text), provenanced_experiments(record_text)
+        for eid in sorted(set(EXPERIMENT_TAG.findall(strip_code(text)))):
+            hits += experiment_label_hits(eid, statuses, self.experiments_file, provenanced)
+        lessons = self.folder / self.lessons_file
+        hits += lessons_label_hits(text, lessons_titles(read(lessons)) if lessons.is_file() else set(),
+                                   self.lessons_file)
+        if not self.canon.efficacy_triggers and not hits:
+            # With no trigger list nothing was measured.
+            self.pending(doc, "p-efficacy-mark",
+                         "not measured (the canon lists no efficacy triggers)", "0")
+            return
+        advisory = hypothesis_advisories(text, self.canon.efficacy_triggers)
+        magnitude = str(len(hits)) + (f", {len(advisory)} advisory" if advisory else "")
+        self.record(doc, "p-efficacy-mark", magnitude, "0", hits, advisory=advisory)
+
+    def efficacy_scope(self, doc: str, text: str) -> tuple[str, list[str]]:
+        """The part of an append-only document the gate reads (v0.5.0):
+        from the heading the canon declares for it on; the units above are
+        history, exempt like the frozen ledger. A declared heading that is
+        not in the document is a finding, never an exemption of the whole."""
+        heading = self.canon.efficacy_starts.get(doc)
+        if heading is None:
+            return text, []
+        scoped = from_heading(text, heading)
+        if scoped is None:
+            return text, [f"the heading '{heading}' the canon declares as the start of the "
+                          "measured part is not a line of the document"]
+        return scoped, []
+
+    def check_limit_column(self) -> None:
+        """The Limit cell of each gate row against the limits the validator
+        applied (v0.6.0): when the cell states numbers, they have to be the
+        numbers of the applied limit; a divergence is a note of p-references
+        on the gates file. A cell without a number names where its limit
+        lives (the 'Size ranges' table, 'equal') and is not compared."""
+        i_lim = column(self.gate_table, "Limit")
+        applied: dict[str, set[str]] = {}
+        for m in self.measurements:
+            if m.passed is not None:  # a pending row applied no limit
+                applied.setdefault(m.gate, set()).update(NUMBER.findall(m.limit))
+        hits = []
+        for gate, row in sorted(self.gate_rows.items()):
+            stated = set(NUMBER.findall(cell_at(row, i_lim, "the gate table")))
+            if stated and gate in applied and stated != applied[gate]:
+                hits.append(f"the Limit cell of `{gate}` states {', '.join(sorted(stated))}; the "
+                            f"validator applies {', '.join(sorted(applied[gate])) or 'no number'}")
+        if hits:
+            self.amend(self.gates_file, "p-references", hits)
+
+
+class PriorGates:
+    """The gates about registered priors: the labels and numbers (p-prior), the marks (p-prior-mark), the pins (p-prior-pin) and the section commitments.
+
+    Every family records through the interface of CheckerCore: record() and
+    pending() for a row, the layout, the canon, the artifacts and the gate
+    table it loaded. The families share that state and nothing else.
+    """
+
+    def check_prior(self, doc: str, text: str) -> None:
+        if self.registry is None:
+            self.pending(doc, "p-prior", "not measured (no instance registry)", "0")
+            return
+        ids = {inst["id"] for inst in self.registry["instances"]}
+        tags = prior_ids(text)
+        unknown = sorted({i for i in tags if i not in ids})
+        hits = [f"'{i}' is not an instance registered in the registry" for i in unknown]
+        # v0.6.0: a mark outside code spans whose id breaks the grammar is
+        # blocking; it used to vanish from the count and from every check.
+        hits += [f"malformed mark {mark}: the id of a prior mark is lowercase letters, digits "
+                 "and hyphens" for mark in malformed_prior_marks(strip_code(text))]
+        label_mag = f"{len(tags)} labels, {len(unknown)} unregistered"
+        if not self.cases_given:
+            # Without the prior document the labels are measured, the numbers
+            # are not: the gate is pending, never a pass.
+            magnitude = f"{label_mag}; numbers not measured (no prior document{self.held_note()})"
+            if hits:
+                self.record(doc, "p-prior", magnitude, "0", hits, severity="blocking")
+            else:
+                self.pending(doc, "p-prior", magnitude, "0")
+            return
+        self.check_prior_numbers(doc, text, hits, label_mag)
+
+    def check_prior_numbers(self, doc: str, text: str, hits: list[str], label_mag: str) -> None:
+        """The number check of p-prior with the prior documents passed, and,
+        on the canon, its section commitments (v0.6.0)."""
+        check = multi_prior_findings(self.prior_scope(doc, text), self.case_docs,
+                                     self.canon.recorded_facts, instance_ids_of(self.registry))
+        hits += check.hits
+        magnitude = (f"{label_mag}, {check.checked} numbers and {check.references} section "
+                     f"references checked, {len(check.hits)} unverified")
+        if doc == self.canon_file and self.canon.section_commitments:
+            commitments, unmeasured = self.commitment_hits()
+            hits += commitments
+            magnitude += (f"; {len(self.canon.section_commitments) - len(unmeasured)} section "
+                          f"commitments checked, {len(commitments)} broken")
+            check.unmeasured |= set(unmeasured)
+        if check.unmeasured:
+            # A cited prior with no --case document is pending by name.
+            magnitude += (f"; numbers of {', '.join(sorted(check.unmeasured))} not measured "
+                          f"(no --case document identified as that prior{self.held_note()})")
+            if not hits:
+                self.pending(doc, "p-prior", magnitude, "0")
+                return
+        self.record(doc, "p-prior", magnitude, "0", hits, severity="blocking")
+
+    def unpassed_held(self, registry: dict) -> frozenset[str]:
+        """The executed owner-held priors no --case document stands for."""
+        return frozenset(inst["id"] for inst in registry.get("instances", [])
+                         if isinstance(inst, dict) and inst.get("status") == EXECUTED
+                         and inst.get("locator") == LOCATOR_OWNER_HELD
+                         and inst.get("id") not in self.case_docs)
+
+    def held_note(self) -> str:
+        """'; <ids>: owner-held evidence, not measured here' for the executed
+        priors the owner keeps and no --case document stands for (v0.6.0:
+        a clone used to read 'pending accepted' as if the gap were its own)."""
+        held = sorted(inst["id"] for inst in (self.registry or {}).get("instances", [])
+                      if isinstance(inst, dict) and inst.get("status") == EXECUTED
+                      and inst.get("locator") == LOCATOR_OWNER_HELD
+                      and inst.get("id") not in self.case_docs)
+        return f"; {', '.join(held)}: {OWNER_HELD_NOTICE}" if held else ""
+
+    def prior_scope(self, doc: str, text: str) -> str:
+        """The text the number check of p-prior reads: in the canon, the
+        'Recorded facts' section is exempt by name (it is the definition of
+        the facts, not a statement about a prior); line numbers are kept."""
+        if doc != self.canon_file:
+            return text
+        return re.sub(r"^## Recorded facts$.*?(?=^## |\Z)",
+                      lambda m: "\n" * m.group(0).count("\n"), text, flags=re.S | re.M)
+
+    def check_prior_mark(self, doc: str, text: str) -> None:
+        if not self.canon.prior_triggers:
+            self.pending_empty(doc, "p-prior-mark", "prior-statement triggers", "0")
+            return
+        hits = prior_mark_hits(text, self.canon.prior_triggers)
+        self.record(doc, "p-prior-mark", str(len(hits)), "0", hits)
+
+    def check_prior_pin(self, doc: str, text: str) -> None:
+        try:
+            registry = json.loads(text)
+            validate_registry(registry)
+        except json.JSONDecodeError as exc:
+            raise InputError(f"registry: invalid JSON ({exc.msg}, line {exc.lineno})") from exc
+        held = self.unpassed_held(registry)
+        hits, cited = pin_findings(self.cited_prior_ids, registry,
+                                   self.case_digests if self.cases_given else None, held)
+        unmeasured = sorted(held & self.cited_prior_ids)
+        if self.cases_given and unmeasured and not hits:
+            # Per prior (rework of v0.6.0): the pins of the documents passed
+            # are measured; an owner-held prior without one is pending.
+            self.pending(doc, "p-prior-pin",
+                         f"{cited - len(unmeasured)} of {cited} executed priors pinned; "
+                         f"{', '.join(unmeasured)} not measured (no prior document"
+                         f"{self.held_note()})", "equal")
+            return
+        if not self.cases_given:
+            # A pin that passes without the prior document would be the
+            # owner-only proof this gate exists to end.
+            self.pending(doc, "p-prior-pin",
+                         f"{cited} executed priors cited; not measured (no prior document"
+                         f"{self.held_note()})", "equal")
+            return
+        self.record(doc, "p-prior-pin", f"{cited} executed priors pinned", "equal",
+                    hits, severity="blocking")
+
+    def commitment_hits(self) -> tuple[list[str], list[str]]:
+        """The canon's section commitments against the --case documents
+        (v0.6.0): the sha256 of each cited section of a prior, so a rewrite of
+        the document after the fact changes the hash of a cited section.
+        Returns the mismatches and the priors of the rows not measured."""
+        hits, unmeasured = [], []
+        for row in self.canon.section_commitments:
+            doc = self.case_docs.get(row.prior_id)
+            if doc is None:
+                unmeasured.append(row.prior_id)
+            elif doc.digests.get(row.section) != row.sha256:
+                hits.append(f"section {row.section} of the method document of '{row.prior_id}' "
+                            "does not match the sha256 the canon commits to")
+        return hits, unmeasured
+
+
+class ContractGates:
+    """The contracts and the ledgers: schemas, the chain of the append-only ledgers, the notes and the state of each note.
+
+    Every family records through the interface of CheckerCore: record() and
+    pending() for a row, the layout, the canon, the artifacts and the gate
+    table it loaded. The families share that state and nothing else.
+    """
+
+    def check_contract_shape(self, doc: str, text: str) -> None:
+        if doc == self.artifacts_file:
+            refs = schema_refs(self.artifacts)
+            hits = schema_ref_hits(refs, self.folder)
+            self.record(doc, "p-contract-shape",
+                        f"{len(refs)} schema cells, {len(hits)} broken", "0 broken", hits)
+            return
+        if doc.endswith(".schema.json"):
+            self.check_schema_census(doc, text)
+            return
+        art = self.artifacts.get(self.current_artifact)
+        schema_ref = art.schema if art is not None else ""
+        if not schema_ref:
+            self.record(doc, "p-contract-shape", "no schema declared", "no schema", [])
+            return
+        schema_path = self.folder / schema_ref
+        if not schema_path.exists():
+            self.record(doc, "p-contract-shape", "1 broken", "0 broken",
+                        [f"schema '{schema_ref}' does not exist"])
+            return
+        try:
+            schema = json.loads(read(schema_path))
+        except json.JSONDecodeError as exc:
+            self.record(doc, "p-contract-shape", "1 broken", "0 broken",
+                        [f"schema '{schema_ref}' is not valid JSON ({exc.msg})"])
+            return
+        if doc.endswith(".jsonl"):
+            hits = []
+            lines = [ln for ln in text.splitlines() if ln.strip()]
+            for i, line in enumerate(lines, 1):
+                hits += validate_data_text(line, schema, f"line {i}")
+            hits += self.ledger_hits(doc, lines)
+            self.record(doc, "p-contract-shape",
+                        f"{len(lines)} lines, {len(hits)} violations", "0", hits,
+                        advisory=self.round_advisories(doc, lines) or None)
+            return
+        hits = validate_data_text(text, schema, "$")
+        if doc == self.layout["registry"]:
+            hits += registry_status_hits(text)
+        self.record(doc, "p-contract-shape", f"{len(hits)} violations", "0", hits)
+
+    def round_advisories(self, doc: str, lines: list[str]) -> list[str]:
+        """The low notes of the chained lines of the round record."""
+        if doc != self.round_record_file:
+            return []
+        return [a for line in lines if isinstance(e := parse_ledger_line(line), dict)
+                and "prev" in e for a in round_line_advisories(e)]
+
+    def ledger_hits(self, doc: str, lines: list[str]) -> list[str]:
+        """The chain of an append-only ledger and, for the round record, the
+        rules of its chained lines (v0.6.0). Applies to the round record and
+        the state ledger of the notes; other JSONL documents have no chain."""
+        ledgers = (self.round_record_file, self.layout["artifacts"]["notes-status"],
+                   self.layout["artifacts"].get("owner-decisions", OWNER_DECISIONS_FILE))
+        if doc not in ledgers:
+            return []
+        entries = [parse_ledger_line(line) for line in lines]
+        # A ledger the canon does not list starts its chain where its first
+        # chained line is (the chain is opt-in there).
+        hits = chain_hits(lines, entries, self.canon.chained_ledgers.get(doc, len(lines)))
+        if doc == self.round_record_file:
+            for n, entry in enumerate(entries, 1):
+                if isinstance(entry, dict) and "prev" in entry:
+                    hits += [f"line {n}: {hit}"
+                             for hit in round_line_hits(entry, self.current_rubric_digest)]
+        return hits
+
+    def check_schema_census(self, doc: str, text: str) -> None:
+        """A contract file has to parse and use only the keywords the
+        stdlib mini-validator applies (a keyword outside the subset is a
+        note, never silently ignored as if fully validated)."""
+        try:
+            schema = json.loads(text)
+        except json.JSONDecodeError as exc:
+            self.record(doc, "p-contract-shape", "1 broken", "0 broken",
+                        [f"schema is not valid JSON ({exc.msg})"])
+            return
+        unsupported = unsupported_keywords(schema)
+        hits = [f"keyword '{kw}' is outside the subset the validator applies"
+                for kw in unsupported]
+        declared = schema.get(CONTRACT_VERSION_KEY) if isinstance(schema, dict) else None
+        if declared != CONTRACT_VERSION:
+            hits.append(f"the contract declares {CONTRACT_VERSION_KEY} {declared!r}; this "
+                        f"validator reads contract version '{CONTRACT_VERSION}'")
+        self.record(doc, "p-contract-shape",
+                    f"{len(schema_keyword_set(schema))} keywords, "
+                    f"{len(unsupported)} unsupported", "0 unsupported", hits)
+
+    def check_notes(self) -> None:
+        """p-notes: the note ledger passed with --notes, and the state
+        ledger of its notes (v0.5.0) at the layout key notes-status."""
+        status_file = self.layout["artifacts"]["notes-status"]
+        if self.notes_file is None:
+            # Since v0.3.1: the gate stays visible without --notes — a
+            # pending with its reason, never a row that quietly disappears.
+            self.pending("open-notes", "p-notes",
+                         "not measured (notes not supplied; the note ledger "
+                         "was not measured)", "0 invalid")
+            self.pending(status_file, "p-notes", "not measured (notes not supplied; the "
+                         "state of the notes needs the ledger)", "every note tracked")
+            return
+        rel = Path(os.path.relpath(self.notes_file.resolve(), self.folder)).as_posix()
+        count, hits = note_contract_hits(self.notes_file, set(self.artifacts))
+        if not rel.startswith(FROZEN_LEDGER_PREFIX):
+            # v0.6.0: evidence that names a file has to resolve; the frozen
+            # ledger keeps the names of its time (exempt by design).
+            hits += evidence_hits(self.notes_file, self.folder)
+        self.record(rel, "p-notes", f"{count} notes, {len(hits)} invalid", "0 invalid", hits,
+                    target="open-notes")
+        self.check_notes_status(status_file, count)
+
+    def check_notes_status(self, status_file: str, note_count: int) -> None:
+        path = self.folder / status_file
+        if not path.is_file():
+            self.pending(status_file, "p-notes", f"not measured (no state ledger at "
+                         f"'{status_file}'; the layout key artifacts.notes-status points "
+                         "there)", "every note tracked")
+            return
+        text = read(path)
+        counts, hits = notes_status_hits(text, note_count)
+        rules, advisory = self.state_rules(latest_status_lines(text))
+        hits += rules
+        magnitude = ", ".join(f"{n} {status}" for status, n in counts.items()) + \
+            f"; {len(hits)} invalid" + (f", {len(advisory)} advisory" if advisory else "")
+        severity = "blocking" if any(h.startswith(UNPROTECTED) for h in rules) else "high"
+        self.record(status_file, "p-notes", magnitude, "every note tracked, 0 invalid", hits,
+                    severity=severity, target="open-notes", advisory=advisory)
+
+    def state_context(self) -> StateContext:
+        """The gates, the brief's non-negotiables, the notes the owner's
+        decisions cover, the versions of the round record and the severity
+        of each note of the ledger passed with --notes."""
+        def lines(key: str, default: str) -> list[dict]:
+            path = self.folder / self.layout["artifacts"].get(key, default)
+            text = read(path) if path.is_file() else ""
+            return [e for e in (parse_ledger_line(x) for x in text.splitlines() if x.strip())
+                    if isinstance(e, dict)]
+        brief = self.folder / self.layout["artifacts"].get("brief", BRIEF_FILE)
+        brief_text = section(read(brief), r"^Non-negotiables$", 2) if brief.is_file() else ""
+        # The last line of each decision is its state (rework of v0.6.0): a
+        # decision reopened later used to keep covering its notes.
+        last = {e.get("name"): e for e in lines("owner-decisions", OWNER_DECISIONS_FILE)}
+        decided = {name for name, e in last.items() if isinstance(name, str) and name.strip()
+                   and e.get("status") == DECIDED}
+        covered = {ref for name in decided for ref in last[name].get("covers", [])}
+        versions = [v for e in lines("round-record", ROUND_RECORD_FILE)
+                    if (v := version_key(e.get("method_version"))) is not None]
+        notes = json.loads(read(self.notes_file)) if self.notes_file else []
+        severities = {f"notes:{i}": n.get("severity") for i, n in enumerate(notes, 1)
+                      if isinstance(n, dict)}
+        line_severities, affected = status_history(lines("notes-status", NOTES_STATUS_FILE))
+        return StateContext(set(self.gate_rows), set(NON_NEGOTIABLE_ID.findall(brief_text)),
+                            covered, versions, severities, decided, line_severities, affected)
+
+    def state_rules(self, latest: dict[str, dict]) -> tuple[list[str], list[str]]:
+        """The rules of the state of each note (v0.6.0): an escaped
+        regression closes with a gate or a recorded reason not to make one;
+        an open note older than NOTE_AGE_LIMIT_ROUNDS rounds is scheduled,
+        disputed or closed; an open high or blocking note that affects a
+        non-negotiable of the brief is blocking unless the owner decided it."""
+        context = self.state_context()
+        hits, advisory = [], []
+        for ref, entry in sorted(latest.items()):
+            hits += escape_hits(ref, entry, context)
+            hits += affects_hits(ref, entry, context)
+            advisory += age_advisories(ref, entry, context)
+        return hits, advisory
+
+
+class RecordGates:
+    """The gates measured once per run: the frozen rubric and records, the declared artifacts and documents, and the sensitivity report.
+
+    Every family records through the interface of CheckerCore: record() and
+    pending() for a row, the layout, the canon, the artifacts and the gate
+    table it loaded. The families share that state and nothing else.
+    """
+
+    def check_global(self) -> None:
+        if self.rubric_hash_file is None or not self.rubric_hash_file.exists():
+            self.pending(self.rubric_doc(), "p-frozen-rubric", "rubric not frozen yet", "equal")
+        else:
+            recorded = read(self.rubric_hash_file).split()
+            if not recorded:
+                raise InputError(f"{self.rubric_hash_file.name} is empty")
+            if recorded[0] == RUBRIC_UNFROZEN:
+                # The placeholder a scaffolded cell ships: no pin yet.
+                self.pending(self.rubric_doc(), "p-frozen-rubric", "rubric not frozen yet", "equal")
+            else:
+                current = self.current_rubric_digest()
+                hits = [] if recorded[0] == current else ["the 'Rubric' section changed after being frozen"]
+                self.record(self.rubric_doc(), "p-frozen-rubric", "equal" if not hits else "different", "equal",
+                            hits, severity="blocking", target="review")
+        self.check_frozen_records()
+        self.check_brief_languages()
+        self.check_declared_artifacts()
+        self.check_declared_documents()
+        self.check_sensitivity_report()
+        self.check_notes()
+        self.check_domain_results()
+
+    def check_brief_languages(self) -> None:
+        """The dates of a language the brief declares and p-anonymity cannot
+        read (rework of v0.6.0): no built-in month names and no row of the
+        canon's 'Month names' table. Pending by name, never a pass."""
+        brief = self.layout["artifacts"].get("brief", BRIEF_FILE)
+        path = self.folder / brief
+        declared = brief_languages(read(path)) if path.is_file() else []
+        unread = [code for code in declared if code not in BUILTIN_MONTHS
+                  and code not in self.canon.anonymity.month_names]
+        if unread:
+            # Closing pass of v0.6.0: under a name of its own, which
+            # --allow-pending does not accept: accepting p-anonymity covers
+            # the forbidden list the material does not distribute, not a
+            # language the cell declared and gave no month names.
+            self.pending(brief, LANGUAGE_GATE, f"dates in {', '.join(unread)} not measured (no "
+                         "month names: add the language to the canon's table 'Month names')", "0")
+
+    def check_frozen_records(self) -> None:
+        """The records the canon freezes (v0.6.0): the review's report and
+        notes, the replies and the history of the lessons, each pinned by
+        sha256 under p-frozen-rubric, so a verdict or a note rewritten
+        unannounced is blocking. Like the chain, it detects an edit nobody
+        announced, not whoever controls the whole tree."""
+        for doc, (digest, upto) in sorted(self.canon.frozen_files.items()):
+            path = self.folder / doc
+            part = frozen_part(read(path), upto) if path.is_file() else None
+            same = part is not None and sha256_text(part) == digest
+            self.record(doc, "p-frozen-rubric", "equal" if same else "different", "equal",
+                        [] if same else [f"the frozen record `{doc}` changed (or its heading "
+                                         "is gone) since the canon pinned it"],
+                        severity="blocking", target="review")
+
+    def check_declared_artifacts(self) -> None:
+        """Since v0.3.0: an artifact declared in the table whose files
+        match nothing is never silently unmeasured — a real artifact (not
+        'proposed') is blocking; a proposed one is pending with its reason.
+        A JSON artifact declared with no paths at all is also visible
+        (since v0.3.1): a pending that says so, never a silent skip."""
+        for name in sorted(self.artifacts):
+            artifact = self.artifacts[name]
+            if not artifact.files:
+                self.pending(name, "p-declared",
+                             "declared without paths; no files to measure",
+                             "at least one path")
+                continue
+            # v0.6.0: every literal path has to exist (a glob, at least one
+            # file); deleting one of two literal files used to pass.
+            missing = [p for p in artifact.files if not resolve_patterns(self.folder, [p])]
+            if not missing:
+                continue
+            joined = ", ".join(missing)
+            if artifact.proposed:
+                self.pending(joined, "p-declared", "proposed, not yet produced", "exists")
+            else:
+                self.record(joined, "p-declared", "missing", "exists",
+                            [f"declared artifact missing: {joined}"],
+                            severity="blocking", target=name)
+
+    def check_declared_documents(self) -> None:
+        """The map's completeness (v0.6.0): every Markdown document of the
+        folder belongs to an artifact or to the canon's list of documents
+        outside the artifact table; no file belongs to two artifacts; every
+        document of the 'Size ranges' table is declared by an artifact. The map
+        moved to the artifact table in v0.5.0 with none of these checked, so
+        a repointed file left a document outside every gate, green."""
+        owners: dict[str, list[str]] = {}
+        for name in sorted(self.artifacts):
+            for path in self.files_of(name):
+                owners.setdefault(path, []).append(name)
+        hits = [f"document `{doc}` belongs to no artifact and is not declared outside the "
+                "artifact table" for doc in self.undeclared_documents(owners)]
+        hits += [f"`{path}` belongs to {len(arts)} artifacts ({', '.join(arts)})"
+                 for path, arts in sorted(owners.items()) if len(arts) > 1]
+        declared = [p for art in self.artifacts.values() for p in art.files]
+        hits += [f"the size range of `{doc}` names a document no artifact declares"
+                 for doc in sorted(self.size_ranges)
+                 if not any(fnmatch.fnmatchcase(doc, p) for p in declared)]
+        self.current_artifact = "artifacts"
+        self.record(self.artifacts_file, "p-declared",
+                    f"{len(owners)} files in {len(self.artifacts)} artifacts, {len(hits)} "
+                    "unmapped, shared or unmeasured", "0", hits, target="artifacts")
+
+    def undeclared_documents(self, owners: dict[str, list[str]]) -> list[str]:
+        """The Markdown documents of the folder (hidden folders excepted) no
+        artifact declares and the canon does not list as outside the table."""
+        exempt = set(resolve_patterns(self.folder, self.canon.exempt_documents))
+        found = (p.relative_to(self.folder).as_posix() for p in self.folder.rglob("*.md"))
+        return sorted(doc for doc in found if doc not in owners and doc not in exempt
+                      and not any(part.startswith(".") for part in doc.split("/")))
+
+    def rubric_doc(self) -> str:
+        """The document the frozen-rubric gate reports against: the cell's
+        rubric file when the layout names one, else the gates file."""
+        return self.rubric_file if self.rubric_file is not None else self.gates_file
+
+    def current_rubric_digest(self) -> str:
+        """The sha256 of the rubric as this run resolves it (same rule as
+        rubric_digest, reusing the gates text already read)."""
+        if self.rubric_file is not None:
+            return hashlib.sha256(read(self.folder / self.rubric_file).encode("utf-8")).hexdigest()
+        return rubric_hash(self.gates_text, self.gates_file)
+
+    def check_sensitivity_report(self) -> None:
+        # The path comes from the layout (v0.2.3): the hardcoded directory
+        # assumption left p-sensitivity pending in every scaffolded cell
+        # (medium finding of instance 004, the first real run of v0.2).
+        sens = self.folder / self.sensitivity_file
+        self.current_artifact = "instrument-validator"
+        if not sens.exists():
+            # v0.6.0: blocking, never pending: a pending could be accepted by
+            # name, and deleting the evidence was cheaper than keeping it.
+            self.record(self.sensitivity_file, "p-sensitivity", "no report", SENSITIVITY_LIMIT,
+                        [f"no sensitivity report at '{self.sensitivity_file}' (the layout key "
+                         "artifacts.sensitivity points there) — run sensitivity.py"],
+                        severity="blocking")
+            return
+        content = read(sens)
+        provenance = self.sensitivity_provenance_hits(content, sens)
+        if provenance:
+            self.record(self.sensitivity_file, "p-sensitivity", "provenance mismatch",
+                        SENSITIVITY_LIMIT, provenance, severity="blocking")
+            return
+        m = re.search(r"Caught (\d+) of (\d+)\.", content)
+        if not m:
+            raise InputError(f"{self.sensitivity_file} has no line 'Caught X of Y.'")
+        self.record_sensitivity(content, int(m.group(2)) - int(m.group(1)), m.group(2))
+
+    def record_sensitivity(self, content: str, missed: int, total: str) -> None:
+        """The row of p-sensitivity for a report whose provenance holds:
+        coverage by gate and by (document, gate) pair, misses and noise."""
+        covered, assigned, uncovered = self.sensitivity_coverage(content)
+        noisy, pairs, pair_total = sensitivity_specificity(content)
+        percent = 100 * pairs // pair_total if pair_total else 0
+        magnitude = (f"{covered} of {assigned} gates covered, {pairs} of {pair_total} pairs "
+                     f"({percent} %), {missed} missed of {total}, {noisy} noisy")
+        hits = ([f"{missed} perturbations missed"] if missed else []) + \
+            ([f"{noisy} perturbations noisy (another row changed its result)"] if noisy else [])
+        reasons = ([f"gates without a perturbation: {', '.join(f'`{g}`' for g in uncovered)}"]
+                   if uncovered else [])
+        if percent < PAIR_COVERAGE_MINIMUM_PERCENT:
+            reasons.append(f"fewer than {PAIR_COVERAGE_MINIMUM_PERCENT} % of the (document, "
+                           "gate) pairs perturbed")
+        # Closing pass of v0.6.0: the synthetic name applies only to a report
+        # that would otherwise pass; it used to skip the floor of the pairs.
+        synthetic = self.synthetic_priors(content)
+        if synthetic and not hits and not reasons:
+            self.record_synthetic(magnitude, synthetic)
+            return
+        if not hits and reasons:
+            # Not measured by the report: pending with the reason, never a pass.
+            self.pending(self.sensitivity_file, "p-sensitivity",
+                         f"not measured ({magnitude}; {'; '.join(reasons)})", SENSITIVITY_LIMIT)
+            return
+        self.record(self.sensitivity_file, "p-sensitivity", magnitude, SENSITIVITY_LIMIT, hits)
+
+    def synthetic_priors(self, content: str) -> list[str]:
+        """The priors a report was made with whose document is not the one
+        the registry pins: synthetic (v0.6.0, rework)."""
+        pins = {inst.get("id"): inst.get("sha256") for inst in (self.registry or {}).get("instances", [])
+                if isinstance(inst, dict)}
+        return sorted(m.group(1) for m in SENSITIVITY_CASE_LINE.finditer(content)
+                      if m.group(1) and pins.get(m.group(1)) != m.group(2))
+
+    def record_synthetic(self, magnitude: str, synthetic: list[str]) -> None:
+        """A report made with a synthetic prior: refused when the run has the
+        owner's document of that prior (the published report is made with
+        it); otherwise pending under its own name, accepted only explicitly
+        (--allow-pending p-sensitivity-synthetic), never a pass. It shows the
+        gates react; it does not show the owner's document holds the facts,
+        nor that the instrument reads that document's format."""
+        owned = [pid for pid in synthetic if pid in self.case_docs]
+        if owned:
+            self.record(self.sensitivity_file, SENSITIVITY_GATE, magnitude, SENSITIVITY_LIMIT,
+                        [f"the report was made with a synthetic {', '.join(owned)} while its "
+                         "document was passed: regenerate it with the document"],
+                        severity="blocking")
+            return
+        self.pending(self.sensitivity_file, SYNTHETIC_GATE,
+                     f"not measured against the owner's document ({magnitude}; synthetic prior: "
+                     f"{', '.join(synthetic)})", SENSITIVITY_LIMIT)
+
+    def sensitivity_coverage(self, content: str) -> tuple[int, int, list[str]]:
+        """Since v0.5.0: one perturbation and four assigned
+        gates gave '0 missed of 1' and passed. The gates the artifact table
+        assigns (but this gate and the measurements m-*) are compared with
+        the expected gates of the report's rows. Returns the number covered,
+        the number assigned and the assigned gates without a perturbation."""
+        # A domain gate's sensitivity is the cell's own (its mutants): the
+        # sensitivity test perturbs documents (v0.6.0).
+        assigned = sorted(gate for gate in self.gate_map
+                          if gate != SENSITIVITY_GATE and not gate.startswith(MEASUREMENT_PREFIX)
+                          and not DOMAIN_GATE.fullmatch(gate))
+        perturbed = set(SENSITIVITY_ROW_GATE.findall(content))
+        uncovered = [gate for gate in assigned if gate not in perturbed]
+        return len(assigned) - len(uncovered), len(assigned), uncovered
+
+    def sensitivity_provenance_hits(self, content: str, sens: Path) -> list[str]:
+        """Since v0.3.0: a report that says 'Caught 14 of 14.' proves
+        nothing unless this instrument and this perturbation set produced it.
+        The header records the sha256 of the validator that ran, the sha256
+        of the gate section and of the canon (since v0.5.0) and the ids and
+        count of the perturbations; any divergence is blocking, and so is a
+        table whose rows do not add up to its 'Caught' line."""
+        sha_m = SENSITIVITY_SHA_LINE.search(content)
+        set_m = SENSITIVITY_SET_LINE.search(content)
+        if sha_m is None or set_m is None:
+            return ["the sensitivity report carries no provenance header; it was "
+                    "not produced by this instrument — re-run sensitivity.py"]
+        # v0.6.0: the running validator and the one next to the report both
+        # have to be the one that made it; the neighbor alone let an edited
+        # copy run against an old report.
+        running = Path(__file__).resolve()
+        neighbor = sens.parent / "validator.py"
+        for path in (running, neighbor) if neighbor.exists() else (running,):
+            if sha_m.group(1) != sha256_text(read(path)):
+                return ["the sensitivity report was produced by a different "
+                        f"validator (sha256 mismatch with {path.name} "
+                        f"{'running' if path == running else 'next to the report'}) "
+                        "— re-run sensitivity.py"]
+        if not SENSITIVITY_CASE_LINE.search(content):
+            return ["the sensitivity report records no case document ('case sha256:'; a report "
+                    "from before the rework of v0.6.0) — re-run sensitivity.py"]
+        if not SENSITIVITY_NOISY_LINE.search(content) or not SENSITIVITY_PAIRS_LINE.search(content):
+            return ["the sensitivity report records no specificity or pair coverage (a "
+                    "report from before v0.6.0) — re-run sensitivity.py"]
+        return (self.input_digest_hits(content) or self.attestation_hits(content, sha_m.group(1))
+                or self.perturbation_set_hits(set_m)
+                or sensitivity_row_hits(content, int(set_m.group(1))))
+
+    def attestation_hits(self, content: str, validator_sha: str) -> list[str]:
+        """Each prior document this run has and the report says it was made
+        with (its case line holds the pin) needs the report's attestation of
+        it to match the one recomputed from the document (closing pass of
+        v0.6.0): a case line copied from the registry by hand has none that
+        matches. Without the document, nothing is compared here."""
+        pins = {inst.get("id"): inst.get("sha256") for inst in (self.registry or {}).get("instances", [])
+                if isinstance(inst, dict)}
+        cases = {m.group(1): m.group(2) for m in SENSITIVITY_CASE_LINE.finditer(content) if m.group(1)}
+        attested = {m.group(1): m.group(2) for m in SENSITIVITY_ATTESTATION_LINE.finditer(content)}
+        digests = provenance_inputs(self.folder, self.layout)
+        return [f"the report's attestation of {pid} does not match the document passed: it was "
+                "not made with that document over these inputs (a case line written by hand?) "
+                "— re-run sensitivity.py with the document"
+                for pid, text in sorted(self.case_texts_by_id.items())
+                if cases.get(pid) == pins.get(pid)
+                and attested.get(pid) != case_attestation(text, digests, validator_sha)]
+
+    def input_digest_hits(self, content: str) -> list[str]:
+        """The gate section and the canon the report was made against."""
+        current = provenance_inputs(self.folder, self.layout)
+        hits = []
+        for name, pattern in SENSITIVITY_INPUT_LINES.items():
+            m = pattern.search(content)
+            if m is None:
+                hits.append(f"the sensitivity report records no sha256 of the {name} (a "
+                            "report from before v0.5.0) — re-run sensitivity.py")
+            elif m.group(1) != current[name]:
+                hits.append(f"the {name} changed since the sensitivity report was made "
+                            "(sha256 mismatch): what the gates measure is not what was "
+                            "perturbed — re-run sensitivity.py")
+        return hits
+
+    def perturbation_set_hits(self, set_m: re.Match[str]) -> list[str]:
+        count = int(set_m.group(1))
+        ids = {part.strip() for part in set_m.group(2).split(",")}
+        expected = {pert.name for pert in self.perturbation_set()}
+        if count != len(expected):
+            return [f"the report names {count} perturbations, the instrument "
+                    f"runs {len(expected)} — re-run sensitivity.py"]
+        if ids != expected:
+            missing = ", ".join(sorted(expected - ids))
+            extra = ", ".join(sorted(ids - expected))
+            return [f"the report names a different perturbation set "
+                    f"(missing: {missing or '—'}; unknown: {extra or '—'}) "
+                    "— re-run sensitivity.py"]
+        return []
+
+    def perturbation_set(self) -> list:
+        """The perturbations of this production, from the one module that
+        holds them (perturbation_set.py, since v0.6.0; the validator used to
+        import the sensitivity script, which imports the validator): the
+        cell's data file the layout key artifacts.perturbations names, or
+        the corpus set. A missing module is a tool failure, never a traceback."""
+        try:
+            import perturbation_set
+        except ImportError as exc:
+            raise InputError("p-sensitivity needs perturbation_set.py next to validator.py, "
+                             f"which holds the perturbation set ({exc})") from exc
+        try:
+            return list(perturbation_set.select(self.folder, self.layout))
+        except perturbation_set.PerturbationDataError as exc:
+            raise InputError(str(exc)) from exc
+
+
+class DomainGates:
+    """The gates of the target's domain, read from the result files the cell's code writes.
+
+    Every family records through the interface of CheckerCore: record() and
+    pending() for a row, the layout, the canon, the artifacts and the gate
+    table it loaded. The families share that state and nothing else.
+    """
+
+    def check_domain_results(self) -> None:
+        """The gates of the target's domain (v0.6.0): each 'd-<name>' row of
+        the gate table is read from the result file the cell's code wrote
+        (layout key 'domain-results'); a declared gate with no result is
+        pending, never a pass, and a result for an undeclared gate is a tool
+        failure."""
+        declared = sorted(g for g in self.gate_rows if DOMAIN_GATE.fullmatch(g))
+        seen: set[str] = set()
+        for rel in resolve_patterns(self.folder, self.layout.get("domain-results", [])):
+            result = load_domain_result(self.folder / rel, rel)
+            gate = result["gate"]
+            if gate not in declared:
+                raise InputError(f"domain result {rel} is for '{gate}', which the gate table "
+                                 "does not declare")
+            seen.add(gate)
+            hits = self.domain_result_hits(gate, result)
+            severity = "blocking" if hits else self.row_severity(gate)
+            if not hits and result["result"] == "fail":
+                hits = [f"{result['magnitude']} against the limit {result['limit']}"]
+            self.current_artifact = rel
+            self.record(rel, gate, result["magnitude"], result["limit"], hits, severity=severity)
+        for gate in declared:
+            if gate not in seen:
+                self.pending(self.gates_file, gate, "not measured (no domain result for this "
+                             "gate under the layout key domain-results)", "a result file")
+
+    def domain_result_hits(self, gate: str, result: dict) -> list[str]:
+        """What makes a result untrustworthy (blocking): a stale or missing
+        input, no input at all, a file of the gate row's artifacts the result
+        did not measure, and a result its own numbers contradict (rework of
+        v0.6.0: a result over the canon alone passed for the candidate)."""
+        hits = stale_input_hits(self.folder, result) or (
+            [] if result["inputs"] else ["the result names no input it measured"])
+        measured = {posixpath.normpath(item["path"]) for item in result["inputs"]}
+        files = sorted({path for art in self.gate_map.get(gate, []) if art in self.artifacts
+                        for path in resolve_patterns(self.folder, self.artifacts[art].files)})
+        hits += [f"the result does not measure `{path}`, a file of the artifacts of its gate row"
+                 for path in files if posixpath.normpath(path) not in measured]
+        return hits + contradiction_hits(result)
+
+    def row_severity(self, gate: str) -> str:
+        """The severity a failing domain gate carries: the optional Severity
+        column of its row, else high. Since the rework of v0.6.0 a column
+        below high counts only for a gate a decided owner decision covers: a
+        failed identity of results used to become a low note."""
+        i_sev = column_if_present(self.gate_table, "Severity")
+        row = self.gate_rows.get(gate, [])
+        value = clean_cell(row[i_sev]).lower() if i_sev is not None and i_sev < len(row) else ""
+        if value not in VALID_SEVERITIES:
+            return "high"
+        if SEVERITY_RANK[value] < SEVERITY_RANK["high"] and gate not in self.state_context().covered:
+            return "high"
+        return value
+
+
+class CheckerCore:
+    """The state of one run and the interface every family of gates uses: the
+    inputs it loaded, record() and pending() for a row, run() and the report.
+    """
+
     def __init__(self, folder: Path, case_texts: list[str] | None, forbidden: list[str] | None,
                  rubric_hash_file: Path | None, notes_file: Path | None,
                  layout: dict | None = None, registry: dict | None = None) -> None:
@@ -1886,38 +3841,45 @@ class Checker:
         # instrument is rendered by main(), which needs two runs to say it.
         self.global_gates = set(GLOBAL_GATES)
 
+    @property
+    def lessons_file(self) -> str:
+        """The lessons file a [lessons:<title>] label resolves in (v0.6.0)."""
+        return self.layout["artifacts"].get("lessons", LESSONS_FILE)
+
+    @property
+    def round_record_file(self) -> str:
+        """The round record, whose chained lines have rules (v0.6.0)."""
+        return self.layout["artifacts"].get("round-record", ROUND_RECORD_FILE)
+
     def load_cases(self, case_texts: list[str], registry: dict | None) -> None:
         """Identify each --case document by its sha256 against the registry
-        (I14 of the panel): digest -> executed instance id. The pin compares
+        (v0.4.0): digest -> executed instance id. The pin compares
         the digests passed with the ones recorded; the number check of a
         [prior:<id>] unit reads the document identified as <id>, in the
-        number format its registry entry declares (I16)."""
+        number format its registry entry declares."""
         self.cases_given = bool(case_texts)
         self.case_digests = {hashlib.sha256(text.encode("utf-8")).hexdigest()
                              for text in case_texts}
         executed = {inst.get("sha256"): inst for inst in (registry or {}).get("instances", [])
                     if inst.get("status") == "executed"}
         self.case_docs: dict[str, CaseDocument] = {}
+        self.case_texts_by_id: dict[str, str] = {}
         for text in case_texts:
             inst = executed.get(hashlib.sha256(text.encode("utf-8")).hexdigest())
             if inst is not None:
+                self.case_texts_by_id[inst["id"]] = text
                 number_format = inst.get("number_format")
                 fmt = number_format if number_format in NUMBER_FORMATS else None
                 self.case_docs[inst["id"]] = case_document(text, fmt)
 
     def load_controls(self) -> None:
         """The canon and the artifact list, through the layout's parser."""
-        if self.parser == "builtin-json-canon":
-            self.canon = load_canon_json(self.folder / self.canon_file)
-            try:
-                data = json.loads(read(self.folder / self.artifacts_file))
-            except json.JSONDecodeError as exc:
-                raise InputError(f"artifacts: invalid JSON ({exc.msg}, line {exc.lineno})") from exc
-            self.artifacts = load_artifact_records(data)
-        else:
-            self.canon = load_canon(self.folder / self.canon_file)
-            artifact_table = first_table(section(read(self.folder / self.artifacts_file), r"^Table$"))
-            self.artifacts = load_artifact_table(artifact_table)
+        self.canon, self.artifacts = load_control_documents(self.folder, self.layout)
+        if self.canon_file in self.canon.accepted_paths:
+            # Rework of v0.6.0: the canon declares the valve; accepting its
+            # own paths would let it pass what it is the judge of.
+            raise InputError("canon: the table of accepted paths names the canon itself; "
+                             "its own paths are never accepted")
 
     def load_gates(self) -> None:
         """The gate rows and the size ranges of the gates file, and the gate
@@ -1927,11 +3889,19 @@ class Checker:
         tables = gate_tables(gates_text)
         if not tables:
             raise InputError(f"{self.gates_file}: gate table not found")
-        self.gate_table = tables[0]
+        self.gate_table = merged_gate_table(tables, self.gates_file)
+        ids = [clean_cell(r[0]) for r in self.gate_table[1:]]
+        repeated = sorted({gate for gate in ids if ids.count(gate) > 1})
+        if repeated:
+            # v0.6.0: a second row of a gate used to measure it twice, with
+            # whichever limit, in silence.
+            raise InputError(f"{self.gates_file}: the gate table has more than one row for "
+                             f"{', '.join(repeated)}; one row per gate")
         self.gate_rows = {clean_cell(r[0]): r for r in self.gate_table[1:]}
         self.gate_map = declared_gate_map(self.artifacts)
         for gate in sorted(set(self.gate_rows) | set(self.gate_map)):
-            if gate not in (*BUILTIN_GATES, *GLOBAL_GATES) and not PLACEHOLDER.fullmatch(gate):
+            if (gate not in (*BUILTIN_GATES, *GLOBAL_GATES) and not DOMAIN_GATE.fullmatch(gate)
+                    and not PLACEHOLDER.fullmatch(gate)):
                 raise InputError(unimplemented_gate_message(gate))
         size_table = first_table(section(gates_text, r"^Size ranges$", 3))
         try:
@@ -1940,7 +3910,7 @@ class Checker:
             raise InputError(f"{self.gates_file}: invalid size range row ({exc})") from exc
 
     def row_number(self, gate: str, cell: str, pattern: re.Pattern[str]) -> int | None:
-        """A number a gate's own row declares (IM16): the minimum words of a
+        """A number a gate's own row declares (v0.5.0): the minimum words of a
         justification, the minimum steps of a recipe. None when the gate has
         no row or the row does not state it: the gate is then not measured."""
         row = self.gate_rows.get(gate)
@@ -1951,23 +3921,16 @@ class Checker:
         return int(m.group(1)) if m else None
 
     def files_of(self, artifact: str) -> list[str]:
-        out = []
-        for pattern in self.artifacts[artifact].files:
-            if pattern.startswith("../"):
-                # A pattern with '../' is a literal path out of the folder
-                # (no wildcard expansion), so the corpus document above the
-                # folder can be measured without sweeping outside it.
-                literal = self.folder / pattern
-                if literal.is_file():
-                    out.append(literal.relative_to(self.folder).as_posix())
-                continue
-            matches = sorted(p.relative_to(self.folder).as_posix() for p in self.folder.glob(pattern))
-            out.extend(matches)
-        return out
+        return resolve_patterns(self.folder, self.artifacts[artifact].files)
 
     def record(self, doc: str, gate: str, magnitude: str, limit: str, hits: list[str],
-               severity: str = "high", target: str | None = None) -> None:
+               severity: str = "high", target: str | None = None,
+               advisory: list[str] | None = None) -> None:
+        """One measurement; every hit is a note of the severity given and
+        fails the row. An advisory is a low note that does not (v0.6.0)."""
         self.measurements.append(Measurement(doc, gate, magnitude, limit, not hits))
+        for hit in (advisory or [])[:MAX_NOTES_PER_GATE]:
+            self.notes.append(Note(target or self.current_artifact, "low", f"{gate}: {hit}", doc))
         for hit in hits[:MAX_NOTES_PER_GATE]:
             self.notes.append(Note(target or self.current_artifact, severity, f"{gate}: {hit}", doc))
         if len(hits) > MAX_NOTES_PER_GATE:
@@ -1980,6 +3943,8 @@ class Checker:
     def run(self) -> None:
         doc_gates: dict[str, list[tuple[str, str]]] = {}
         for gate, arts in self.gate_map.items():
+            if DOMAIN_GATE.fullmatch(gate):
+                continue  # read from its result file in check_global
             for art in arts:
                 if art not in self.artifacts:
                     continue
@@ -1990,9 +3955,9 @@ class Checker:
         # whichever order the gates run in.
         for doc, pairs in doc_gates.items():
             if any(gate == "p-prior" for gate, _ in pairs):
-                self.cited_prior_ids |= set(PRIOR_TAG.findall(read(self.folder / doc)))
+                self.cited_prior_ids |= set(prior_ids(read(self.folder / doc)))
         if not doc_gates:
-            # C4a of the panel: a run that measures no documents is green
+            # Since v0.3.0: a run that measures no documents is green
             # for nothing; a scaffolded cell fails here until it has real
             # artifacts ("files of the empty template match no file").
             self.notes.append(Note("artifacts", "blocking",
@@ -2004,6 +3969,7 @@ class Checker:
                 self.current_artifact = art
                 self.check(doc, gate, text)
         self.check_global()
+        self.check_limit_column()
 
     def check(self, doc: str, gate: str, text: str) -> None:
         if gate in self.global_gates:
@@ -2014,495 +3980,23 @@ class Checker:
         handler(doc, text)
 
     def pending_empty(self, doc: str, gate: str, canon_list: str, limit: str) -> None:
-        """CR3 (v0.5.0): a gate whose object is a list of the canon, with the
+        """Since v0.5.0: a gate whose object is a list of the canon, with the
         list empty, measured nothing; it is pending with the reason, never a
         pass of 0 of 0 (the scaffold ships every such list empty)."""
         self.pending(doc, gate, f"not measured (the canon's '{canon_list}' list is empty)", limit)
 
-    # One method per document gate; each records exactly one measurement.
-
-    def check_terms(self, doc: str, text: str) -> None:
-        if doc.startswith(FROZEN_LEDGER_PREFIX):
-            # Exemption by design: vocabulary rules govern living documents;
-            # the review ledger is frozen history and is never edited to
-            # satisfy a later vocabulary (regression turned into a rule).
-            self.record(doc, "p-terms", "exempt by design (frozen ledger)", "0", [])
-            return
-        if not self.canon.avoid_terms:
-            self.pending_empty(doc, "p-terms", "terms to avoid", "0")
-            return
-        body = text
-        if doc == self.canon_file:
-            # Up to the next level-2 heading, or the end (v0.5.0): a canon
-            # whose avoid table was its last section counted its own table.
-            body = re.sub(r"^## Terms to avoid$.*?(?=^## |\Z)", "", text, flags=re.S | re.M)
-        found = count_avoid_terms(body, self.canon.avoid_terms)
-        total = sum(n for _, n in found)
-        self.record(doc, "p-terms", str(total), "0", [f"'{t}' x{n}" for t, n in found])
-
-    def check_canon_link(self, doc: str, text: str) -> None:
-        resolved, unresolved = canon_links(self.folder / doc, text, self.folder / self.canon_file)
-        hits = [f"link to the canon does not resolve: `{target}`" for target in unresolved]
-        if not resolved and not unresolved:
-            hits.append("no link to the canon")
-        self.record(doc, "p-canon-link", f"{resolved} resolved, {len(unresolved)} unresolved",
-                    "\u2265 1 resolved, 0 unresolved", hits)
-
-    def check_anonymity(self, doc: str, text: str) -> None:
-        hits = anonymity_hits(text, self.forbidden)
-        if not self.forbidden and not hits:
-            # An empty list measures no identifier either (v0.5.0): it used
-            # to turn the identifier half from pending into a pass.
-            reason = "no list" if self.forbidden is None else "the list is empty"
-            self.pending(doc, "p-anonymity",
-                         f"0 paths and dates; identifiers not measured ({reason})", "0")
-            return
-        self.record(doc, "p-anonymity", str(len(hits)), "0", hits)
-
-    def check_form(self, doc: str, text: str) -> None:
-        hits = form_hits(text)
-        self.record(doc, "p-form", str(len(hits)), "0", hits)
-
-    def check_size(self, doc: str, text: str) -> None:
-        words = len(text.split())
-        bounds = self.size_ranges.get(doc)
-        if bounds is None:
-            self.record(doc, "p-size", str(words), "no range", [f"{doc} has no declared range"])
-            return
-        low, high = bounds
-        ok = low <= words <= high
-        self.record(doc, "p-size", str(words), f"{low} to {high}",
-                    [] if ok else [f"{words} words outside {low} to {high}"])
-
-    def check_table(self, doc: str, text: str) -> None:
-        rows = self.canon.instantiation_rows
-        if not rows:
-            self.pending_empty(doc, "p-table", "instantiation table rows", "all rows, 0 empty")
-            return
-        found, empty, hits = instantiation_hits(text, rows)
-        self.record(doc, "p-table", f"{found}/{len(rows)}, {empty} empty",
-                    f"{len(rows)}/{len(rows)}, 0 empty", hits)
-
-    def check_sections(self, doc: str, text: str) -> None:
-        n = len(self.canon.instance_sections)
-        if not n:
-            self.pending_empty(doc, "p-sections", "mandatory sections", "all sections")
-            return
-        titles = heading_titles(text)
-        missing = [s for s in self.canon.instance_sections if s.lower() not in titles]
-        self.record(doc, "p-sections", f"{n - len(missing)}/{n}", f"{n}/{n}",
-                    [f"section '{s}' missing" for s in missing])
-
-    def check_card(self, doc: str, text: str) -> None:
-        if not self.canon.card_fields:
-            self.pending_empty(doc, "p-card", "role card fields", "0")
-            return
-        hits = card_hits(text, self.canon.card_fields,
-                         whole_document=doc.startswith(self.roles_dir + "/"))
-        missing = sum(1 for hit in hits if hit.endswith("' missing"))
-        self.record(doc, "p-card", f"{missing} fields missing, {len(hits) - missing} placeholders",
-                    "0", hits)
-
-    def check_limit(self, doc: str, text: str) -> None:
-        if not self.canon.limit_tags:
-            # K4 of the panel: with the list empty, every justification was
-            # reported "without an origin label" — a false red.
-            self.pending_empty(doc, "p-limit", "origin labels", "0")
-            return
-        min_words = self.row_number("p-limit", "Magnitude", MIN_WORDS_IN_ROW)
-        if min_words is None:
-            self.pending(doc, "p-limit", "not measured (the gate table's row of p-limit "
-                         "declares no minimum of words, 'fewer than N words')", "0")
-            return
-        hits = limit_hits(text, self.canon.limit_tags, min_words)
-        self.record(doc, "p-limit", str(len(hits)), "0", hits)
-
-    def check_references(self, doc: str, text: str) -> None:
-        roles = self.roles | {OWNER_HUMAN}
-        if doc == self.artifacts_file:
-            hits = reference_hits(self.artifacts, roles, []) + artifact_placeholder_hits(self.artifacts)
-        elif doc == self.gates_file:
-            hits = (reference_hits(self.artifacts, roles, gate_tables(text))
-                    + gate_map_hits(self.artifacts, self.gate_table))
-        elif doc.startswith(self.roles_dir + "/"):
-            hits = note_target_hits(text, set(self.artifacts), doc)
+    def amend(self, doc: str, gate: str, hits: list[str]) -> None:
+        """Add hits to the row of a gate on a document, failing it; a document
+        with no such row gets one."""
+        for k, m in enumerate(self.measurements):
+            if m.document == doc and m.gate == gate:
+                total = int(m.magnitude) + len(hits) if m.magnitude.isdigit() else len(hits)
+                self.measurements[k] = Measurement(doc, gate, str(total), m.limit, False)
+                break
         else:
-            hits = instance_reference_hits(text)
-        severity = "blocking" if any(h.startswith("cycle") for h in hits) else "high"
-        self.record(doc, "p-references", str(len(hits)), "0", hits, severity=severity)
-
-    def check_prior(self, doc: str, text: str) -> None:
-        if self.registry is None:
-            self.pending(doc, "p-prior", "not measured (no instance registry)", "0")
-            return
-        ids = {inst["id"] for inst in self.registry["instances"]}
-        tags = PRIOR_TAG.findall(text)
-        unknown = sorted({i for i in tags if i not in ids})
-        hits = [f"'{i}' is not an instance registered in the registry" for i in unknown]
-        label_mag = f"{len(tags)} labels, {len(unknown)} unregistered"
-        if not self.cases_given:
-            # Without the prior document the labels are measured, the numbers
-            # are not: the gate is pending, never a pass.
-            magnitude = f"{label_mag}; numbers not measured (no prior document)"
-            if unknown:
-                self.record(doc, "p-prior", magnitude, "0", hits, severity="blocking")
-            else:
-                self.pending(doc, "p-prior", magnitude, "0")
-            return
-        check = multi_prior_findings(text, self.case_docs, self.canon.recorded_facts,
-                                     instance_ids_of(self.registry))
-        hits += check.hits
-        magnitude = (f"{label_mag}, {check.checked} numbers and {check.references} section "
-                     f"references checked, {len(check.hits)} unverified")
-        if check.unmeasured:
-            # I14: a cited prior with no --case document is pending by name.
-            magnitude += (f"; numbers of {', '.join(sorted(check.unmeasured))} not measured "
-                          "(no --case document identified as that prior)")
-            if not hits:
-                self.pending(doc, "p-prior", magnitude, "0")
-                return
-        self.record(doc, "p-prior", magnitude, "0", hits, severity="blocking")
-
-    def check_prior_mark(self, doc: str, text: str) -> None:
-        if not self.canon.prior_triggers:
-            self.pending_empty(doc, "p-prior-mark", "prior-statement triggers", "0")
-            return
-        hits = prior_mark_hits(text, self.canon.prior_triggers)
-        self.record(doc, "p-prior-mark", str(len(hits)), "0", hits)
-
-    def check_prior_pin(self, doc: str, text: str) -> None:
-        try:
-            registry = json.loads(text)
-            validate_registry(registry)
-        except json.JSONDecodeError as exc:
-            raise InputError(f"registry: invalid JSON ({exc.msg}, line {exc.lineno})") from exc
-        hits, cited = pin_findings(self.cited_prior_ids, registry,
-                                   self.case_digests if self.cases_given else None)
-        if not self.cases_given:
-            # A pin that passes without the prior document would be the
-            # owner-only proof this gate exists to end.
-            self.pending(doc, "p-prior-pin",
-                         f"{cited} executed priors cited; not measured (no prior document)",
-                         "equal")
-            return
-        self.record(doc, "p-prior-pin", f"{cited} executed priors pinned", "equal",
-                    hits, severity="blocking")
-
-    def check_contract_shape(self, doc: str, text: str) -> None:
-        if doc == self.artifacts_file:
-            refs = schema_refs(self.artifacts)
-            hits = schema_ref_hits(refs, self.folder)
-            self.record(doc, "p-contract-shape",
-                        f"{len(refs)} schema cells, {len(hits)} broken", "0 broken", hits)
-            return
-        if doc.endswith(".schema.json"):
-            self.check_schema_census(doc, text)
-            return
-        art = self.artifacts.get(self.current_artifact)
-        schema_ref = art.schema if art is not None else ""
-        if not schema_ref:
-            self.record(doc, "p-contract-shape", "no schema declared", "no schema", [])
-            return
-        schema_path = self.folder / schema_ref
-        if not schema_path.exists():
-            self.record(doc, "p-contract-shape", "1 broken", "0 broken",
-                        [f"schema '{schema_ref}' does not exist"])
-            return
-        try:
-            schema = json.loads(read(schema_path))
-        except json.JSONDecodeError as exc:
-            self.record(doc, "p-contract-shape", "1 broken", "0 broken",
-                        [f"schema '{schema_ref}' is not valid JSON ({exc.msg})"])
-            return
-        if doc.endswith(".jsonl"):
-            hits = []
-            lines = [ln for ln in text.splitlines() if ln.strip()]
-            for i, line in enumerate(lines, 1):
-                hits += validate_data_text(line, schema, f"line {i}")
-            self.record(doc, "p-contract-shape",
-                        f"{len(lines)} lines, {len(hits)} violations", "0", hits)
-            return
-        hits = validate_data_text(text, schema, "$")
-        if doc == self.layout["registry"]:
-            hits += registry_status_hits(text)
-        self.record(doc, "p-contract-shape", f"{len(hits)} violations", "0", hits)
-
-    def check_schema_census(self, doc: str, text: str) -> None:
-        """A contract file has to parse and use only the keywords the
-        stdlib mini-validator applies (a keyword outside the subset is a
-        note, never silently ignored as if fully validated)."""
-        try:
-            schema = json.loads(text)
-        except json.JSONDecodeError as exc:
-            self.record(doc, "p-contract-shape", "1 broken", "0 broken",
-                        [f"schema is not valid JSON ({exc.msg})"])
-            return
-        unsupported = unsupported_keywords(schema)
-        hits = [f"keyword '{kw}' is outside the subset the validator applies"
-                for kw in unsupported]
-        declared = schema.get(CONTRACT_VERSION_KEY) if isinstance(schema, dict) else None
-        if declared != CONTRACT_VERSION:
-            hits.append(f"the contract declares {CONTRACT_VERSION_KEY} {declared!r}; this "
-                        f"validator reads contract version '{CONTRACT_VERSION}' (IM21)")
-        self.record(doc, "p-contract-shape",
-                    f"{len(schema_keyword_set(schema))} keywords, "
-                    f"{len(unsupported)} unsupported", "0 unsupported", hits)
-
-    def check_efficacy_mark(self, doc: str, text: str) -> None:
-        """I10 of the panel: the method's own doctrine of evidence applied to
-        the claims about the method; an [experiment:<id>] label has to cite
-        an executed experiment of the experiments record (S4, v0.4.1)."""
-        if doc == self.canon_file:
-            # The canon's table is the definition of the triggers, exempt.
-            self.record(doc, "p-efficacy-mark", "exempt by design (the definition page)", "0", [])
-            return
-        text, hits = self.efficacy_scope(doc, text)
-        hits += efficacy_mark_hits(text, self.canon.efficacy_triggers)
-        record = self.folder / self.experiments_file
-        statuses = experiment_statuses(read(record)) if record.is_file() else {}
-        for eid in sorted(set(EXPERIMENT_TAG.findall(strip_code(text)))):
-            hits += experiment_label_hits(eid, statuses, self.experiments_file)
-        if not self.canon.efficacy_triggers and not hits:
-            # S3 of the review: with no trigger list nothing was measured.
-            self.pending(doc, "p-efficacy-mark",
-                         "not measured (the canon lists no efficacy triggers)", "0")
-            return
-        self.record(doc, "p-efficacy-mark", str(len(hits)), "0", hits)
-
-    def efficacy_scope(self, doc: str, text: str) -> tuple[str, list[str]]:
-        """The part of an append-only document the gate reads (CR7, v0.5.0):
-        from the heading the canon declares for it on; the units above are
-        history, exempt like the frozen ledger. A declared heading that is
-        not in the document is a finding, never an exemption of the whole."""
-        heading = self.canon.efficacy_starts.get(doc)
-        if heading is None:
-            return text, []
-        scoped = from_heading(text, heading)
-        if scoped is None:
-            return text, [f"the heading '{heading}' the canon declares as the start of the "
-                          "measured part is not a line of the document"]
-        return scoped, []
-
-    def check_recipe(self, doc: str, text: str) -> None:
-        min_steps = self.row_number("p-recipe", "Limit", MIN_STEPS_IN_ROW)
-        if min_steps is None:
-            self.pending(doc, "p-recipe", "not measured (the gate table's row of p-recipe "
-                         "declares no minimum of steps, '\u2265 N steps')", "0 missing")
-            return
-        steps, hits = recipe_hits(text)
-        if steps < min_steps:
-            hits.append(f"{steps} steps, fewer than {min_steps}")
-        self.record(doc, "p-recipe", f"{steps} steps, {len(hits)} missing",
-                    f"\u2265 {min_steps} steps, 0 missing", hits)
-
-    def check_components(self, doc: str, text: str) -> None:
-        components = self.canon.components
-        if not components:
-            self.pending_empty(doc, "p-components", "method components", "all components")
-            return
-        missing = missing_components(text, components)
-        n = len(components)
-        self.record(doc, "p-components", f"{n - len(missing)}/{n}", f"{n}/{n}",
-                    [f"component '{c}' not named" for c in missing])
-
-    def check_global(self) -> None:
-        if self.rubric_hash_file is None or not self.rubric_hash_file.exists():
-            self.pending(self.rubric_doc(), "p-frozen-rubric", "rubric not frozen yet", "equal")
-        else:
-            recorded = read(self.rubric_hash_file).split()
-            if not recorded:
-                raise InputError(f"{self.rubric_hash_file.name} is empty")
-            if recorded[0] == RUBRIC_UNFROZEN:
-                # The placeholder a scaffolded cell ships: no pin yet.
-                self.pending(self.rubric_doc(), "p-frozen-rubric", "rubric not frozen yet", "equal")
-            else:
-                current = self.current_rubric_digest()
-                hits = [] if recorded[0] == current else ["the 'Rubric' section changed after being frozen"]
-                self.record(self.rubric_doc(), "p-frozen-rubric", "equal" if not hits else "different", "equal",
-                            hits, severity="blocking", target="review")
-        self.check_declared_artifacts()
-        self.check_sensitivity_report()
-        self.check_notes()
-
-    def check_notes(self) -> None:
-        """p-notes: the note ledger passed with --notes, and the state
-        ledger of its notes (IM10, v0.5.0) at the layout key notes-status."""
-        status_file = self.layout["artifacts"]["notes-status"]
-        if self.notes_file is None:
-            # I4 of the panel: the gate stays visible without --notes — a
-            # pending with its reason, never a row that quietly disappears.
-            self.pending("open-notes", "p-notes",
-                         "not measured (notes not supplied; the note ledger "
-                         "was not measured)", "0 invalid")
-            self.pending(status_file, "p-notes", "not measured (notes not supplied; the "
-                         "state of the notes needs the ledger)", "every note tracked")
-            return
-        rel = Path(os.path.relpath(self.notes_file.resolve(), self.folder)).as_posix()
-        count, hits = note_contract_hits(self.notes_file, set(self.artifacts))
-        self.record(rel, "p-notes", f"{count} notes, {len(hits)} invalid", "0 invalid", hits,
-                    target="open-notes")
-        self.check_notes_status(status_file, count)
-
-    def check_notes_status(self, status_file: str, note_count: int) -> None:
-        path = self.folder / status_file
-        if not path.is_file():
-            self.pending(status_file, "p-notes", f"not measured (no state ledger at "
-                         f"'{status_file}'; the layout key artifacts.notes-status points "
-                         "there)", "every note tracked")
-            return
-        counts, hits = notes_status_hits(read(path), note_count)
-        magnitude = ", ".join(f"{n} {status}" for status, n in counts.items()) + \
-            f"; {len(hits)} invalid"
-        self.record(status_file, "p-notes", magnitude, "every note tracked, 0 invalid", hits,
-                    target="open-notes")
-
-    def rubric_doc(self) -> str:
-        """The document the frozen-rubric gate reports against: the cell's
-        rubric file when the layout names one, else the gates file."""
-        return self.rubric_file if self.rubric_file is not None else self.gates_file
-
-    def current_rubric_digest(self) -> str:
-        """The sha256 of the rubric as this run resolves it (same rule as
-        rubric_digest, reusing the gates text already read)."""
-        if self.rubric_file is not None:
-            return hashlib.sha256(read(self.folder / self.rubric_file).encode("utf-8")).hexdigest()
-        return rubric_hash(self.gates_text, self.gates_file)
-
-    def check_declared_artifacts(self) -> None:
-        """C2 of the panel: an artifact declared in the table whose files
-        match nothing is never silently unmeasured — a real artifact (not
-        'proposed') is blocking; a proposed one is pending with its reason.
-        A JSON artifact declared with no paths at all is also visible (S3 of
-        the v0.3.0 review): a pending that says so, never a silent skip."""
-        for name in sorted(self.artifacts):
-            artifact = self.artifacts[name]
-            if not artifact.files:
-                self.pending(name, "p-declared",
-                             "declared without paths; no files to measure",
-                             "at least one path")
-                continue
-            if self.files_of(name):
-                continue
-            joined = ", ".join(artifact.files)
-            if artifact.proposed:
-                self.pending(joined, "p-declared", "proposed, not yet produced", "exists")
-            else:
-                self.record(joined, "p-declared", "missing", "exists",
-                            [f"declared artifact missing: {joined}"],
-                            severity="blocking", target=name)
-
-    def check_sensitivity_report(self) -> None:
-        # The path comes from the layout (v0.2.3): the hardcoded directory
-        # assumption left p-sensitivity pending in every scaffolded cell
-        # (medium finding of instance 004, the first real run of v0.2).
-        sens = self.folder / self.sensitivity_file
-        if not sens.exists():
-            self.pending(self.sensitivity_file, "p-sensitivity",
-                         f"not measured (no sensitivity report at "
-                         f"'{self.sensitivity_file}'; the layout key "
-                         f"artifacts.sensitivity points there)", SENSITIVITY_LIMIT)
-            return
-        content = read(sens)
-        self.current_artifact = "instrument-validator"
-        provenance = self.sensitivity_provenance_hits(content, sens)
-        if provenance:
-            self.record(self.sensitivity_file, "p-sensitivity", "provenance mismatch",
-                        "re-run sensitivity.py", provenance, severity="blocking")
-            return
-        m = re.search(r"Caught (\d+) of (\d+)\.", content)
-        if not m:
-            raise InputError(f"{self.sensitivity_file} has no line 'Caught X of Y.'")
-        missed = int(m.group(2)) - int(m.group(1))
-        covered, assigned, uncovered = self.sensitivity_coverage(content)
-        magnitude = f"{covered} of {assigned} gates covered, {missed} missed of {m.group(2)}"
-        if missed == 0 and uncovered:
-            # A gate without a perturbation is not measured by the report:
-            # pending with the reason, never a pass (M1).
-            self.pending(self.sensitivity_file, "p-sensitivity",
-                         f"not measured ({magnitude}; gates without a perturbation: "
-                         + ", ".join(f"`{gate}`" for gate in uncovered) + ")",
-                         SENSITIVITY_LIMIT)
-            return
-        self.record(self.sensitivity_file, "p-sensitivity", magnitude, SENSITIVITY_LIMIT,
-                    [] if missed == 0 else [f"{missed} perturbations missed"])
-
-    def sensitivity_coverage(self, content: str) -> tuple[int, int, list[str]]:
-        """M1 of the review of v0.5.0: one perturbation and four assigned
-        gates gave '0 missed of 1' and passed. The gates the artifact table
-        assigns (but this gate and the measurements m-*) are compared with
-        the expected gates of the report's rows. Returns the number covered,
-        the number assigned and the assigned gates without a perturbation."""
-        assigned = sorted(gate for gate in self.gate_map
-                          if gate != SENSITIVITY_GATE and not gate.startswith(MEASUREMENT_PREFIX))
-        perturbed = set(SENSITIVITY_ROW_GATE.findall(content))
-        uncovered = [gate for gate in assigned if gate not in perturbed]
-        return len(assigned) - len(uncovered), len(assigned), uncovered
-
-    def sensitivity_provenance_hits(self, content: str, sens: Path) -> list[str]:
-        """C3 of the panel: a report that says 'Caught 14 of 14.' proves
-        nothing unless this instrument and this perturbation set produced it.
-        The header records the sha256 of the validator that ran, the sha256
-        of the gate section and of the canon (v0.5.0, CR1) and the ids and
-        count of the perturbations; any divergence is blocking, and so is a
-        table whose rows do not add up to its 'Caught' line."""
-        sha_m = SENSITIVITY_SHA_LINE.search(content)
-        set_m = SENSITIVITY_SET_LINE.search(content)
-        if sha_m is None or set_m is None:
-            return ["the sensitivity report carries no provenance header; it was "
-                    "not produced by this instrument — re-run sensitivity.py"]
-        neighbor = sens.parent / "validator.py"
-        if not neighbor.exists():
-            neighbor = Path(__file__).resolve().with_name("validator.py")
-        if sha_m.group(1) != hashlib.sha256(neighbor.read_bytes()).hexdigest():
-            return ["the sensitivity report was produced by a different "
-                    "validator (sha256 mismatch) — re-run sensitivity.py"]
-        return (self.input_digest_hits(content) or self.perturbation_set_hits(set_m)
-                or sensitivity_row_hits(content, int(set_m.group(1))))
-
-    def input_digest_hits(self, content: str) -> list[str]:
-        """The gate section and the canon the report was made against."""
-        current = provenance_inputs(self.folder, self.layout)
-        hits = []
-        for name, pattern in SENSITIVITY_INPUT_LINES.items():
-            m = pattern.search(content)
-            if m is None:
-                hits.append(f"the sensitivity report records no sha256 of the {name} (a "
-                            "report from before v0.5.0) — re-run sensitivity.py")
-            elif m.group(1) != current[name]:
-                hits.append(f"the {name} changed since the sensitivity report was made "
-                            "(sha256 mismatch): what the gates measure is not what was "
-                            "perturbed — re-run sensitivity.py")
-        return hits
-
-    def perturbation_set_hits(self, set_m: re.Match[str]) -> list[str]:
-        count = int(set_m.group(1))
-        ids = {part.strip() for part in set_m.group(2).split(",")}
-        expected = {pert.name for pert in self.perturbation_set()}
-        if count != len(expected):
-            return [f"the report names {count} perturbations, the instrument "
-                    f"runs {len(expected)} — re-run sensitivity.py"]
-        if ids != expected:
-            missing = ", ".join(sorted(expected - ids))
-            extra = ", ".join(sorted(ids - expected))
-            return [f"the report names a different perturbation set "
-                    f"(missing: {missing or '—'}; unknown: {extra or '—'}) "
-                    "— re-run sensitivity.py"]
-        return []
-
-    def perturbation_set(self) -> list:
-        """The perturbations of this production, from the one place that
-        reads them (the sensitivity script): the cell's data file the layout
-        key artifacts.perturbations names, or the corpus set in the script.
-        A missing script is a tool failure (IM17), never a traceback."""
-        try:
-            import sensitivity
-        except ImportError as exc:
-            raise InputError("p-sensitivity needs sensitivity.py next to validator.py, "
-                             f"which reads the perturbation set ({exc})") from exc
-        try:
-            return list(sensitivity.perturbation_set(self.folder, self.layout))
-        except sensitivity.PerturbationDataError as exc:
-            raise InputError(str(exc)) from exc
+            self.measurements.append(Measurement(doc, gate, str(len(hits)), "0", False))
+        target = next((name for name in sorted(self.artifacts) if doc in self.files_of(name)), doc)
+        self.notes += [Note(target, "high", f"{gate}: {hit}", doc) for hit in hits]
 
     def pending_by_gate(self) -> dict[str, int]:
         counts: dict[str, int] = {}
@@ -2512,7 +4006,7 @@ class Checker:
         return dict(sorted(counts.items()))
 
     def unaccepted_pending(self, allowed: frozenset[str]) -> dict[str, int]:
-        """IM15 (v0.5.0): the pending gates the caller did not accept with
+        """Since v0.5.0: the pending gates the caller did not accept with
         --allow-pending; any of them makes the exit 4, never 0."""
         return {gate: n for gate, n in self.pending_by_gate().items() if gate not in allowed}
 
@@ -2522,13 +4016,21 @@ class Checker:
                              for g, n in counts.items()) or "none"
         accepted = {g: n for g, n in self.pending_by_gate().items() if g in allowed}
         unaccepted = self.unaccepted_pending(allowed)
-        return ["", f"Pending accepted by the caller (--allow-pending): {listing(accepted)}.",
-                f"Pending not accepted: {listing(unaccepted)}"
-                + ("; the run exits 4 unless a note exits 1." if unaccepted else ".")]
+        lines = ["", f"Pending accepted by the caller (--allow-pending): {listing(accepted)}.",
+                 f"Pending not accepted: {listing(unaccepted)}"
+                 + ("; the run exits 4 unless a note exits 1." if unaccepted else ".")]
+        idle = sorted(allowed - set(accepted))
+        if idle:
+            # v0.6.0: an accepted gate with nothing pending is said, so the
+            # caller sees that the acceptance covered nothing.
+            lines.append("Accepted but not pending: " + ", ".join(f"`{g}`" for g in idle) + ".")
+        return lines
 
     def report(self, allowed: frozenset[str] = frozenset()) -> str:
+        report_file = self.layout["artifacts"].get("report", REPORT_FILE)
         lines = ["# Validator report", "",
-                 f"Generated by `{VALIDATOR_DIR}/validator.py`. Deterministic: no date, relative paths,",
+                 f"Generated by `{validator_path_of(report_file)}`. Deterministic: no date, "
+                 "relative paths,",
                  "sorted by document and gate. The prior method document and the list of forbidden",
                  "identifiers are passed as arguments and are not quoted here. A pending gate was not",
                  "measured, because its input was not provided; it is neither a pass nor a fail.", "",
@@ -2546,7 +4048,8 @@ class Checker:
                   "unless --determinism was passed.", "",
                   "| Measurement | Artifact | Magnitude | Expected | Result |",
                   "| --- | --- | --- | --- | --- |",
-                  determinism_row("pending", "not measured (no --determinism flag)")]
+                  determinism_row("pending", "not measured (no --determinism flag)", report_file),
+                  "", instrument_line()]
         counts = {s: sum(1 for n in self.notes if n.severity == s) for s in VALID_SEVERITIES}
         lines += ["", "## Notes", "",
                   "Count: " + ", ".join(f"{counts[s]} {s}" for s in reversed(VALID_SEVERITIES)) + ".", ""]
@@ -2560,6 +4063,14 @@ class Checker:
 
     def blocking(self) -> bool:
         return any(n.severity in BLOCKING for n in self.notes)
+
+
+class Checker(FormGates, PriorGates, ContractGates, RecordGates, DomainGates,
+              CheckerCore):
+    """One run of the validator: the families of gates (v0.6.0: one class each,
+    the methods of what was one class split for a maintainer who is not the
+    author; 71 methods after the closing pass of v0.6.0), over the state and the
+    interface of CheckerCore."""
 
 
 # ---------------------------------------------------------------- self-test
@@ -2632,7 +4143,7 @@ def self_test() -> int:
         "line 6: '48' is not in the prior method document"], "line numbers survive a fenced block")
     t.expect(prior_number_hits("the instance [prior:000-demo] gave 49", case) == [],
              "digits inside the mark are never checked")
-    t.expect(PRIOR_TAG.findall("one [prior:000-demo] and [prior:001-other]") ==
+    t.expect(prior_ids("one [prior:000-demo] and [prior:001-other]") ==
              ["000-demo", "001-other"], "prior ids extracted")
     # p-prior, section check: a number with a recorded-fact row is verified
     # in the union of the sections that row cites.
@@ -2765,7 +4276,7 @@ def self_test() -> int:
                  "JSON canon loads with the consumed sections")
         t.expect(loaded.recorded_facts == [] and loaded.prior_triggers == [],
                  "JSON canon starts with empty facts and triggers")
-        # I5 of the panel: a canon of a different schema version is
+        # Since v0.3.1: a canon of a different schema version is
         # refused, not misread — both the JSON field and the markdown row.
         t.expect(canon_schema_row_version(
             "| Section | Owner | Version | State |\n| --- | --- | --- | --- |\n"
@@ -2825,7 +4336,7 @@ def self_test() -> int:
     # p-notes contract fields and rubric hash.
     t.expect(rubric_hash("x\n## Rubric\nA\n## Next\n") == rubric_hash("y\n## Rubric\nA\n"), "rubric hash scope")
     # m-determinism: a measurement of the instrument, not a corpus gate
-    # (C13, second critical panel).
+    # (v0.2.2).
     t.expect(determinism_row("pending", "not measured (no --determinism flag)").startswith(
         "| `m-determinism` |"), "the instrument measurement names itself, not a document gate")
     t.expect("p-determinism" not in determinism_row("pass", "sha256 equal in 2 runs"),
@@ -2836,7 +4347,56 @@ def self_test() -> int:
 def self_test_later_rules(t: SelfTest) -> int:
     """The rules added after the self-test stopped growing (v0.4.0 on)."""
     self_test_rules_v04(t)
-    return self_test_rules_v05(t)
+    self_test_rules_v05(t)
+    return self_test_rules_v06(t)
+
+
+def self_test_rules_v06(t: SelfTest) -> int:
+    """The rules of v0.6.0 (the false greens of the panel that reviewed
+    v0.5.0), one short function per rule."""
+    self_test_fences(t)
+    self_test_prior_mark_grammar(t)
+    self_test_ledger_chain(t)
+    self_test_labels_v06(t)
+    return t.count
+
+
+def self_test_fences(t: SelfTest) -> None:
+    """One CommonMark reader of fences: tildes, indentation up to three
+    spaces, longer fences, comments."""
+    t.expect(form_hits("~~~sh\nls\n~~~\n") != [], "a tilde fence without the text mark fails")
+    t.expect(form_hits("- item\n\n  ```sh\n  ls\n  ```\n") != [], "an indented fence is read")
+    t.expect(form_hits("````text\nplain\n````\n") == [], "a four-backtick text fence passes")
+    t.expect(form_hits("<!-- hidden -->\n") != [], "an HTML comment fails p-form")
+    t.expect(anonymity_hits("~~~python\n", []) == [], "a tilde fence is no home folder")
+
+
+def self_test_prior_mark_grammar(t: SelfTest) -> None:
+    """A mark whose id breaks the grammar is malformed, never a silent skip."""
+    t.expect(malformed_prior_marks("x [prior:000-AV-x] y [prior:] z") == ["[prior:000-AV-x]", "[prior:]"],
+             "malformed prior marks are found")
+    t.expect(prior_ids("[prior:000-a] [prior: 000-a]") == ["000-a"], "only well-formed ids count")
+    t.expect(open_code_spans("p95 of `0.746` s") == "p95 of 0.746 s", "code spans are opened")
+
+
+def self_test_ledger_chain(t: SelfTest) -> None:
+    """The hash chain of an append-only ledger."""
+    lines = ['{"a": 1}', '{"a": 2}']
+    third = json.dumps({"a": 3, "prev": chain_prev(lines, 2)})
+    good = lines + [third]
+    t.expect(chain_hits(good, [json.loads(x) for x in good], 2) == [], "a valid chain passes")
+    bad = ['{"a": 9}', lines[1], third]
+    t.expect(chain_hits(bad, [json.loads(x) for x in bad], 2) != [], "an edited old line breaks it")
+    t.expect(chain_hits(lines, [json.loads(x) for x in lines], 1) != [],
+             "an unchained line after the legacy ones is a hit")
+
+
+def self_test_labels_v06(t: SelfTest) -> None:
+    """[lessons:<title>] resolves; a hypothesis with a number is advisory."""
+    t.expect(lessons_label_hits("ok [lessons:A]", {"A"}, "l.md") == [], "a known entry resolves")
+    t.expect(lessons_label_hits("ok [lessons:B]", {"A"}, "l.md") != [], "an unknown entry is a hit")
+    t.expect(hypothesis_advisories("It pays off in 90 % of cases [hypothesis].", ["pays off"]) != [],
+             "a numeric hypothesis is advisory")
 
 
 def self_test_rules_v04(t: SelfTest) -> int:
@@ -2874,7 +4434,7 @@ def self_test_rules_v05(t: SelfTest) -> int:
 
 
 def self_test_marks_in_code(t: SelfTest) -> None:
-    """CR2: a mark or a label inside a code span is notation, not a mark."""
+    """Since v0.5.0: a mark or a label inside a code span is notation, not a mark."""
     triggers = ["reference case"]
     t.expect(prior_mark_hits("The phrase `reference case` is defined in the canon.", triggers) == [],
              "a trigger inside a code span is notation")
@@ -2886,7 +4446,7 @@ def self_test_marks_in_code(t: SelfTest) -> None:
 
 
 def self_test_placeholders(t: SelfTest) -> None:
-    """CR3: a placeholder outside code is an unfilled field."""
+    """Since v0.5.0: a placeholder outside code is an unfilled field."""
     t.expect(placeholders("- <fill in>") == ["'<fill in>'"], "angle-bracket placeholder")
     t.expect(placeholders("Stopping criterion: TBD") == ["'TBD'"], "TBD marker")
     t.expect(placeholders("the `[prior:<id>]` mark, x <- y, a < b > c") == [],
@@ -2900,7 +4460,7 @@ def self_test_placeholders(t: SelfTest) -> None:
 
 
 def self_test_anonymity_forms(t: SelfTest) -> None:
-    """IM18: dates with the month's name or dots, one-segment roots, file
+    """Since v0.5.0: dates with the month's name or dots, one-segment roots, file
     URLs and home folders by user name."""
     day, month, year = "29", "October", "2026"
     for sample in (f"{day} {month} {year}", f"{month} {day}, {year}", f"Oct {day} {year}",
@@ -2911,11 +4471,13 @@ def self_test_anonymity_forms(t: SelfTest) -> None:
 
 
 def self_test_pending_and_rows(t: SelfTest) -> None:
-    """IM15 and IM17: --allow-pending names implemented gates; a truncated
-    table row is malformed input, never an IndexError."""
-    t.expect(allowed_pending("p-anonymity, p-notes") == frozenset({"p-anonymity", "p-notes"}),
+    """--allow-pending names the closed list of acceptable gates (v0.6.0)
+    and an implemented gate outside it is refused; a truncated table row is
+    malformed input, never an IndexError."""
+    t.expect(allowed_pending("p-anonymity, p-prior") == frozenset({"p-anonymity", "p-prior"}),
              "--allow-pending reads a comma-separated list")
-    for bad in (lambda: allowed_pending("p-anonymty"), lambda: cell_at(["a"], 2, "x")):
+    for bad in (lambda: allowed_pending("p-anonymty"), lambda: allowed_pending("p-sensitivity"),
+                lambda: allowed_pending("p-notes"), lambda: cell_at(["a"], 2, "x")):
         try:
             bad()
             t.expect(False, "malformed input is an InputError")
@@ -2924,7 +4486,7 @@ def self_test_pending_and_rows(t: SelfTest) -> None:
 
 
 def self_test_status_ledger(t: SelfTest) -> None:
-    """IM10: every note of the ledger has one status line."""
+    """Since v0.5.0: every note of the ledger has one status line."""
     lines = ('{"ref": "notes:1", "status": "fixed", "closed_in": "0.5.0"}\n'
              '{"ref": "panel:0.4.2:CR1", "status": "open"}\n')
     t.expect(notes_status_hits(lines, 1) == ({"open": 1, "fixed": 1, "disputed": 0,
@@ -2936,7 +4498,7 @@ def self_test_status_ledger(t: SelfTest) -> None:
 
 
 def self_test_gate_map(t: SelfTest) -> None:
-    """CR1 and IM16: the gate table mirrors the artifact list."""
+    """Since v0.5.0: the gate table mirrors the artifact list."""
     arts = {"a": Artifact("a", ["a.md"], "w", [], gates=["p-form", "p-terms"])}
     table = [["Gate", "Artifact"], ["`p-form`", "`a`"]]
     t.expect(gate_map_hits(arts, table) == ["gate `p-terms` declared for `a` has no row in the "
@@ -2982,7 +4544,7 @@ def self_test_instance_ids(t: SelfTest) -> None:
 
 
 def self_test_number_format(t: SelfTest) -> None:
-    """One reading per declared format; values and literals apart (I16, I6)."""
+    """One reading per declared format; values and literals apart (v0.4.0)."""
     t.expect(number_readings("1.200", "comma-decimal") == {VALUE_TAG + "1200"}, "comma-decimal thousands")
     t.expect(number_readings("1.10", "comma-decimal") == {LITERAL_TAG + "1.10"},
              "a token that does not parse in the format is its literal")
@@ -2995,7 +4557,7 @@ def self_test_number_format(t: SelfTest) -> None:
 
 
 def self_test_layout_keys(t: SelfTest) -> None:
-    """An unknown layout key is refused; gate-semantics is known (I12)."""
+    """An unknown layout key is refused; gate-semantics is known (v0.4.0)."""
     for bad in ({"version": 1, "artifacts": {"sensitivty": "x.md"}}, {"version": 1, "registy": "x.json"}):
         try:
             merge_layout(DEFAULT_LAYOUT, bad)
@@ -3007,7 +4569,7 @@ def self_test_layout_keys(t: SelfTest) -> None:
 
 
 def self_test_registry_status(t: SelfTest) -> None:
-    """The contract of a registry entry by status (C16, v0.4.1)."""
+    """The contract of a registry entry by status (v0.4.1)."""
     def hits(*entries: dict) -> list[str]:
         return registry_status_hits(json.dumps({"instances": list(entries)}))
     executed = {"id": "000-demo", "status": "executed", "document": "m.md", "sha256": "a" * 64,
@@ -3024,7 +4586,7 @@ def self_test_registry_status(t: SelfTest) -> None:
 
 
 def self_test_experiment_status(t: SelfTest) -> None:
-    """Only an executed experiment backs a claim; a subheading is no id (S4)."""
+    """Only an executed experiment backs a claim; a subheading is no id (v0.4.1)."""
     record = ("# Experiments\n\n## E1 — one\n\n| Field | Value |\n| --- | --- |\n"
               "| Status | `executed`; closed |\n\n### Question\n\nWhy.\n\n"
               "## E2 — two\n\nStatus: designed\n\n## E3 — three\n\nNo status.\n")
@@ -3102,16 +4664,21 @@ def allowed_pending(value: str) -> frozenset[str]:
     """The gates of --allow-pending; an id this validator does not implement
     is a typo until proven otherwise, a tool failure (exit 2)."""
     gates = frozenset(part.strip() for part in value.split(",") if part.strip())
-    unknown = sorted(gates - set(BUILTIN_GATES) - set(GLOBAL_GATES))
+    unknown = sorted(gates - set(BUILTIN_GATES) - set(GLOBAL_GATES) - {SYNTHETIC_GATE})
     if unknown:
         raise InputError(f"--allow-pending names gates this validator does not implement: "
                          f"{', '.join(unknown)}")
+    refused = sorted(gates - set(ACCEPTABLE_PENDING))
+    if refused:
+        raise InputError(f"--allow-pending accepts only {', '.join(ACCEPTABLE_PENDING)} (the "
+                         "inputs the material does not distribute); "
+                         f"{', '.join(refused)} has to be measured, never accepted by name")
     return gates
 
 
 def exit_code(checker: Checker, allowed: frozenset[str]) -> int:
     """1 for a high/blocking note, else 4 for a pending the caller did not
-    accept, else 0 (IM15, v0.5.0)."""
+    accept, else 0 (v0.5.0)."""
     if checker.blocking():
         return EXIT_BLOCKING
     return EXIT_PENDING if checker.unaccepted_pending(allowed) else EXIT_OK
@@ -3135,6 +4702,15 @@ def build_report(args: argparse.Namespace) -> tuple[str, int]:
     return checker.report(allowed), exit_code(checker, allowed)
 
 
+def report_summary(report: str, code: int) -> str:
+    """One line for the terminal when the report goes to a file (v0.6.0: a
+    failing run with --output printed nothing)."""
+    count = re.search(r"^Count: (.+)\.$", report, re.M)
+    unaccepted = re.search(r"^Pending not accepted: (.+?)(?:;|\.$)", report, re.M)
+    return (f"validator: exit {code}; notes: {count.group(1) if count else 'none'}; "
+            f"pending not accepted: {unaccepted.group(1) if unaccepted else 'none'}")
+
+
 def without_option(argv: list[str], option: str, takes_value: bool) -> list[str]:
     out: list[str] = []
     skip = False
@@ -3151,15 +4727,32 @@ def without_option(argv: list[str], option: str, takes_value: bool) -> list[str]
     return out
 
 
-def determinism_row(result: str, magnitude: str) -> str:
+def determinism_row(result: str, magnitude: str, report_file: str = REPORT_FILE) -> str:
     """The `m-determinism` row: a measurement of the instrument, not a gate.
 
-    The second critical panel (C13) found the report's determinism injected
-    as a corpus-gate row after the table it itself promised was sorted; it
-    is now a measurement with its own section, and the row it starts from
-    is the pending one, replaced by main() when --determinism runs.
+    Since v0.2.2 the report's determinism is a measurement with its own
+    section (it had been injected as a corpus-gate row after the table it
+    promised was sorted); the row it starts from is the pending one,
+    replaced by main() when --determinism runs. Since v0.6.0 it names the
+    report path of the layout, not the corpus's.
     """
-    return f"| `m-determinism` | `{REPORT_FILE}` | {magnitude} | equal | {result} |"
+    return f"| `m-determinism` | `{report_file}` | {magnitude} | equal | {result} |"
+
+
+def instrument_line() -> str:
+    """What the report was made with besides its inputs (v0.6.0): the count
+    of the embedded self-test and the sha256 of the test suite next to the
+    validator, when there is one."""
+    tests = Path(__file__).resolve().with_name("test_validator.py")
+    digest = content_digest(tests) if tests.is_file() else "no test suite next to the validator"
+    return f"Self-test: {self_test()} checks passed. Test suite sha256: {digest}."
+
+
+def validator_path_of(report_file: str) -> str:
+    """The validator as the report names it: the script next to the report
+    of the layout ('80-validator/validator.py' in the corpus)."""
+    folder = os.path.dirname(report_file)
+    return f"{folder}/validator.py" if folder else "validator.py"
 
 
 def python_command(script: str, *args: str) -> list[str]:
@@ -3172,17 +4765,20 @@ def determinism_check(argv: list[str]) -> tuple[bool, list[str]]:
     base = without_option(without_option(argv, "--determinism", False), "--output", True)
     digests = []
     for seed in ("1", "2"):
-        env = dict(os.environ, PYTHONHASHSEED=seed)
+        env = dict(os.environ, PYTHONHASHSEED=seed, PYTHONIOENCODING=CHILD_ENCODING)
+        if seed == "2":
+            env["LC_ALL"] = "C"  # v0.6.0: the second run also changes the locale
         proc = subprocess.run(python_command(os.path.abspath(__file__), *base),
                               capture_output=True, env=env, check=False)
         if proc.returncode == EXIT_TOOL_FAILURE:
-            raise InputError("tool failure in the determinism run: " + proc.stderr.decode()[-300:])
+            raise InputError("tool failure in the determinism run: "
+                             + proc.stderr.decode(CHILD_ENCODING, errors="replace")[-300:])
         digests.append(hashlib.sha256(proc.stdout).hexdigest())
     return digests[0] == digests[1], digests
 
 
 def run_freeze(args: argparse.Namespace) -> int:
-    """The freeze path (C1/C4b of the panel): the rubric resolves through
+    """The freeze path (v0.3.0): the rubric resolves through
     the layout, and an existing pin is refused — replacement is deliberate."""
     if args.freeze_rubric is not None and args.re_freeze_rubric is not None:
         raise InputError("--freeze-rubric and --re-freeze-rubric are mutually "
@@ -3205,7 +4801,19 @@ def run_freeze(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def utf8_streams() -> None:
+    """The standard streams write UTF-8 whatever the console's code page."""
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding=CHILD_ENCODING)
+
+
 def main(argv: list[str]) -> int:
+    if sys.version_info < MIN_PYTHON:
+        print(f"validator: Python {'.'.join(map(str, MIN_PYTHON))} or later is required "
+              f"(this is {sys.version.split()[0]})", file=sys.stderr)
+        return EXIT_TOOL_FAILURE
+    utf8_streams()
     args = parse_args(argv)
     try:
         if args.self_test:
@@ -3216,29 +4824,32 @@ def main(argv: list[str]) -> int:
             return run_freeze(args)
         report, code = build_report(args)
         if args.determinism:
-            report, same = with_determinism(report, argv)
+            report_file = load_layout(args)["artifacts"].get("report", REPORT_FILE)
+            report, same = with_determinism(report, argv, report_file)
             code = code if same else EXIT_BLOCKING
         if args.output:
             args.output.write_text(report, encoding="utf-8")
+            print(report_summary(report, code), file=sys.stderr)
         else:
             sys.stdout.write(report)
     except (InputError, SelfTestError, OSError) as exc:
         print(f"validator: {exc}", file=sys.stderr)
         return EXIT_TOOL_FAILURE
-    except Exception as exc:  # noqa: BLE001 - a tool failure is exit 2, never 1 (IM17)
+    except Exception as exc:  # noqa: BLE001 - a tool failure is exit 2, never 1 (v0.5.0)
         print(f"validator: unexpected tool failure: {type(exc).__name__}: {exc}", file=sys.stderr)
         traceback.print_exc(file=sys.stderr)
         return EXIT_TOOL_FAILURE
     return code
 
 
-def with_determinism(report: str, argv: list[str]) -> tuple[str, bool]:
+def with_determinism(report: str, argv: list[str],
+                     report_file: str = REPORT_FILE) -> tuple[str, bool]:
     """The report with the m-determinism row measured (two child runs)."""
     same, digests = determinism_check(argv)
     row = determinism_row("pass" if same else "fail",
-                          f"sha256 {'equal' if same else 'different'} in 2 runs")
-    report = report.replace(determinism_row("pending", "not measured (no --determinism flag)"),
-                            row, 1)
+                          f"sha256 {'equal' if same else 'different'} in 2 runs", report_file)
+    report = report.replace(determinism_row("pending", "not measured (no --determinism flag)",
+                                            report_file), row, 1)
     if not same:
         report += f"\nHigh note: report differs between runs ({digests[0][:12]} and {digests[1][:12]}).\n"
     return report, same

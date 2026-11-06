@@ -88,7 +88,7 @@ here the first gate of the loop.
 | `measurements` | experiment engineer | `build`, `experiment-plan`, `equivalence` | CSV: one row per run, with tag, size, repetition, order, time, threads requested and obtained, affinity, node, counters with running fraction, peak memory | `h-obtained-configuration`, `h-noise`, `h-counters`, `h-memory` |
 | `performance-report` | experiment engineer | `measurements` | generated from the CSV: speedup per size with interval, prediction × result | `h-speedup`, `h-sweep`, `h-generated-numbers` |
 | `documentation` | documenter | `interface`, `performance-report`, `canon` | usage guide, API reference; numbers inserted by a generator | `h-generated-numbers` |
-| `validation-report` | validator | `canon`, `interface`, `documentation`, `performance-report`, `build` | deterministic report | `h-validation` |
+| `validation-report` | runner | `canon`, `interface`, `documentation`, `performance-report`, `build` | deterministic report | `h-validation` |
 | `independent-review` | independent reviewer | `implementation`, `tests`, `equivalence`, `measurements`, `performance-report`, `documentation`, `validation-report` | rubric report format, with the reproduction | `h-reproduction` |
 | `release` | owner | `independent-review` | recorded decision, with the open notes accepted | signed |
 
@@ -223,7 +223,7 @@ Two graph choices that matter:
 - **Code-conversion degree:** (b) numbers and API reference generated; the
   guide is an agent under gate.
 
-### Validator
+### Runner
 
 - **Decides:** nothing outside the rules it executes.
 - **Does not decide:** whether a note of its own is a false positive.

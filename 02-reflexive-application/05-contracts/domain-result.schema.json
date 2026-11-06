@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "domain-result.schema.json",
+  "contract_version": "1",
+  "title": "Domain result contract",
+  "description": "The result of one gate of the target's domain, written by the cell's own code and read by the validator: the gate id (d-<name>), the magnitude it measured, the limit it applied, the result, and the sha256 of every input it measured (path relative to the production folder, sha256 under the material's hash policy). The validator recomputes each sha256; a divergence makes the result stale (blocking), 'fail' is a note of the gate, 'tool-failure' ends the run with exit 2.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "gate",
+    "magnitude",
+    "limit",
+    "result",
+    "inputs"
+  ],
+  "properties": {
+    "contract_version": {
+      "type": "string",
+      "enum": [
+        "1"
+      ]
+    },
+    "gate": {
+      "type": "string",
+      "pattern": "^d-[a-z0-9][a-z0-9-]*$"
+    },
+    "magnitude": {
+      "type": "string"
+    },
+    "limit": {
+      "type": "string"
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail",
+        "tool-failure"
+      ]
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "sha256"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      }
+    }
+  }
+}

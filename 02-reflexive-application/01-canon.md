@@ -9,11 +9,11 @@ section that changes bumps its version.
 | Section | Owner | Version | State |
 | --- | --- | --- | --- |
 | Canon schema | verifier | v1 | ready |
-| Method terms | writer | v5 | ready |
+| Method terms | writer | v6 | ready |
 | Terms to avoid | writer | v2 | ready |
-| Fixed lists | writer | v6 | ready |
-| Form rules | writer | v5 | ready |
-| Recorded facts | verifier | v5 | ready |
+| Fixed lists | writer | v7 | ready |
+| Form rules | writer | v6 | ready |
+| Recorded facts | verifier | v6 | ready |
 
 ## Method terms
 
@@ -36,6 +36,7 @@ its own before it enters this table.
 | role card | The sheet of a role with seven fixed fields: decides, does not decide, inputs, outputs, exit gate, notes it emits, code-conversion degree. |
 | contract | The schema an artifact has to validate before it is accepted; it rejects the ambiguous before the expensive work. |
 | gate | A measurable function over an artifact that returns pass or fail together with the measured magnitude. It has a limit and a written justification. A tool that does not run is a tool failure, never a pass or a fail. |
+| domain gate | A gate of the target's domain (identity of results, a speedup, a mass), named `d-<name>`: the cell's own code measures it and writes a result file in the contract `domain-result.schema.json`, and the validator reads the result, checks the sha256 of its inputs and turns it into a row (since v0.6.0). |
 | magnitude | The measured value the gate returns (seconds, kilograms, count, ratio), never just a sign. |
 | limit | The value that separates pass from fail, with the justification and the origin label next to it. |
 | signal gate | A gate that only tests existence or "greater than zero"; it lets a broken instrument through. A signal gate has to gain a magnitude limit. |
@@ -44,12 +45,14 @@ its own before it enters this table.
 | severity | One of four values: `low`, `medium`, `high`, `blocking`. Only `high` and `blocking` send the artifact back to its owner. |
 | open note | A note recorded and not resolved when the production stops; it is written debt, not forgotten debt. |
 | round | One pass of the loop: produce, pass the gates, assemble, review, notes. It also counts, per artifact, each return caused by a serious note. |
+| maintenance round | A round that corrects the material of the method itself after its stopping criterion, outside the reflexive production: recorded in the round record as `kind: maintenance`, with its scope and the reviewer's relation, and with no verdict of the canon (since v0.6.0). |
 | maximum rounds | How many returns an artifact accepts before it is escalated to the owner. |
 | escalated | State of an artifact that exceeded its maximum rounds: nothing that depends on it runs until the owner decides. |
 | canon | The single source of numbers, names, terms to prefer and to avoid, accepted variants and rules, with an owner and a version per section. The word replaced a publishing metaphor in v0.2; the old name stays legitimate only where the history of this production is told, and always cited, never used. |
 | accepted variant | Another spelling of a number or term that the canon admits in a declared place and for a declared reason. |
-| validator | A checking instrument, preferably in code, that reads all artifacts against the canon and against their neighbors and emits notes on its own. |
-| independent review | A reading of the product by someone who did not produce it and has no access to the producer's reasoning, with the fixed rubric, returning notes and a verdict. |
+| validator | A checking instrument, preferably in code, that reads all artifacts against the canon and against their neighbors and emits notes on its own. The role that runs it and routes its notes is the runner (named "validator" until v0.6.0). |
+| runner | The role that runs the validator and routes its notes to the owners of the artifacts; it decides nothing beyond the rules the validator executes. |
+| independent review | A reading of the product by someone who did not produce it and has no access to the producer's reasoning, with the fixed rubric, returning notes and a verdict. Since v0.6.0 the round record states the reviewer's relation to the producer (`reviewer_relation`); a reviewer of another family is recommended, a hypothesis with a cost (a second provider), not a rule. |
 | rubric | The fixed grid of dimensions, anchors and verdict rule that every independent review uses in every round; written before the first review. |
 | rubric anchor | The written description of what a score of 1, 3 or 5 means in one rubric dimension, so that two reviewers read the same anchor the same way. One of the three senses the word "anchor" had before v0.2 disambiguated them. |
 | position key | The value that fixes where a part of the target lands during assembly (a word of the script, a heading of a chapter). An ambiguous position key is a contract error, found before the expensive work. One of the three senses the word "anchor" had before v0.2 disambiguated them. |
@@ -70,6 +73,11 @@ its own before it enters this table.
 | stopping criterion | The condition, declared by the owner before the last round, under which the review becomes a list of open notes and not a new version. |
 | case method document | The document that, at the end, records the ideas, graph, step by step, pseudocode per role with its degree, the owner's pending items and the known false positives of an instance. |
 | instantiation table | The table of fourteen fixed rows (section "Fixed lists") that summarizes an instance. |
+| unit | What a gate reads as one statement: a paragraph, a list item, a table row or a heading. A mark or a label applies to the unit it sits in. |
+| family | The provider and line of models an executor belongs to, named by a stable letter (family A, family B); two executors differ in family when what their names map to differs, never by their names. |
+| dispatch | One call of an executor with its inputs (the files, the prompt, the card), recorded with what the endpoint returned (tokens, the reason the generation ended). |
+| wave | A batch of dispatches run in parallel, whose outputs are read together before the next step. |
+| teamwork | The files that set up a production cell for a target (brief, canon, artifact graph, cards, gates, rubric, notes); the name of the skill that creates them. |
 | executor | Whoever or whatever exercises a role: a person, code, or a language model of a declared kind. Different roles may have different executors, and the executor of the independent review differs from the executor of the artifact it reviews. It is declared in the code-conversion degree field of the role card. |
 | orchestrator | Whoever executes the recipe: passes paths (not summaries) to the roles, runs the engine and imports notes. It is a step, not a role. |
 
@@ -217,12 +225,16 @@ this page is exempt, being the definition.
 | Label | Where the evidence is registered |
 | --- | --- |
 | `[prior:<id>]` | the method document of that registered prior |
-| `[experiment:<id>]` | the section of that id in `60-experiments.md`, whose status is `executed` |
-| `[lessons]` | `99-lessons.md`, the history of this reflexive application |
+| `[experiment:<id>]` | the section of that id in `60-experiments.md`, whose status is `executed` and whose "Provenance" table gives the sha256 of at least one input and one output (since v0.6.0; without it the label reads as `[hypothesis]`, with a note) |
+| `[against:<id>]` | an executed experiment of `60-experiments.md`, with its provenance, whose result goes against the claim: counter-evidence is labeled like evidence (since v0.6.0) |
+| `[lessons:<title>]` | the entry of `99-lessons.md` whose heading is that title (since v0.6.0; a bare `[lessons]` named the whole file) |
 | `[hypothesis]` | nowhere yet: an assumption, to be measured |
 
 A label counts outside code spans only. The list is closed and the
-matching is lexical: a paraphrase of a claim escapes it.
+matching is lexical: a paraphrase of a claim escapes it. A claim labeled
+`[hypothesis]` that states a number or a universal quantifier ("every",
+"always", "none", a percentage) gets a low note: the label
+stays valid, the claim has the shape of a measurement with none behind it.
 
 ### Efficacy mark in append-only documents
 
@@ -233,6 +245,85 @@ later rule, as the frozen ledger is for the vocabulary.
 | Document | Measured from the heading |
 | --- | --- |
 | `99-lessons.md` | `## The v0.5.0 round: exit 0 is not green` |
+
+### Documents outside the artifact table
+
+Every Markdown document of this folder belongs to an artifact of
+`02-artifacts.md` or is listed below, by path or glob in a code span, with
+the reason (`p-declared`, since v0.6.0). This production lists none: every
+document it holds is an artifact.
+
+| Document | Why it is outside the artifact table |
+| --- | --- |
+
+### Chained ledgers
+
+An append-only ledger carries a hash chain from its first line written in
+v0.6.0 on: each new line holds `prev`, the sha256 of every line above it.
+The lines written before the chain are counted here and are never edited;
+every line after them carries `prev` (`p-contract-shape`).
+
+| Ledger | Lines before the chain |
+| --- | --- |
+| `state/round-record.jsonl` | 10 |
+| `state/notes-status.jsonl` | 48 |
+| `state/owner-decisions.jsonl` | 0 |
+
+### Frozen records
+
+The records of the review of round 1 and the history of the lessons are
+never edited; their sha256 is pinned here and compared under
+`p-frozen-rubric` (since v0.6.0), as the rubric is. A row with a heading
+pins the part of the file above that heading.
+
+| Record | sha256 | Frozen part |
+| --- | --- | --- |
+| `90-review/auditor-report.md` | `bf7c5f131cce1f0cd64d329aa59c8b1d170f4017d41099d6e5b760581adafaf0` | the whole file |
+| `90-review/auditor-notes.json` | `d2b4946348d3e54fdd53101dc5da7d8622be37b0f5d9f86a6fb5dd374465a044` | the whole file |
+| `90-review/notes.json` | `80b3eddf121bfd77c7df88860c6d58d905a9da7cf46bed1c833edf3201b04842` | the whole file |
+| `90-review/replies.md` | `a9da78519ae6b1bc4cc8f462b3416abf34c49d151915f7c7a8281efa9ba113f3` | the whole file |
+| `90-review/rubric.sha256` | `99ace405d569251017cc6b545c23b6fad76860c2305342fe2e3fe156238b8f1f` | the whole file |
+| `99-lessons.md` | `029053a1f0d227a5088f06395a5820f6a6968606f840a1aa8063c8cd89364fd7` | `## The v0.5.0 round: exit 0 is not green` |
+
+### Accepted paths
+
+A path that `p-anonymity` reads in a document and that is not a path of a
+machine (a system path a document quotes) is declared here, with the
+reason. Since the rework of v0.6.0 an entry is a path and nothing else (its
+whole text has the shape of an absolute, root or UNC path; any other entry
+is a tool failure), the gate drops only a path hit equal to the entry, in
+that document only, and blanks no text before the checks of identifiers and
+dates, and the canon cannot accept a path for itself. An interpreter line
+(`#!`) on line 1 is always accepted. This production declares none.
+
+| Document | Path | Why it is accepted |
+| --- | --- | --- |
+
+### Month names
+
+The month names of a language whose dates `p-anonymity` reads besides the
+ones the validator carries (English, Portuguese, Spanish, French, German and
+Italian, since the rework of v0.6.0): the code of the language and its
+twelve names, each in a code span. A language the brief declares on its
+"Languages:" line with neither is pending under `p-anonymity-language`,
+which `--allow-pending` does not accept. This production writes
+in English and declares none.
+
+| Language | Months |
+| --- | --- |
+
+### Machine roots
+
+The roots of one segment that name a machine of this production (a scratch
+or project root like `/scr01`), each in a code span, with the reason. A root
+of one segment is read by `p-anonymity` when another segment follows it,
+when it is one of the common roots the validator carries, or when it is
+here; any other one alone is not read (since the rework of v0.6.0, a
+decision: a bare `/name` in prose is too often no path). This production
+declares none.
+
+| Root | Why it names a machine |
+| --- | --- |
 
 ## Form rules
 
@@ -251,8 +342,12 @@ later rule, as the frozen ledger is for the vocabulary.
 7. Every document, except this canon, points to it by link, with a target
    that resolves.
 8. Every unit that claims the method's efficacy (a phrase of "Efficacy
-   triggers") carries `[prior:<id>]`, `[experiment:<id>]`, `[lessons]` or
-   `[hypothesis]`, outside code spans.
+   triggers") carries `[prior:<id>]`, `[experiment:<id>]`,
+   `[against:<id>]`, `[lessons:<title>]` or `[hypothesis]`, outside code
+   spans.
+9. A prior mark is `[prior:<id>]` with an id of lowercase letters, digits
+   and hyphens; any other bracketed `[prior:...]` outside code spans is a
+   malformed mark (blocking), never a silent skip (since v0.6.0).
 
 ## Recorded facts
 
@@ -283,6 +378,31 @@ instance.
 | 1054 | words of the adoption guide at the close `[prior:004-adoption-guide]` | sections 4.4 and 5 |
 | 900 and 1400 | the size range of the guide in words, set in its brief `[prior:004-adoption-guide]` | sections 1, 4.4 and 5 |
 | 4 | the lowest dimension score of its one review, which accepted it `[prior:004-adoption-guide]` | section 4.5 |
+
+### Section commitments
+
+The sha256 of the text of each section of the owner-held method document of
+`000-av-production` that a row above cites (the lines under its numbered
+heading, up to the next numbered heading, joined by LF; the reader of
+`p-prior`), since v0.6.0. They reveal nothing of the text and make a later
+rewrite of a cited section detectable: with `--case`, `p-prior` compares
+them on the row of this canon; without it, the row says "owner-held
+evidence, not measured here". The document of `004-adoption-guide` is distributed and pinned whole.
+
+| Prior | Section | sha256 |
+| --- | --- | --- |
+| `[prior:000-av-production]` | 1.1 | `1f608646a782bf537e5292907ee540736ec29a428dc559b37d2e7b8d6d623e96` |
+| `[prior:000-av-production]` | 1.4 | `8fb80bb5d892b26c5ee1c646664ba073e50d255c848455b6a90204fc0f33b4eb` |
+| `[prior:000-av-production]` | 1.10 | `b0302c18530e834602923dd64ed15f306728efe29112512f82a79ef95f92e46f` |
+| `[prior:000-av-production]` | 2.1 | `65ec3d92ecd2302759cc4fbc21e2e391082d394a1deec71dc86b7ae207aa869b` |
+| `[prior:000-av-production]` | 2.4 | `c6cb59af5c56d7a451c589d9f70c47919fd9b2f55210f54254530f3adecbbf16` |
+| `[prior:000-av-production]` | 4.5 | `7e9727b6f47a35cb461f17264675fd5075979f1b6a1618100bda3d1c3b1b42b1` |
+| `[prior:000-av-production]` | 6 | `d469baff73d6d589e04291bb807b99bc4aa50767f54a277662f5828165410f1b` |
+| `[prior:000-av-production]` | 13 | `f1d37761ec7c993c0bb9aac2f5822d9196b81b7d7cc87b48d1d1a375be7a8c57` |
+| `[prior:000-av-production]` | 14 | `ff54424959483dea6aa2437be13a20d7fbf38ebcdc739bc3eb6fba4277026263` |
+| `[prior:000-av-production]` | 15 | `9b50a7dc272ae44f3b5b024431959e8d1b83bdf345f7bee843fa5c0b6e2a1e3d` |
+| `[prior:000-av-production]` | 16 | `368b9dfd80b34b2ed3b8a8360a8bb12f10512cf397871b3ffd18ca1d429d7ecb` |
+| `[prior:000-av-production]` | 17 | `90e791ff6ab2ea3321cce9a50bdb6001a02f19012d4b0eeaf2315153653ce60d` |
 
 ## Historical vocabulary of the prior instance
 

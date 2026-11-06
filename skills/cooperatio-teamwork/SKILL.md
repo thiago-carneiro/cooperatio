@@ -1,16 +1,19 @@
 ---
 name: cooperatio-teamwork
-description: Create the teamwork files for a given task, process, project or product — brief, canon, artifact graph, role cards, gates, review rubric, notes and stopping criterion — so that several roles (people, agents or code) can cooperate on it without drifting. Use when the user wants to organize work as a production cell of narrow roles with explicit artifacts, measurable gates and independent review, or says "set up the teamwork for X", "turn this process into roles and gates", "make a cooperatio workspace". NOT for a single document or a one-off checklist, and NOT for executing the work itself.
+description: Create the teamwork files for a target — brief, canon, artifact graph, role cards, gates, review rubric, notes and stopping criterion — so that several roles (people, agents or code) can cooperate on it without drifting. The distributed validator measures documents; a target whose non-negotiables are domain measurements (identity of results, speed, mass) needs the cell's own code to write them as results the validator reads, or its exit 0 says nothing about them. Use when the user wants to organize work as a production cell of narrow roles with explicit artifacts, measurable gates and a review by someone who did not produce, or says "set up the teamwork for X", "turn this process into roles and gates", "make a cooperatio workspace". NOT for a single document or a one-off checklist, and NOT for executing the work itself.
 ---
 
 # Cooperatio teamwork files
 
-Turns a task, process or product (the **target**) into a small folder of
+Turns a target (a product, a document, a library) into a small folder of
 files that define how a team cooperates on it: who does what, what they hand
 to each other, how quality is measured, and when to stop.
 
-**Working hypothesis — two executed instances.** The method (version 0.5.0)
-stands on two executed instances and three designed instances, not executed;
+**Status: a working hypothesis, with a documentary validator; the gates of
+a target's domain enter as results the cell's own code produces and the
+validator checks; two executed instances, one auditable.** The method
+(version 0.6.0) stands on two executed instances, both documentary, and
+three designed sketches, not executed;
 it holds for a target with a declarable brief and stop, a discrete
 assemblable artifact, separable sources of truth per content type, and an
 acyclic dependency graph. Do not claim it was validated on this target: the
@@ -27,9 +30,12 @@ into the new cell when the skill folder sits inside that material. Copied
 alone, the skill still creates the cell, says what it could not copy, and
 the cell has no validator until you copy one in. The full method is in
 `../../01-principle.md`. The distributed validator measures documents; a
-gate of the target's domain (a speedup, a mass, a cost) is "contract +
-agent" or the cell's own code, and the validator has no extension point
-for it in this version.
+gate of the target's domain (the identity of results, a speedup, a mass) is
+named `d-<name>`, measured by the cell's own code, and read by the validator
+from the result file the layout lists under `domain-results` (contract
+`05-contracts/domain-result.schema.json`); what no code can measure stays
+"contract + agent". Requirements: Python 3.9 or later; `pytest` for a test
+suite.
 
 ## When to use
 
@@ -40,7 +46,7 @@ for it in this version.
 - An existing folder of ad-hoc notes should be restructured into this layout.
 
 Do not use it for a throwaway draft: the method costs a production round plus
-an independent review per round, and pays off only when being wrong is
+a review per round, and pays off only when being wrong is
 expensive [hypothesis] — an assumption, not a measurement: no production has
 yet run against a baseline without the method.
 
@@ -49,9 +55,10 @@ yet run against a baseline without the method.
 Produce the target by compiling a graph of typed **artifacts**, each with one
 owner, a contract and a **gate**; separate **roles** talk only through
 artifacts and **notes**; quality is what the system delivered (measured), not
-what was asked; every review is **independent** and comparable across rounds
-(fixed **rubric**); every error that escapes becomes a new gate; stop at a
-**stopping criterion** declared in advance.
+what was asked; each review is made by someone who did not produce, with a
+**rubric** frozen before it, so rounds are comparable; every error that
+escapes becomes a new gate; stop at a **stopping criterion** declared in
+advance.
 
 ## Vocabulary (use it exactly)
 
@@ -83,13 +90,17 @@ production-cell-TARGET/
   priors.json
 ```
 
-`state/` holds the note ledger (`notes.jsonl`), the state of each note
-(`notes-status.jsonl`) and the round record
-(`round-record.jsonl`: one JSON line per round, per
-`05-contracts/round-record.schema.json` — the method version, the roles of
-the round and the executor of each by family and effort (never a model
-identifier), a summary, and, when a rubric is frozen, the frozen rubric
-hash; no dates).
+The cell has one note ledger, `open-notes.json` (a JSON list, passed to the
+validator with `--notes`); `state/` holds the state of each of its notes
+(`notes-status.jsonl`) and the round record (`round-record.jsonl`: one JSON
+line per round, per `05-contracts/round-record.schema.json` — the method
+version, its `kind` (`production` or `maintenance`), the roles of the round
+and the executor of each by family and effort (never a model identifier),
+the reviewer's relation to the producer, a summary, and, when a rubric is
+frozen, the frozen rubric hash; no dates). Both state files are
+append-only: a line may carry `prev`, the sha256 of the file as it stood
+before the line was appended, and once a line carries it every later one
+does; the validator recomputes the chain.
 `priors.json` registers prior instances this cell knows (id, status, method
 document path, sha256, locator, and the `number_format` the document is
 written in: `point-decimal` or `comma-decimal`). The status decides the
@@ -113,7 +124,13 @@ previous file exists. Templates are in `references/templates.md`.
 2. **Scaffold.** Run `scripts/scaffold.py` to create the folder and the empty
    files (it refuses to overwrite). Or create them by hand from the templates.
 3. **`00-brief.md`** — target, audience, non-negotiables, owner decisions,
-   round budget, stopping criterion. No brief, no canon.
+   round budget, stopping criterion. No brief, no canon. Give each
+   non-negotiable an id in a code span (`nn-<name>`): a note names the ones
+   it affects (`affects`), and an open high or blocking note that affects one
+   is blocking at the stop unless the owner decided it. Record each decision
+   only the owner can take as a line of `state/owner-decisions.jsonl` (name,
+   status `open` or `decided`, what it blocks, the version, and, once
+   decided, the notes it `covers`).
 4. **`01-sources-of-truth.md`** — per content type, the one source that errs
    least, who consults it, and what is forbidden as a source. The writer is
    never a source of fact; a generative tool is never a source of exact text;
@@ -128,12 +145,25 @@ previous file exists. Templates are in `references/templates.md`.
    the validator fails a prior number without its row. Fill the lists the
    validator reads (terms to avoid, card fields, origin labels and the
    others the scaffold writes empty): a gate whose list is empty measured
-   nothing and stays pending.
+   nothing and stays pending. Each list is a JSON list of plain strings,
+   and the origin labels keep their brackets, for example
+   `"terms to avoid": ["pipeline", "checkpoint"]`,
+   `"role card fields": ["Decides", "Does not decide", "Inputs", "Outputs",
+   "Exit gate", "Notes it emits", "Code-conversion degree"]`,
+   `"origin labels": ["[method]", "[brief]", "[hypothesis]"]`. List under
+   `"documents outside the artifact list"` (paths or globs) the Markdown
+   documents of the cell that belong to no artifact, such as
+   `"01-sources-of-truth.md"` or `"08-validator/*.md"`: every other one has
+   to belong to an artifact, or the validator reports it.
 6. **`03-artifacts.json`** — every intermediate and final artifact: name,
    single owner, dependencies, schema, paths, gates. Its `gates` field is
    the one source of the map from gate to artifact: the validator runs each
    gate on the documents this list assigns it to. Draw the graph; a cycle
-   means the graph is wrong. Owner decisions are artifacts too.
+   means the graph is wrong. Owner decisions are artifacts too. A record's
+   `command` is resolved against the paths it names (each has to exist; the
+   validator never runs it), and a path or command may carry `{version}`,
+   which takes the layout's `version-label` (for example `v2`), so moving to
+   a new version changes one key.
 7. **`04-roles/<role>.md`** — one role card per role with seven fixed fields,
    each a bold label (`**Decides:**`), the form the gate reads: Decides,
    Does not decide, Inputs, Outputs, Exit gate, Notes it emits,
@@ -149,10 +179,15 @@ previous file exists. Templates are in `references/templates.md`.
    written justification starting with an origin label
    (`[method]`, `[brief]`, `[hypothesis]`). One row per gate of the
    artifact list, naming the same artifacts: a gate assigned there with no
-   row here is a finding. The validator reads the minimum words of
-   `p-limit` and the minimum steps of `p-recipe` from their rows. A gate
-   of the domain the validator does not implement exits 2: write it as
-   "contract + agent" or as the cell's own code. Keep each magnitude short; when
+   row here is a finding, and a gate with two rows is a tool failure. The
+   validator reads the minimum words of `p-limit` and the minimum steps of
+   `p-recipe` from their rows, and compares the numbers of each Limit cell
+   with the limit it applies. A gate of the domain is a row `d-<name>`:
+   the cell's code measures it and writes a result file (gate, magnitude,
+   limit, result, and the sha256 of each input, in the contract the scaffold
+   copies), the layout lists the file under `domain-results`, and the
+   validator reads it; a declared `d-*` row without a result is pending. Any
+   other id the validator does not implement exits 2. Keep each magnitude short; when
    what a gate reads needs paragraphs (its declared reading, exceptions,
    reach), write them in a separate semantics document the row points to,
    so the gates file stays readable (the reflexive application keeps
@@ -162,7 +197,7 @@ previous file exists. Templates are in `references/templates.md`.
     anchors for 1, 3 and 5; severity scale; a mechanical verdict rule
     (`rejected` / `accepted with conditions` / `accepted`); report format.
     Freeze it before the first review with the validator —
-    `python 08-validator/validator.py --folder . --layout layout.json
+    `python3 08-validator/validator.py --folder . --layout layout.json
     --freeze-rubric 07-rubric.sha256` (the freeze resolves the rubric
     through the layout's `artifacts.rubric` key, which points at this
     file). The command refuses to overwrite an existing pin: replacing a
@@ -171,44 +206,50 @@ previous file exists. Templates are in `references/templates.md`.
 11. **Validator (`08-validator/`).** Specify (or write, preferably as code)
     the check that reads every artifact against the canon and its neighbours
     and emits notes by itself; the scaffold copies the material's
-    `validator.py` and `sensitivity.py` here. Give it a sensitivity test:
+    `validator.py`, `sensitivity.py` and `perturbation_set.py` here. Give it a sensitivity test:
     inject one known defect per gate and confirm each gate fails on its own.
     The defects are data, `08-validator/perturbations.json` (layout key
     `artifacts.perturbations`); the scaffold writes three generic ones, to
     adapt to the cell's text and extend to one per gate. Run
-    `python 08-validator/sensitivity.py --folder . --layout layout.json`;
+    `python3 08-validator/sensitivity.py --folder . --layout layout.json`;
     it writes the report to `08-validator/sensitivity.md`, where the layout
     key `artifacts.sensitivity` points — the validator's
     `p-sensitivity` gate reads the report through that key, and verifies its
     provenance (the sha256 of the validator that produced it, of the gates
-    file and of the canon it was made against, and the perturbation set; a
-    report the instrument cannot have produced, or made against other gates
-    or another canon, is blocking, never a pass); a cell whose report sits
-    elsewhere, or has none yet, shows the gate as pending with the path it
-    looked for, never as a crash or a silent pass. The sensitivity script
+    file, of the canon and of the resolved gate map it was made against, and
+    the perturbation set; a report the instrument cannot have produced, or
+    made against other gates, another canon or another map, is blocking,
+    never a pass); a cell with no report yet gets a blocking note with the
+    path it looked for, never a crash or a pending. A perturbation that
+    changes the result of another row is noisy and fails the report, unless
+    it declares that row's gate in `also`. The sensitivity script
     takes the validator's inputs (`--case`, `--rubric-hash`, `--notes`): a
     row whose gate needs a missing input is not measured, and `p-sensitivity`
     refuses a report that measured fewer rows than its set. A gate the
-    artifact list assigns with no perturbation in the report leaves
-    `p-sensitivity` pending, naming the gate ("k of n gates covered"), never
-    passing. `layout.json`
+    artifact list assigns with no perturbation in the report, or fewer than
+    a quarter of the (document, gate) pairs perturbed, leaves
+    `p-sensitivity` pending, with the reason, never passing. `layout.json`
     carries only the keys the validator reads; a misspelled key
     (`sensitivty`) exits 2, naming it. A run exits 0 only when every gate
     was measured or its pending was accepted by name
-    (`--allow-pending p-anonymity`, for a cell with no forbidden list);
-    any other pending exits 4, a note that is high or blocking exits 1, and
-    a tool failure exits 2.
+    (`--allow-pending p-anonymity`, for a cell with no forbidden list; the
+    list is closed: `p-anonymity`, `p-prior`, `p-prior-pin`); any other
+    pending exits 4, so freeze the rubric and pass `--notes open-notes.json`
+    and `--rubric-hash 07-rubric.sha256` before you expect a green run; a
+    note that is high or blocking exits 1, and a tool failure exits 2. With
+    `--output`, one summary line goes to the error stream.
     The validator writes no bytecode cache into the cell by itself (a copy
     from v0.4.2 on; an older copy does, until it is replaced); a pytest
-    suite, if the cell keeps one, runs as `python -B -m pytest -p
+    suite, if the cell keeps one, runs as `python3 -B -m pytest -p
     no:cacheprovider`, since pytest imports the files before their code can
     switch the cache off.
 12. **Assembly engine (`09-engine/`).** Specify how artifacts compose into
     the target: contracts that refuse ambiguity, rebuild only what is stale
     (hash), route notes, name outputs by version label.
-13. **Quick first version, then independent review.** v1 exists to be
+13. **Quick first version, then the review.** v1 exists to be
     reviewed, not to be good. The reviewer has no access to the producers'
-    reasoning and uses the frozen rubric.
+    reasoning and uses the frozen rubric; record the reviewer's relation to
+    the producer in the round record.
 14. **Round loop.** Notes go to the artifact where the defect was born; a
     false positive fixes the instrument at the root (with a test that
     reproduces it, then redo the previous round); a regression that escaped
@@ -221,6 +262,33 @@ previous file exists. Templates are in `references/templates.md`.
     in `priors.json`. A cell that cites several priors passes each method
     document with its own `--case`: the validator identifies each by its
     sha256 and checks every `[prior:<id>]` number in the document of `<id>`.
+
+### The commands of a cell
+
+From inside the cell, after the files are filled:
+
+```text
+python3 08-validator/validator.py --folder . --layout layout.json --self-test
+python3 08-validator/validator.py --folder . --layout layout.json \
+    --freeze-rubric 07-rubric.sha256
+python3 08-validator/sensitivity.py --folder . --layout layout.json \
+    --rubric-hash 07-rubric.sha256 --notes open-notes.json --work SCRATCH_FOLDER
+python3 08-validator/validator.py --folder . --layout layout.json \
+    --rubric-hash 07-rubric.sha256 --notes open-notes.json \
+    --allow-pending p-anonymity --determinism --output 08-validator/report.md
+python3 -B -m pytest -p no:cacheprovider tests/
+```
+
+The last line only if the cell keeps a test suite. Add `--case` for each
+registered prior the cell cites, and `--forbidden` with the cell's list of
+forbidden identifiers kept outside the cell (then drop `--allow-pending`).
+
+A failing test is a rejection of its gate (a `d-*` gate of the tests, or
+the cell's own), with a note to the implementation where the defect was
+born; whether the test itself is wrong is the verifier's decision, recorded
+as a note to the tests. A regression that escaped every gate is recorded in
+the state ledger as `escaped`, and closes with the `gate` it became or a
+`no_gate` reason.
 
 ## Rules that must hold in every file you write
 
@@ -240,7 +308,10 @@ previous file exists. Templates are in `references/templates.md`.
   contract and gate only).
 - No absolute paths, machine names, user names or authoring dates in durable
   artifacts if anonymity or reproducibility matters (the checking date is a
-  parameter, not content); version labels are state, dates are not.
+  parameter, not content); version labels are state, dates are not. A hash
+  of a host or user name is not a pseudonym (a dictionary reverses it); keep
+  a map held by the owner, or a salted hash, and pass the forbidden list as
+  names or as `sha256:<hex>` entries.
 - One term per concept, defined in the canon; list the synonyms to avoid.
 - A claim about a prior instance carries `[prior:<id>]`; a number under the
   mark is checked against that prior's method document, and it is a fact
@@ -251,92 +322,32 @@ previous file exists. Templates are in `references/templates.md`.
 - A claim that the method works ("pays off", "the method catches", "the
   gates caught", "the review found" and the other efficacy triggers of the
   canon) carries its evidence: `[prior:<id>]`, `[experiment:<id>]` of an
-  experiment whose status is `executed` (a designed or pending one is not
-  evidence yet), `[lessons]`, or `[hypothesis]`.
+  experiment whose status is `executed` and whose record gives the sha256 of
+  its inputs and outputs (a designed or pending one is not evidence yet),
+  `[lessons:<title>]` naming an entry of the lessons file by its heading, or
+  `[hypothesis]` (which, on a claim with a number or "every", "always",
+  "none", gets a low note).
 - With a single agent (or a single model) playing several roles, separation
   is weak: the rubric and the review must come from outside.
 
 ## Several models
 
-Roles may be executed by different language models; the method encourages it.
-Decide it per role while writing the role cards, and record it in the
-Code-conversion degree field (for example: "(b) partial under gate; executor:
-fast mid-tier model") or in the executor table of the artifact list.
-
-- **Match capability to the role.** Mechanical, fully specified roles take a
-  fast, cheap model; roles that design, plan or reason about hard trade-offs
-  take the strongest one. The gate, not the model's confidence, decides
-  whether the output is accepted.
-- **Independence needs a different model** [hypothesis]. The independent
-  reviewer, and any role that audits another, runs on a different model
-  (ideally a different family or provider) from the one that produced the
-  artifact, and never sees the producer's reasoning. Two reviewers from
-  different families on the same product are cheap insurance when being
-  wrong is expensive; disagreements become notes, not silent choices. It
-  is the method's rule and a hypothesis: the one datum, experiment E1, has
-  the producer's own model in another session catching 2 of 2 injected
-  defects, as the other family did, one run per cell [experiment:E1], and
-  no recorded production round has met the rule with a frozen rubric.
-  Its status (norm, gate or relaxed) is the owner's open decision. In the
-  round record, describe a reviewer by its relation to the producer
-  ("reviewer, same family as the producer" or "reviewer, another family"),
-  never as "independent" when the family is the same.
-- **Code is not a model.** Whatever a gate can measure is measured by code,
-  identically for every executor; models handle only the judgment the gates
-  cannot.
-- **Contracts absorb the differences.** Because roles hand off only through
-  artifacts that validate against a contract, swapping the model behind a role
-  must not change any other file. If it does, the contract is too loose.
-- **Make the assignment auditable.** The round record names the executor of
-  each role by family (a letter kept stable across the material: "family
-  A") and effort, never by model identifier — a product identifier is jargon
-  that changes and leaks the provider, and the family is what independence
-  is judged on. The map from letter to identifier stays with the owner,
-  outside the files. A change of verdict can then be told apart from a
-  change of executor. Models drift: the same role card gives different
-  output on different days.
-- **Do not let a model grade itself.** Another session of the producing
-  model is not an independent review: it shares the producer's blind spots,
-  and the principle says independence needs a different model. The review
-  comes from another executor, ideally of another family. If only one model
-  is available, the rubric and the review come from outside the producing
-  run (another person, or another model later); declare the gap in the round
-  record rather than calling a second session independent. **An alias or a
-  route is not a family**: check what each name maps to. The review of the
-  second executed instance was recorded as coming from another family and
-  came from the producer's own model through another route; no recorded
-  production round has yet had a reviewer of another family with a frozen
-  rubric (the one exception without it, a reading review of family A in
-  v0.4.1, had no frozen rubric, no verdict rule and no execution).
-- **What has been measured about this.** Experiment E1 of the reflexive
-  application (`../../02-reflexive-application/60-experiments.md`) ran the
-  same review on one product, with and without two injected defects (an
-  invented prior number; the claim that the same model in another session is
-  an independent review), by the producer's own model in another session and
-  by a model of another family, one run per condition plus one re-run. Both
-  caught 2 of 2 at the predicted severity, and neither valid control run
-  rejected the clean product [experiment:E1]. That is what each executor
-  caught once, on one product whose defects the rubric anticipates — not a
-  rate, not a difference between executors, and not evidence against (or
-  for) a second session of the producer's model. One control report stopped
-  at an output limit the dispatch had not declared: it is a tool failure by
-  the experiment's own rule, not a verdict, so its re-run is the only valid
-  control of that executor, and the stability of the verdict across
-  repetitions was not measured. Record the effective limit and the reason
-  the generation ended, and treat an ending for length, or a report missing
-  a section, as a tool failure, never a verdict. Experiment E3 ran the same
-  four reviews without the review apparatus (the rubric with its
-  dimensions, severity table and verdict rule, the card, the gates file and
-  the framing of the dispatch, removed together): both executors still
-  named both defects, but classed the invented prior number as high instead
-  of blocking and ended the perturbed product at "accepted with conditions"
-  instead of `rejected` [experiment:E3]. For two defects checkable against
-  a source, one run per cell, the apparatus was not what made the reviewer
-  see the defects; removed as a block, it was what turned the finding into
-  a verdict. That the severity table and the mechanical rule are the parts
-  that did it is a hypothesis [hypothesis]; keep the whole apparatus. No
-  experiment yet compares a production with the method against one without
-  it.
+Roles may be executed by different language models. What the method says
+about it, and what has been measured, is in one place: the principle,
+section 2, "Using several models across the roles"
+(`../../01-principle.md`), with the experiments it cites in
+`../../02-reflexive-application/60-experiments.md`. In short, for the files
+you write: decide the executor per role in the Code-conversion degree field;
+match capability to the role; let the gate, never the model's confidence,
+accept an output; record each executor in the round record by family (a
+stable letter) and effort, never by model identifier, and the reviewer's
+relation to the producer (`reviewer_relation`); a reviewer of another family
+is recommended, a hypothesis with the cost of a second provider, and a second
+session of the producing model is recorded as such, never as independent.
+What a pilot showed is the part every cell can adopt: a rubric frozen before
+the review, with a mechanical verdict rule, turned a finding into a verdict
+[experiment:E3]. An alias or a route is not a family: check what each name
+maps to.
 
 ## Quality check before handing over
 

@@ -1,0 +1,33 @@
+// The eleven components of the method and what each one guards, on a grid around the cell.
+digraph components {
+  rankdir=TB;
+  graph [fontname="Helvetica", fontsize=12, nodesep=0.3, ranksep=0.35];
+  node  [fontname="Helvetica", fontsize=11, shape=box, style="rounded,filled", fillcolor="#F5F3EE", color="#555555", width=2.0];
+  edge  [color="#999999", arrowhead=none];
+
+  cell [label="production cell\n(one target)", shape=ellipse, fillcolor="#FBE9D7", fontsize=12];
+
+  g1  [label="artifact graph\nowner, schema, deps, hash"];
+  g2  [label="role cards\ndecides / does not decide"];
+  g3  [label="contracts\nrefuse ambiguity early"];
+  g4  [label="gates with magnitude\nlimit + justification"];
+  g5  [label="routed notes\ntarget, severity, evidence"];
+  g6  [label="canon\none source of numbers\nand terms"];
+  g7  [label="validator\nreads all artifacts,\nemits notes"];
+  g8  [label="independent review\nfrozen rubric, 3 verdicts"];
+  g9  [label="instrument fixed\nat the root\nno loosened limits"];
+  g10 [label="stopping criterion\ndeclared before\nthe last round"];
+  g11 [label="gate sensitivity test\na known defect\nmust be rejected"];
+
+  { rank=same; g1; g2; g3; }
+  { rank=same; g4; cell; g5; }
+  { rank=same; g6; g7; g8; }
+  { rank=same; g9; g10; g11; }
+
+  // invisible chains fix the rows; the visible spokes do not constrain the ranks
+  g1 -> g4 -> g6 -> g9 [style=invis]; g2 -> cell -> g7 -> g10 [style=invis]; g3 -> g5 -> g8 -> g11 [style=invis];
+  cell -> g1 [constraint=false]; cell -> g2 [constraint=false]; cell -> g3 [constraint=false];
+  cell -> g4 [constraint=false]; cell -> g5 [constraint=false]; cell -> g6 [constraint=false];
+  cell -> g7 [constraint=false]; cell -> g8 [constraint=false]; cell -> g9 [constraint=false];
+  cell -> g10 [constraint=false]; cell -> g11 [constraint=false];
+}

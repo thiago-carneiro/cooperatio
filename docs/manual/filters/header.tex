@@ -1,0 +1,39 @@
+% LaTeX preamble additions for the manual (pandoc --include-in-header).
+\usepackage{xcolor}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{etoolbox}
+% Code blocks: a shaded box with a colored left rule.
+\definecolor{shadecolor}{HTML}{F5F3EE}
+\definecolor{rulecolor}{HTML}{E89B3C}
+\usepackage{framed}
+\renewenvironment{Shaded}{%
+  \def\FrameCommand{{\color{rulecolor}\vrule width 2pt}\hspace{6pt}\colorbox{shadecolor}}%
+  \MakeFramed{\advance\hsize-\width\FrameRestore}\small}%
+  {\endMakeFramed}
+% Tables: smaller font, a little breathing room.
+\AtBeginEnvironment{longtable}{\small}
+\setlength{\LTpre}{6pt}
+\setlength{\LTpost}{6pt}
+% Figures stay where they are written, and a tall one leaves room for its
+% caption: pandoc's bounding macro is redefined to cap the height at 86 %
+% of the text height instead of all of it.
+\makeatletter
+\def\fps@figure{H}
+\AtBeginDocument{%
+  \renewcommand*\pandocbounded[1]{%
+    \sbox\pandoc@box{#1}%
+    \Gscale@div\@tempa{0.86\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+    \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+    \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi
+    \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+    \else\usebox{\pandoc@box}%
+    \fi}}
+\makeatother
+% Inline code wraps instead of overflowing the margin.
+\usepackage{xurl}
+\makeatletter
+\renewcommand{\texttt}[1]{{\ttfamily\hyphenchar\font=-1 #1}}
+\makeatother

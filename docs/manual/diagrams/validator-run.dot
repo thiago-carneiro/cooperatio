@@ -1,0 +1,42 @@
+// One run of validator.py: inputs, the checker, the report and the exit code.
+digraph validator_run {
+  rankdir=TB;
+  graph [fontname="Helvetica", fontsize=12, nodesep=0.3, ranksep=0.4];
+  node  [fontname="Helvetica", fontsize=11, shape=box, style="rounded,filled", fillcolor="#F5F3EE", color="#555555"];
+  edge  [fontname="Helvetica", fontsize=10, color="#666666", arrowsize=0.7];
+
+  subgraph cluster_controls {
+    label="the controls (always read)"; style="rounded"; color="#BBBBBB"; fontcolor="#555555";
+    folder  [label="--folder\nthe cell or the corpus", shape=folder];
+    layout  [label="--layout layout.json\npaths, parsers, registry,\ndomain-results, version-label", shape=note];
+    canon   [label="canon\n01-canon.md tables\nor 02-canon.json", shape=note];
+    arts    [label="artifact list = the gate map\n02-artifacts.md\nor 03-artifacts.json", shape=note];
+    gates   [label="gates file\nrows, limits, size ranges,\n\"Rubric\" section", shape=note];
+    registry [label="instance registry\npins, number format,\nheading style", shape=note];
+    folder -> layout -> canon -> arts -> gates -> registry [style=invis];
+  }
+
+  subgraph cluster_inputs {
+    label="the other inputs (a missing one leaves its gate pending)"; style="rounded"; color="#BBBBBB"; fontcolor="#555555";
+    cases   [label="--case (repeatable)\nprior method documents", shape=note, fillcolor="#FBE9D7"];
+    notes   [label="--notes notes.json\n+ state/notes-status.jsonl", shape=note];
+    rubric  [label="--rubric-hash\nthe frozen sha256", shape=note];
+    forbidden [label="--forbidden\nkept outside the material", shape=note, fillcolor="#FBE9D7"];
+    sens    [label="sensitivity.md\nprovenance header", shape=note];
+    dres    [label="domain result files\nd-* gates", shape=note];
+    cases -> notes -> rubric -> forbidden -> sens -> dres [style=invis];
+  }
+
+  core [label="CheckerCore\nloads the controls and the gate rows,\nresolves the files of each artifact,\nruns gate × document in sorted order", fillcolor="#E6EEF5"];
+  fam  [label="gate families\nFormGates · PriorGates · ContractGates\nRecordGates · DomainGates", fillcolor="#E6EEF5"];
+  rows [label="measurements\n(document, gate, magnitude, limit,\npass | fail | pending)"];
+  notesout [label="notes\n(target, severity, text, evidence)\ncapped at 50 per gate"];
+  report [label="report.md\ndeterministic, sorted,\nno date, relative paths", shape=note, fillcolor="#DDEEDD"];
+  det [label="--determinism: two child runs,\nanother hash seed and the C locale\n→ the m-determinism row"];
+  exit [label="exit code 0 · 1 · 2 · 4", style="rounded,filled", peripheries=2, fillcolor="#DDEEDD"];
+
+  registry -> core; dres -> fam;
+  core -> fam; fam -> rows; fam -> notesout;
+  rows -> report; notesout -> report; report -> exit;
+  report -> det [style=dashed, dir=both];
+}

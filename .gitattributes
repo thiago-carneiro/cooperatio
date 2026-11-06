@@ -1,0 +1,4 @@
+# One hash policy for the material (v0.6.0): every text file is checked out
+# with LF line breaks, so a checkout on any system keeps every sha256 pin.
+* text eol=lf
+*.pdf binary

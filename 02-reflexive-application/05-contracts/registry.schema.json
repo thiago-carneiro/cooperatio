@@ -40,6 +40,16 @@
             "enum": ["point-decimal", "comma-decimal", null],
             "description": "How the numbers of the method document are written: point-decimal (1,200.5) or comma-decimal (1.200,5). Each token of the document is read in this format only. Null or omitted only while the instance is designed; the validator reports an executed instance without it under p-contract-shape (there is no silent default)."
           },
+          "heading_style": {
+            "type": ["object", "null"],
+            "additionalProperties": false,
+            "properties": {
+              "section": {"type": "string", "pattern": "^#{1,6} .*\\{label\\}"},
+              "subsection": {"type": "string", "pattern": "^#{1,6} .*\\{label\\}"},
+              "step": {"type": "string", "pattern": "^#{1,6} .*\\{label\\}"}
+            },
+            "description": "Optional (since the rework of v0.6.0): how the numbered headings of the method document are written, one template per kind with {label} for the number: a section ('## {label}.'), a subsection ('### {label}') and a step ('### Passo {label}.'). It describes the document, reveals none of its text, and is what the synthetic prior of sensitivity.py writes, so that a reader of p-prior that stops reading the real style fails on the synthetic document too. Without it the synthetic uses plain numbered headings and says nothing about the real format."
+          },
           "method_version": {
             "type": ["string", "null"],
             "description": "Optional: the version of the method the instance was executed under. An executed cell is history: it runs under that version's validator, and under a later one only after a migration (the migration notes of the changelog)."

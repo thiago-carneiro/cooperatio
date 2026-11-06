@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "owner-decisions.schema.json",
+  "contract_version": "1",
+  "title": "Owner decisions",
+  "description": "One JSON line per decision only the owner can take, in state/owner-decisions.jsonl (v0.6.0): its name, its status, the artifacts or steps it blocks, the version it was raised in, and, once decided, the notes it covers (an open high or blocking note that affects a non-negotiable is blocking unless a decided decision covers it). Append-only: a change of status is a new line carrying prev.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "status",
+    "blocks",
+    "version",
+    "summary"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "\\S",
+      "description": "The name of the decision, at least one character that is not a space (since the closing pass of v0.6.0: an empty name matched every reason). A note names it, exactly, in its 'decision' field. The stdlib mini-validator applies no minLength; this pattern is the same rule."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "decided"
+      ]
+    },
+    "blocks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "covers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "prev": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

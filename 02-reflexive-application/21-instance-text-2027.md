@@ -80,7 +80,7 @@ and a gate on the chapters.
 | `figures` | data designer | `claims-register`, `projections`, `canon` | per figure: data file, script, identifiers it shows | `t-data-figure` |
 | `fact-check` | fact verifier | `chapters`, `claims-register` | per chapter: claims reopened, verdict (matches, does not match, rephrase), source reopened | `t-sample-check` |
 | `manuscript` | manuscript assembler | `chapters`, `figures`, `claims-register`, `canon` | the assembled book with a version tag; endnotes generated from the register | `t-assembly` |
-| `validation-report` | validator | `manuscript`, `canon`, `claims-register`, `projections` | deterministic report | `t-validation` |
+| `validation-report` | runner | `manuscript`, `canon`, `claims-register`, `projections` | deterministic report | `t-validation` |
 | `independent-reading` | independent reader | `manuscript`, `validation-report`, `fact-check` | report format of the rubric | frozen rubric |
 | `editorial-release` | owner | `independent-reading`, `fact-check` | recorded decision, with the accepted open notes | signed |
 
@@ -242,7 +242,7 @@ One card per domain, with the same format.
   (`high`).
 - **Code-conversion degree:** (a).
 
-### Validator
+### Runner
 
 - **Decides:** nothing outside the rules it executes.
 - **Does not decide:** whether a note of its own is a false positive (the

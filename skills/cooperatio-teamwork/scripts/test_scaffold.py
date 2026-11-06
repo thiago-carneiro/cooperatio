@@ -36,7 +36,7 @@ def test_creates_the_recipe_layout(tmp_path: Path) -> None:
         "lessons.md",
         "open-notes.json",
         "priors.json",
-        "state/notes.jsonl",
+        "state/notes-status.jsonl",
         "state/round-record.jsonl",
         "04-roles/writer.md",
         "04-roles/reviewer.md",
@@ -318,8 +318,45 @@ def test_rubric_uses_the_new_verdicts(tmp_path: Path) -> None:
 def test_state_files_are_empty(tmp_path: Path) -> None:
     out = tmp_path / "teamwork"
     scaffold.scaffold("Demo", ["writer"], out)
-    assert (out / "state" / "notes.jsonl").read_text(encoding="utf-8") == ""
+    assert (out / "state" / "notes-status.jsonl").read_text(encoding="utf-8") == ""
     assert (out / "state" / "round-record.jsonl").read_text(encoding="utf-8") == ""
+
+
+def test_the_cell_has_one_note_ledger(tmp_path: Path) -> None:
+    """v0.6.0 (the adopter's path of the panel that reviewed v0.5.0): the
+    cell had two note ledgers, open-notes.json and an empty state/notes.jsonl
+    no gate read. open-notes.json is the ledger; state/ keeps its state."""
+    out = tmp_path / "teamwork"
+    scaffold.scaffold("Demo", ["writer"], out)
+    assert (out / "open-notes.json").read_text(encoding="utf-8") == "[]\n"
+    assert not (out / "state" / "notes.jsonl").exists()
+
+
+def test_out_naming_the_current_folder_is_refused_with_exit_2(tmp_path: Path, monkeypatch,
+                                                               capsys) -> None:
+    """v0.6.0: '--out .' ended in a traceback and exit 1."""
+    monkeypatch.chdir(tmp_path)
+    code = scaffold.main(["--target", "Demo", "--roles", "writer", "--out", "."])
+    assert code == 2
+    assert "not the current folder" in capsys.readouterr().err
+
+
+def test_a_target_with_a_line_break_is_refused(tmp_path: Path) -> None:
+    """v0.6.0: a line break in the target broke the title of every file."""
+    with pytest.raises(scaffold.ScaffoldError, match="one line"):
+        scaffold.scaffold("Demo\nsecond line", ["writer"], tmp_path / "teamwork")
+
+
+def test_the_layout_names_the_domain_results_and_the_report(tmp_path: Path) -> None:
+    """v0.6.0: the cell's layout carries the empty list of domain results
+    (gates 'd-<name>' its own code measures), the report path its
+    m-determinism row names, and the contract of a domain result."""
+    out = tmp_path / "teamwork"
+    scaffold.scaffold("Demo", ["writer"], out)
+    layout = json.loads((out / "layout.json").read_text(encoding="utf-8"))
+    assert layout["domain-results"] == []
+    assert layout["artifacts"]["report"] == "08-validator/report.md"
+    assert (out / "05-contracts" / "domain-result.schema.json").is_file()
 
 
 def test_refuses_to_overwrite_non_empty_destination(tmp_path: Path) -> None:

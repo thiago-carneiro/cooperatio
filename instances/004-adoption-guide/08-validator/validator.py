@@ -1736,7 +1736,20 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     p.add_argument("--determinism", action="store_true",
                    help="run twice with different hash seeds and compare the reports")
     p.add_argument("--self-test", action="store_true")
+    p.add_argument("--historical", action="store_true",
+                   help="run this copy anyway: it is the validator of method 0.2.2, kept as "
+                        "the record of this cell (see ../ERRATA.md)")
     return p.parse_args(argv)
+
+
+# Added in method v0.6.0, the only change to this cell's copy: it is the
+# record of the execution under 0.2.2, whose semantics later versions
+# corrected (a pending gate exits 0 here), so it refuses to run as if it
+# were the current instrument unless the caller says it reads a record.
+HISTORICAL_NOTICE = ("validator: this is the validator of method 0.2.2, kept as the record of "
+                     "the cell 004-adoption-guide; its exit 0 does not mean what the current "
+                     "validator's does (see ../ERRATA.md). Pass --historical to run it as a "
+                     "record, or run the current validator of the material after a migration.")
 
 
 def read_forbidden(path: Path | None) -> list[str] | None:
@@ -1814,6 +1827,9 @@ def determinism_check(argv: list[str]) -> tuple[bool, list[str]]:
 
 def main(argv: list[str]) -> int:
     args = parse_args(argv)
+    if not args.historical:
+        print(HISTORICAL_NOTICE, file=sys.stderr)
+        return EXIT_TOOL_FAILURE
     try:
         if args.self_test:
             count = self_test()

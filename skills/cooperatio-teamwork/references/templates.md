@@ -1,18 +1,24 @@
 # Templates
 
 Copy a block, replace the angle-bracket placeholders, delete the guidance
-lines. Keep pseudocode in fenced blocks marked `text`, plain Markdown only.
+lines. The terms follow the
+[canon](../../../02-reflexive-application/01-canon.md) of the method; a cell
+has its own canon, `02-canon.json`. Keep the headings of the templates as
+they are, in English: the three generic perturbations the scaffold writes
+look for them, and a translated heading makes them miss. Keep pseudocode in fenced blocks marked `text`, plain Markdown only.
 
 ## 00-brief.md
 
 ```text
 # Brief: <target name>
 
+Canon: [02-canon.json](02-canon.json)
+
 Target: <what is delivered, one sentence>
 Audience: <who uses it>
 
 ## Non-negotiables
-- <constraint that no role may trade away>
+- `nn-<name>`: <constraint that no role may trade away>
 
 ## Owner decisions
 | Decision | Status | Blocks |
@@ -28,6 +34,8 @@ Audience: <who uses it>
 
 ```text
 # Sources of truth: <target name>
+
+Canon: [02-canon.json](02-canon.json)
 
 | Content type | Source that errs least | Who consults it | Forbidden as a source |
 | --- | --- | --- | --- |
@@ -70,23 +78,56 @@ method-vocabulary sections (those belong to the corpus of the method).
 The scaffold also writes the lists the validator consumes (terms to avoid,
 fixed lists, triggers), empty. "recorded facts" holds one object per number
 the cell states about a registered prior; a prior number without its row
-fails `p-prior`.
+fails `p-prior`. Every document that carries `p-canon-link` links the canon
+with a target that resolves from its own folder (`02-canon.json` from the
+cell's root, `../02-canon.json` from `04-roles/`).
+
+The lists the validator reads, filled for a small cell (each a JSON list of
+plain strings; an origin label keeps its brackets):
+
+```text
+{
+  "version": "v1",
+  "terms to avoid": ["pipeline", "checkpoint"],
+  "instantiation table rows": [],
+  "mandatory sections": [],
+  "role card fields": ["Decides", "Does not decide", "Inputs", "Outputs",
+                       "Exit gate", "Notes it emits", "Code-conversion degree"],
+  "origin labels": ["[method]", "[brief]", "[hypothesis]"],
+  "method components": [],
+  "prior-statement triggers": [],
+  "efficacy triggers": [],
+  "documents outside the artifact list": ["01-sources-of-truth.md", "07-rubric.md",
+                                          "lessons.md", "08-validator/*.md"],
+  "recorded facts": [
+    { "number": "18", "context": "roles with a card [prior:000-example]",
+      "section": "1.1" }
+  ]
+}
+```
+
+A list left empty leaves its gate pending, never a pass; a Markdown
+document of the cell that belongs to no artifact and is not listed under
+"documents outside the artifact list" is a finding.
 
 ## 03-artifacts.json
 
 ```text
 [
-  { "name": "<artifact>", "owner": "<role or owner>", "paths": ["<relative path>"],
+  { "name": "<artifact>", "owner": "<role or owner>", "paths": ["{version}/<relative path>"],
     "depends_on": ["<names>"], "schema": null,
-    "command": null, "gates": ["<gate ids>"],
+    "command": "python3 <script> --out {version}/<relative path>", "gates": ["<gate ids>"],
     "resource": "code | agent | human | machine", "proposed": false }
 ]
 ```
 
 Graph (must be acyclic):
-  <artifact> -> <artifact>
 
-## 04-roles/<role>.md
+```text
+<artifact> -> <artifact>
+```
+
+## `04-roles/<role>.md`
 
 The fields are bold labels, the form the gate `p-card` reads (the scaffold
 writes the same form); a field that still holds an angle-bracket
@@ -126,7 +167,7 @@ Canon: [02-canon.json](../02-canon.json)
 - <(a) converted, (b) partial under gate or (c) contract and gate only>; executor: <a person, code, or a model named by family and effort; the reviewer's executor differs from the producer's>
 ```
 
-## 05-contracts/<artifact>.schema.json
+## `05-contracts/<artifact>.schema.json`
 
 ```text
 <JSON Schema of the artifact; rejects unknown fields and ambiguous values.
@@ -152,11 +193,32 @@ rejects the invalid one.>
 
 The Gates column of `03-artifacts.json` assigns the gates; this table
 mirrors it, one row per gate, and the validator reports a gate assigned
-there with no row here. A gate of the target's domain (a speedup, a mass)
-is not one the validator implements: it is "contract + agent" or the
-cell's own code. The validator reads the minimum words of `p-limit`
-("fewer than N words" in its magnitude) and the minimum steps of
-`p-recipe` ("≥ N steps" in its limit) from their rows.
+there with no row here; a gate with two rows is a tool failure. The
+validator reads the minimum words of `p-limit` ("fewer than N words" in its
+magnitude) and the minimum steps of `p-recipe` ("≥ N steps" in its limit)
+from their rows, and compares the numbers of each Limit cell with the limit
+it applies. A gate of the target's domain (identity of results, a speedup,
+a mass) is a row `d-<name>`; the cell's own code measures it and writes a
+result file the layout lists under `domain-results`:
+
+```text
+{
+  "contract_version": "1",
+  "gate": "d-identity",
+  "magnitude": "0 divergent of 38 cases",
+  "limit": "0 divergent",
+  "result": "pass | fail | tool-failure",
+  "inputs": [ { "path": "<file it measured, relative to the cell>",
+                "sha256": "<sha256 of that file>" } ]
+}
+```
+
+The contract is `05-contracts/domain-result.schema.json`. The validator
+recomputes the sha256 of every input (an input changed since the result was
+written is blocking), turns `fail` into a note and a missing result into a
+pending, and treats `tool-failure` as a tool failure (exit 2). The sha256
+is that of the file's text read as UTF-8 with LF line breaks and no
+byte-order mark (for such a file, the `sha256sum` of its bytes).
 
 ## 07-rubric.md
 
@@ -185,6 +247,12 @@ if any blocking finding or any dimension scores <= 2: verdict = rejected
 else if no high finding and every dimension >= 4: verdict = accepted
 else: verdict = accepted with conditions
 
+A dimension of reproduction, when the target has one: 1 = nobody re-ran the
+measurements; 3 = the producer re-ran them in another session; 5 = someone
+who did not produce re-ran them from the files alone. A rubric written by the
+producer is recorded as such in the round record (`rubric_author: producer`):
+a gap, not a neutral fact.
+
 ## Report format
 1. Verdict with the rule applied. 2. Scores per dimension with evidence.
 3. Findings by severity (target artifact, severity, text, evidence).
@@ -209,12 +277,35 @@ The only change request between roles. Six fields, all required.
 
 Optional fields carry its state: `status` (`open`, `fixed`, `disputed`,
 `out of scope`) and `closed_in` (the version that closed it). The state of
-a note in a ledger that is never edited goes to `state/notes-status.jsonl`,
-one line per note: `{"ref": "notes:<n>", "status": "...", "closed_in":
-"...", "summary": "..."}`.
+a note goes to `state/notes-status.jsonl`, one line per note:
+
+```text
+{"ref": "notes:<n>", "status": "...", "closed_in": "...", "summary": "..."}
+```
+
+The
+file is append-only: a change of status is a new line for the same ref, and
+the last line of a ref is its state. A line may carry `"prev"`, the sha256
+of the file as it stood before the line was appended; from the first line
+that carries it, every later line does, and the validator recomputes the
+chain.
 
 Only `high` and `blocking` return the artifact to its owner. Aim at the
 artifact where the defect was born, not where it was seen.
+
+## state/owner-decisions.jsonl
+
+One line per decision only the owner can take; a change of status is a new
+line (append-only, with `prev` once the ledger is chained):
+
+```text
+{"name": "<decision>", "status": "open", "blocks": ["<artifact or step>"],
+ "version": "<version it was raised in>", "summary": "<what it decides>"}
+```
+
+Once decided, `"status": "decided"` and `"covers": ["<ref of a note>"]` name
+the open notes the decision accepts; an open high or blocking note that
+affects a non-negotiable is blocking until then.
 
 ## 08-validator/perturbations.json
 
@@ -234,9 +325,14 @@ gate named, never passing.
 ```
 
 Optional keys: `expect` (`fail`, or `pending` for a defect that empties
-what the gate reads), `delete` (remove the document instead), and
+what the gate reads), `delete` (remove the document instead),
 `needs_case`, `needs_rubric_hash`, `needs_notes`, `needs_registry` (the
-input without which the row is not measured).
+input without which the row is not measured), `prior` (the registered
+prior whose document the row needs), and `also` (gates, comma-separated,
+the defect also reaches by design; any other row whose result changes makes
+the perturbation noisy, and a noisy perturbation fails the report). A name
+carries no comma. The gate is one the validator implements: a domain gate's
+sensitivity is the cell's own code (mutants), never a perturbation here.
 
 ## priors.json
 
@@ -271,7 +367,7 @@ compile(graph, brief, corpus):
                     if fails: emit note(artifact, severity, magnitude); return to owner
                 validator.verify(output, canon)
         product = assemble(final artifacts)
-        review = independent_reviewer(product, frozen_rubric)
+        review = reviewer(product, frozen_rubric)   # someone who did not produce
         for finding in review:
             if instrument defect: fix the instrument at the root
             elif regression no gate caught: add the gate, then fix

@@ -1,0 +1,41 @@
+// Roles talk only through artifacts and notes (the reflexive application's four roles).
+digraph roles_flow {
+  rankdir=LR;
+  graph [fontname="Helvetica", fontsize=11, nodesep=0.3, ranksep=0.7];
+  node  [fontname="Helvetica", fontsize=10, style="filled", color="#555555"];
+  edge  [fontname="Helvetica", fontsize=10, color="#555555"];
+
+  subgraph cluster_people {
+    label="executors"; style="rounded"; color="#BBBBBB"; fontcolor="#555555";
+    owner    [label="owner\n(a person: brief, decisions, stop)", shape=box, fillcolor="#FBE9D7"];
+    writer   [label="writer\ndegree (c): a model under gate", shape=box, style="rounded,filled", fillcolor="#E6EEF5"];
+    verifier [label="verifier\ndegree (b): code + judgment", shape=box, style="rounded,filled", fillcolor="#E6EEF5"];
+    runner   [label="runner\ndegree (a): the script", shape=box, style="rounded,filled", fillcolor="#E6EEF5"];
+    reviewer [label="reviewer\ndegree (c): another executor,\nseparate session, frozen rubric", shape=box, style="rounded,filled", fillcolor="#E6EEF5"];
+  }
+
+  subgraph cluster_artifacts {
+    label="artifacts (files with one owner, a schema, gates)"; style="rounded"; color="#BBBBBB"; fontcolor="#555555";
+    brief    [label="brief", shape=note, fillcolor="#F5F3EE"];
+    canon    [label="canon", shape=note, fillcolor="#F5F3EE"];
+    docs     [label="documents\n(recipe, instances, cards)", shape=note, fillcolor="#F5F3EE"];
+    report   [label="validator report", shape=note, fillcolor="#F5F3EE"];
+    review   [label="review report\n+ notes (JSON)", shape=note, fillcolor="#F5F3EE"];
+    ledger   [label="note ledger\n+ state ledger", shape=note, fillcolor="#F5F3EE"];
+  }
+
+  owner -> brief [label="approves"];
+  brief -> writer; canon -> writer;
+  writer -> docs [label="writes"];
+  docs -> runner [label="all .md"];
+  runner -> report [label="measures\nevery gate"];
+  report -> writer [label="notes: high/blocking\nreturn the artifact", color="#B23A48", fontcolor="#B23A48"];
+  report -> verifier [label="contested notes"];
+  verifier -> canon [label="recorded facts"];
+  docs -> reviewer [label="files only,\nno reasoning"];
+  reviewer -> review [label="verdict by\nthe mechanical rule"];
+  review -> ledger [label="imported"];
+  ledger -> writer [label="notes to the origin", color="#B23A48", fontcolor="#B23A48"];
+  verifier -> ledger [label="maintains"];
+  ledger -> owner [label="open notes,\nowner decisions"];
+}

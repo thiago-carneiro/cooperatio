@@ -1,0 +1,22 @@
+// The mechanical verdict rule of the frozen rubric.
+digraph verdict_rule {
+  rankdir=TB;
+  graph [fontname="Helvetica", fontsize=11, nodesep=0.4, ranksep=0.45];
+  node  [fontname="Helvetica", fontsize=11, shape=box, style="rounded,filled", fillcolor="#F5F3EE", color="#555555"];
+  edge  [fontname="Helvetica", fontsize=10, color="#555555"];
+
+  start [label="scores per dimension (1–5)\n+ findings with severity", shape=note];
+  q1 [label="a blocking finding,\nor any dimension ≤ 2?", peripheries=2, fillcolor="#E6EEF5"];
+  q2 [label="no high finding, and\nevery dimension ≥ 4?", peripheries=2, fillcolor="#E6EEF5"];
+  rejected [label="rejected", fillcolor="#F9DEDC"];
+  accepted [label="accepted", fillcolor="#DDEEDD"];
+  cond [label="accepted with conditions", fillcolor="#FBE9D7"];
+  tool [label="tool failure, no verdict:\nthe generation ended for length,\nor a section of the report format\nis missing → the review runs again", fillcolor="#F9DEDC"];
+
+  start -> q1;
+  q1 -> rejected [label="yes"];
+  q1 -> q2 [label="no"];
+  q2 -> accepted [label="yes"];
+  q2 -> cond [label="no"];
+  start -> tool [style=dashed, label="report incomplete"];
+}

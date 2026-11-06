@@ -1,7 +1,9 @@
-# Role card: validator
+# Role card: runner
 
-Reads all the documents against the canon and against their neighbors and
-emits notes by itself. Terms follow the [canon](../01-canon.md).
+Runs the validator, the instrument that reads all the documents against the
+canon and against their neighbors and emits notes by itself, and routes its
+notes. The role was named "validator" until v0.6.0, the name of the
+instrument it runs; the instrument keeps the name. Terms follow the [canon](../01-canon.md).
 
 **Mission.** That no term, number, or artifact or role name diverges between
 documents, and that every form, size and anonymity gate is measured, not
@@ -33,10 +35,11 @@ relative paths, sorted by document and by gate.
 
 **Exit gate:** `m-determinism` (two runs, same report). The exit code is 0
 when every gate was measured (or its pending accepted by name with
-`--allow-pending`) and no note is high or blocking, 1 with such a note, 2
+`--allow-pending`, which accepts only `p-anonymity`, `p-prior`,
+`p-prior-pin` and `p-sensitivity-synthetic`) and no note is high or blocking, 1 with such a note, 2
 with invalid input (canon without the tables, missing document, truncated
-table row, a gate it does not implement), 4 with a pending gate the call
-did not accept.
+table row, a gate it does not implement or with two rows, a domain result
+that breaks its contract), 4 with a pending gate the call did not accept.
 
 **Notes it emits:**
 
@@ -60,12 +63,13 @@ decides the contestations.
 **Base prompt.**
 
 ```text
-Run: python 80-validator/validator.py --folder . \
+Run: python3 80-validator/validator.py --folder . \
         --case PRIOR_000_DOCUMENT_PATH \
         --case ../instances/004-adoption-guide/metodo-de-producao.md \
         --rubric-hash 90-review/rubric.sha256 --notes 90-review/notes.json \
         --allow-pending p-anonymity
 Read the report. Forward each note to the owner of the target artifact.
-An exit 4 names a gate that was not measured: supply its input or accept
-it by name, never read it as a pass.
+An exit 4 names a gate that was not measured: supply its input, or accept
+it by name when it is one of the three the validator accepts; never read it
+as a pass.
 ```
