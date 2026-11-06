@@ -1,0 +1,24 @@
+// How the validator decides its exit code.
+digraph exit_codes {
+  rankdir=TB;
+  graph [fontname="Helvetica", fontsize=12, nodesep=0.3, ranksep=0.4];
+  node  [fontname="Helvetica", fontsize=11, shape=box, style="rounded,filled", fillcolor="#F5F3EE", color="#555555"];
+  edge  [fontname="Helvetica", fontsize=10, color="#555555"];
+
+  start [label="a run of validator.py", shape=note];
+  q0 [label="Python 3.9 or later; the inputs parse;\nevery gate id implemented (or d-*);\none row per gate; the layout keys known;\n--allow-pending names only the closed list;\nthe contracts apply?", peripheries=2, fillcolor="#E6EEF5"];
+  e2 [label="exit 2 — tool failure\n(never a pass, never a fail)", fillcolor="#F9DEDC"];
+  q1 [label="any high or blocking note?\n(with --determinism, reports\nthat differ are a high note)", peripheries=2, fillcolor="#E6EEF5"];
+  e1 [label="exit 1 — a high or\nblocking note", fillcolor="#F9DEDC"];
+  q4 [label="any pending row whose gate\n--allow-pending does not name?", peripheries=2, fillcolor="#E6EEF5"];
+  e4 [label="exit 4 — not measured,\nwhich is not green", fillcolor="#FBE9D7"];
+  e0 [label="exit 0 — every gate measured\nor accepted by name, and no\nhigh or blocking note", fillcolor="#DDEEDD"];
+
+  start -> q0;
+  q0 -> e2 [label="no"];
+  q0 -> q1 [label="yes"];
+  q1 -> e1 [label="yes"];
+  q1 -> q4 [label="no"];
+  q4 -> e4 [label="yes"];
+  q4 -> e0 [label="no"];
+}

@@ -1,0 +1,22 @@
+// The folders of the material and what each one is for.
+digraph material_map {
+  rankdir=LR;
+  graph [fontname="Helvetica", fontsize=12, nodesep=0.15, ranksep=0.45];
+  node  [fontname="Helvetica", fontsize=11, shape=folder, style="filled", fillcolor="#F5F3EE", color="#555555"];
+  edge  [color="#777777", arrowhead=none];
+
+  root [label="cooperatio/\nREADME.md · VERSION\nCHANGELOG.md · LICENSE\n.gitattributes", fillcolor="#FBE9D7"];
+  principle [label="01-principle.md\nthe method", shape=note];
+  ra [label="02-reflexive-application/\nthe method applied\nto itself"];
+  skills [label="skills/cooperatio-teamwork/\nSKILL.md · scripts/scaffold.py\nreferences/", fillcolor="#E6EEF5"];
+  instances [label="instances/\nregistry.json\n004-adoption-guide/"];
+  docs [label="docs/manual/\nthis manual", shape=note, style="filled,dashed"];
+  ra_docs [label="brief · canon · artifacts\nroles/ · gates and rubric\ngate semantics · recipe\nthree instances\nexperiments · lessons", shape=note];
+  ra_code [label="80-validator/\nvalidator.py · sensitivity.py\nperturbation_set.py\ntest_validator.py\nreport.md · sensitivity.md", fillcolor="#E6EEF5"];
+  ra_contracts [label="05-contracts/\nsix JSON Schemas", shape=note];
+  ra_review [label="90-review/\nthe frozen records\nof round 1"];
+  ra_state [label="state/\nthree chained ledgers"];
+
+  root -> principle; root -> ra; root -> skills; root -> instances; root -> docs;
+  ra -> ra_docs; ra -> ra_code; ra -> ra_contracts; ra -> ra_review; ra -> ra_state;
+}

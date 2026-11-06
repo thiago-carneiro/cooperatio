@@ -1,0 +1,26 @@
+// The lifecycle of a gate (06-gate-semantics.md, "Gate lifecycle").
+digraph gate_lifecycle {
+  rankdir=TB;
+  graph [fontname="Helvetica", fontsize=12, nodesep=0.4, ranksep=0.4];
+  node  [fontname="Helvetica", fontsize=11, shape=box, style="rounded,filled", fillcolor="#F5F3EE", color="#555555"];
+  edge  [fontname="Helvetica", fontsize=10, color="#555555"];
+
+  escaped  [label="a regression escaped every gate", fillcolor="#F9DEDC"];
+  decide   [label="golden rule 4: a gate, or a recorded\nreason not to make one", peripheries=2, fillcolor="#E6EEF5"];
+  nogate   [label="no_gate: the reason written\n(at least 8 distinct words, or the name\nof a decided owner decision)"];
+  born     [label="gate written, with its perturbation,\nits row in the gate table and its\nassignment in the artifact list"];
+  rejects  [label="does the gate reject the version\nthat motivated it?", peripheries=2, fillcolor="#E6EEF5"];
+  live     [label="live: measured on every run;\nits perturbation is caught in\nthe sensitivity report", fillcolor="#DDEEDD"];
+  fp       [label="a false positive is reported\n(an instrument defect until\nproven otherwise)", fillcolor="#F9DEDC"];
+  rootfix  [label="root-cause fix of the rule,\na test that reproduces the case,\nthe previous round redone"];
+  retired  [label="retired: the row, the assignment and\nthe perturbation leave together; the\nCHANGELOG records the reason and\nthe rounds the gate stayed silent"];
+
+  escaped -> decide;
+  decide -> nogate [label="no code can read it, or its\nrule moved into a contract"];
+  decide -> born [label="a gate can read it"];
+  born -> rejects;
+  rejects -> born [label="no: it measures\nthe wrong thing"];
+  rejects -> live [label="yes; then the fix"];
+  live -> fp; fp -> rootfix; rootfix -> live [label="never a loosened limit"];
+  live -> retired [label="its object is gone, or its\nrule moved into a contract"];
+}

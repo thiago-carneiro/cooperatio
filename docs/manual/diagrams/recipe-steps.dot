@@ -1,0 +1,26 @@
+// The fifteen steps of the generic recipe and the file each one creates.
+digraph recipe_steps {
+  rankdir=TB;
+  graph [fontname="Helvetica", fontsize=11, nodesep=0.2, ranksep=0.3];
+  node  [fontname="Helvetica", fontsize=11, shape=box, style="rounded,filled", fillcolor="#F5F3EE", color="#555555", width=3.6];
+  edge  [color="#555555", arrowsize=0.7];
+
+  s0  [label="0  Production cell folder  →  the tree, empty ledgers, priors.json"];
+  s1  [label="1  Brief  →  00-brief.md (owner approves)", fillcolor="#FBE9D7"];
+  s2  [label="2  Sources of truth  →  01-sources-of-truth.md"];
+  s3  [label="3  Initial canon  →  02-canon.json (+ schema)"];
+  s4  [label="4  Artifacts and graph  →  03-artifacts.json (acyclic)"];
+  s5  [label="5  Role cards  →  04-roles/*.md (seven fields, executor)"];
+  s6  [label="6  Contracts  →  05-contracts/*.schema.json (+ valid and invalid example)"];
+  s7  [label="7  Gates  →  06-gates.md (magnitude, limit, origin label) + gate code"];
+  s8  [label="8  Rubric  →  07-rubric.md, frozen in 07-rubric.sha256", fillcolor="#E6EEF5"];
+  s9  [label="9  Validator  →  08-validator/ (rules, code, tests, sensitivity)", fillcolor="#E6EEF5"];
+  s10 [label="10 Assembly engine  →  09-engine/ (hash, plan, router, assembly)"];
+  s11 [label="11 Quick first version + immediate review  →  v1/, review/v1-*", fillcolor="#DDEEDD"];
+  s12 [label="12 Round loop  →  review/vN-*, new gates, lessons.md", fillcolor="#DDEEDD"];
+  s13 [label="13 Stop  →  open-notes.json (criterion declared before the last round)", fillcolor="#FBE9D7"];
+  s14 [label="14 Case method document  →  method-TARGET.md, priors.json (pinned)"];
+
+  s0 -> s1 -> s2 -> s3 -> s4 -> s5 -> s6 -> s7 -> s8 -> s9 -> s10 -> s11 -> s12 -> s13 -> s14;
+  s12 -> s12 [label="  until the stop", fontname="Helvetica", fontsize=8];
+}

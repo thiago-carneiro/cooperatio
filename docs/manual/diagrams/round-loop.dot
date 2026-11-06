@@ -1,0 +1,31 @@
+// A round of a cell, from the first version to the stop.
+digraph round_loop {
+  rankdir=TB;
+  graph [fontname="Helvetica", fontsize=12, nodesep=0.25, ranksep=0.4];
+  node  [fontname="Helvetica", fontsize=11, shape=box, style="rounded,filled", fillcolor="#F5F3EE", color="#555555"];
+  edge  [fontname="Helvetica", fontsize=10, color="#555555"];
+
+  v1 [label="v1: the whole target, quickly;\nevery artifact present, even if bad", fillcolor="#DDEEDD"];
+  val [label="validator at exit 0, sensitivity\nreport current, before any review"];
+  dispatch [label="review dispatch: the files and the frozen\nrubric only; record the output limit\nand the reason the generation ended"];
+  verdict [label="verdict by the mechanical rule", peripheries=2, fillcolor="#E6EEF5"];
+  toolfail [label="tool failure: ended for length,\nor a section missing → run again", fillcolor="#F9DEDC"];
+  importn [label="import the notes into the ledger:\nthe router refuses an unknown target and\ndeduplicates; only high and blocking\nreturn the artifact to its owner"];
+  classify [label="classify each finding", peripheries=2, fillcolor="#E6EEF5"];
+  defect [label="product defect:\na note to the artifact\nwhere it was born"];
+  escaped [label="escaped regression:\nthe gate and its perturbation\nfirst, then the fix;\nledger line 'escaped'"];
+  fpos [label="false positive:\nroot-cause fix, a reproducing\ntest, the previous round redone"];
+  rebuild [label="rebuild what is stale; gates; validator;\nan entry in lessons.md; a round-record line\n(kind, executors by family, reviewer_relation,\nprev, family_map_commitment)"];
+  stop [label="stopping criterion met?", peripheries=2, fillcolor="#E6EEF5"];
+  close [label="open notes recorded in the contract,\nno non-negotiable among them;\nthe method document; priors.json pinned", fillcolor="#FBE9D7"];
+
+  v1 -> val -> dispatch -> verdict;
+  verdict -> toolfail [label="incomplete"]; toolfail -> dispatch;
+  verdict -> importn [label="rejected, with\nconditions, or accepted"];
+  importn -> classify;
+  classify -> defect; classify -> escaped; classify -> fpos;
+  defect -> rebuild; escaped -> rebuild; fpos -> rebuild;
+  rebuild -> stop;
+  stop -> dispatch [label="no: the same rubric,\nthe item-by-item table"];
+  stop -> close [label="yes"];
+}

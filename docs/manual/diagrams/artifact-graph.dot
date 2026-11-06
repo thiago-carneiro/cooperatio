@@ -1,0 +1,45 @@
+// The artifact graph of the reflexive application (02-artifacts.md); an arrow is "is read by".
+// Drawn top-down and compressed to a page, since the graph is wide.
+digraph artifact_graph {
+  rankdir=TB;
+  graph [fontname="Helvetica", fontsize=15, nodesep=0.12, ranksep=0.35, splines=true, ratio=compress, size="6.4,9.4"];
+  node  [fontname="Helvetica", fontsize=14, shape=box, style="rounded,filled", fillcolor="#F5F3EE", color="#555555", height=0.28, margin="0.08,0.03"];
+  edge  [color="#777777", arrowsize=0.6];
+
+  subgraph cluster_prod {
+    label="production plane"; style="rounded"; color="#BBBBBB"; fontcolor="#555555";
+    corpus [fillcolor="#FBE9D7"];
+    brief; canon; artifacts; cards; gates [label="gates-and-rubric"]; semantics [label="gate-semantics"];
+    instrument [label="instrument-validator", fillcolor="#E6EEF5"]; tests [label="validator-tests", fillcolor="#E6EEF5"];
+    recipe; car [label="instance-car"]; text [label="instance-text-2027"]; hpc [label="instance-hpc"];
+    vreport [label="validation-report", fillcolor="#E6EEF5"];
+    review; replies; open [label="open-notes"]; status [label="notes-status"]; lessons; experiments; readme;
+  }
+
+  subgraph cluster_version {
+    label="versioning plane"; style="rounded"; color="#BBBBBB"; fontcolor="#555555";
+    version [fillcolor="#FBE9D7"]; changelog; registry; contracts; roundrec [label="round-record"];
+    decisions [label="owner-decisions"]; readme_root [label="readme-root"]; skill; license [fillcolor="#FBE9D7"];
+  }
+
+  corpus -> brief -> canon -> artifacts;
+  artifacts -> cards; artifacts -> gates; canon -> cards; canon -> gates;
+  gates -> semantics; canon -> semantics;
+  gates -> instrument; canon -> instrument; instrument -> tests;
+  corpus -> recipe; canon -> recipe; gates -> recipe;
+  recipe -> car; recipe -> text; recipe -> hpc;
+  canon -> car; canon -> text; canon -> hpc; gates -> car; gates -> text; gates -> hpc;
+  car -> vreport; text -> vreport; hpc -> vreport; instrument -> vreport;
+  brief -> vreport; canon -> vreport; artifacts -> vreport; cards -> vreport; gates -> vreport; recipe -> vreport;
+  vreport -> review; gates -> review;
+  review -> replies; review -> open; vreport -> open;
+  open -> status; review -> status;
+  review -> lessons; open -> lessons; replies -> lessons;
+  canon -> experiments; cards -> experiments; gates -> experiments; registry -> experiments;
+  lessons -> readme; open -> readme; status -> readme; review -> readme; experiments -> readme;
+  version -> changelog; version -> registry; version -> roundrec; registry -> contracts; canon -> contracts;
+  brief -> decisions;
+  changelog -> readme; registry -> readme; version -> readme;
+  version -> readme_root; changelog -> readme_root; registry -> readme_root;
+  canon -> skill; recipe -> skill;
+}

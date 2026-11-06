@@ -1,0 +1,28 @@
+% LaTeX preamble additions for the manual (pandoc --include-in-header).
+\usepackage{xcolor}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{etoolbox}
+% Code blocks: a shaded box with a colored left rule.
+\definecolor{shadecolor}{HTML}{F5F3EE}
+\definecolor{rulecolor}{HTML}{E89B3C}
+\usepackage{framed}
+\renewenvironment{Shaded}{%
+  \def\FrameCommand{{\color{rulecolor}\vrule width 2pt}\hspace{6pt}\colorbox{shadecolor}}%
+  \MakeFramed{\advance\hsize-\width\FrameRestore}\small}%
+  {\endMakeFramed}
+% Tables: smaller font, a little breathing room.
+\AtBeginEnvironment{longtable}{\small}
+\setlength{\LTpre}{6pt}
+\setlength{\LTpost}{6pt}
+% Figures stay where they are written.
+\makeatletter
+\def\fps@figure{H}
+\makeatother
+% Inline code wraps instead of overflowing the margin.
+\usepackage{xurl}
+\makeatletter
+\renewcommand{\texttt}[1]{{\ttfamily\hyphenchar\font=-1 #1}}
+\makeatother

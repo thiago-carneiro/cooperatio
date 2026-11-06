@@ -1,0 +1,33 @@
+// The compile loop of the method (principle, section 3).
+digraph method_scheme {
+  rankdir=TB;
+  graph [fontname="Helvetica", fontsize=11, nodesep=0.35, ranksep=0.45, splines=true];
+  node  [fontname="Helvetica", fontsize=11, shape=box, style="rounded,filled", fillcolor="#F5F3EE", color="#555555"];
+  edge  [fontname="Helvetica", fontsize=10, color="#555555"];
+
+  brief   [label="brief B\n(owner)", fillcolor="#FBE9D7"];
+  corpus  [label="corpus F\n(facts, materials, references)", fillcolor="#FBE9D7"];
+  canon   [label="canon\nextract(brief, corpus)"];
+  produce [label="owner role produces\nthe stale artifact\n(inputs, canon, open notes)"];
+  gates   [label="gates of the artifact\nmagnitude vs limit", peripheries=2, fillcolor="#E6EEF5"];
+  note    [label="note to the owner\nof the artifact", fillcolor="#F9DEDC"];
+  validator [label="validator\nterms, numbers, names, contracts"];
+  assemble [label="assemble\nthe final artifacts"];
+  review  [label="independent review\nfrozen rubric, mechanical verdict", fillcolor="#E6EEF5"];
+  classify [label="each finding:\ninstrument defect → fix at the root\nescaped regression → gate first, then fix\nelse → note to the origin"];
+  stop    [label="stopping criterion?", peripheries=2, fillcolor="#E6EEF5"];
+  target  [label="target A\n+ open notes recorded", fillcolor="#DDEEDD"];
+
+  brief -> canon; corpus -> canon;
+  canon -> produce [label="for each artifact in\ntopological order, if stale\nor a high/blocking note"];
+  produce -> gates;
+  gates -> note [label="rejected"];
+  note -> produce [label="returned"];
+  gates -> validator [label="passed"];
+  validator -> assemble;
+  assemble -> review;
+  review -> classify;
+  classify -> stop;
+  stop -> produce [label="no: next round"];
+  stop -> target [label="yes"];
+}

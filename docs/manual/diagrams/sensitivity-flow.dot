@@ -1,0 +1,27 @@
+// One run of sensitivity.py: the gate on the gates.
+digraph sensitivity_flow {
+  rankdir=TB;
+  graph [fontname="Helvetica", fontsize=11, nodesep=0.3, ranksep=0.45];
+  node  [fontname="Helvetica", fontsize=11, shape=box, style="rounded,filled", fillcolor="#F5F3EE", color="#555555"];
+  edge  [fontname="Helvetica", fontsize=10, color="#555555"];
+
+  set [label="perturbation set\n(perturbation_set.py in the corpus;\nperturbations.json in a cell)\nname · document · old → new · gate\nexpect · needs_* · prior · also", shape=note];
+  baseline [label="baseline: the validator on an\nuntouched copy of the whole material\n(the folder and everything its artifact\ntable and registry reach above it)"];
+  loop [label="for each perturbation:\ncopy the material, inject the defect\n(or delete the document), run the validator", fillcolor="#E6EEF5"];
+  skip [label="not measured: the gate needs an\ninput not passed (--case of that prior,\n--rubric-hash, --notes, the registry)", fillcolor="#FBE9D7"];
+  compare [label="compare with the baseline row by row", peripheries=2, fillcolor="#E6EEF5"];
+  caught [label="caught: the expected (document, gate)\nrow went from pass to fail\n(or to pending when expect = pending)", fillcolor="#DDEEDD"];
+  missed [label="MISSED: the row did not change", fillcolor="#F9DEDC"];
+  noisy [label="noisy: another row changed\nand the perturbation did not\ndeclare that gate in 'also'", fillcolor="#F9DEDC"];
+  synthetic [label="--synthetic-prior <id>:\na document generated from the canon's\nrecorded facts, in the registry's heading\nstyle, pinned in the copies only", fillcolor="#FBE9D7"];
+  report [label="sensitivity.md\nheader: validator, gates, canon, map sha256;\nperturbation ids and count;\ncase sha256 and case attestation per prior;\ntable of rows; Caught k of n; Noisy; Pairs covered", shape=note, fillcolor="#DDEEDD"];
+  gate [label="p-sensitivity (in the validator) reads the report:\nprovenance recomputed and compared, rows counted,\nevery assigned gate covered, ≥ 25 % of pairs,\n0 missed, 0 noisy; a synthetic prior is never a pass", fillcolor="#E6EEF5"];
+
+  set -> baseline -> loop;
+  loop -> skip [style=dashed];
+  loop -> compare;
+  compare -> caught; compare -> missed; compare -> noisy;
+  synthetic -> loop [style=dashed];
+  caught -> report; missed -> report; noisy -> report; skip -> report;
+  report -> gate;
+}

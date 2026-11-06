@@ -1,0 +1,22 @@
+// The classes of the validator since v0.6.0: one family per kind of gate over a core.
+digraph gate_families {
+  rankdir=TB;
+  graph [fontname="Helvetica", fontsize=12, nodesep=0.25, ranksep=0.45];
+  node  [fontname="Helvetica", fontsize=11, shape=record, style="filled", fillcolor="#F5F3EE", color="#555555"];
+  edge  [arrowhead=empty, color="#555555"];
+
+  checker [label="{Checker|one run of the validator:\lthe five families over the core\l}", fillcolor="#DDEEDD"];
+  form [label="{FormGates|p-terms · p-canon-link\lp-anonymity · p-form · p-size\lp-table · p-sections · p-card\lp-limit · p-references · p-recipe\lp-components · p-efficacy-mark\lcheck_limit_column()\l}"];
+  prior [label="{PriorGates|p-prior · p-prior-mark\lp-prior-pin\lsection commitments\lof the canon\l}"];
+  contract [label="{ContractGates|p-contract-shape · p-notes\lschemas line by line\lhash chains\lstate rules: escaped,\lage, affects\l}"];
+  record [label="{RecordGates|p-frozen-rubric · p-sensitivity\lp-declared · brief languages\lprovenance · attestation\lsynthetic prior\l}"];
+  domain [label="{DomainGates|d-* result files\lstale inputs\lcontradictions\lseverity column\l}"];
+  core [label="{CheckerCore|folder, layout, canon, artifacts\lgate_rows, gate_map, size_ranges\lcase_docs by prior id, registry\lmeasurements, notes|record(doc, gate, magnitude,\l       limit, hits)\lpending(doc, gate, magnitude, limit)\lrun() · check() · report() · blocking()\l}", fillcolor="#E6EEF5"];
+
+  { rank=same; form; prior; contract; }
+  { rank=same; record; domain; }
+  form -> record [style=invis]; prior -> domain [style=invis];
+
+  checker -> form; checker -> prior; checker -> contract; checker -> record; checker -> domain;
+  form -> core; prior -> core; contract -> core; record -> core; domain -> core;
+}
