@@ -39,8 +39,10 @@ consecutive runs (`m-determinism`, the instrument's own measurement);
 `90-review/notes.json` validates against the notes contract (`p-notes`);
 every instrument rule fixed at the root gains a test case in the script
 itself. Operational note: editing `80-validator/validator.py`, the "Gates"
-section of `04-gates-and-rubric.md` or `01-canon.md` changes a provenance
-sha its sensitivity report carries — regenerate
+section of `04-gates-and-rubric.md`, `01-canon.md` or the gate map of
+`02-artifacts.md` changes a provenance sha its sensitivity report carries,
+and a perturbation that changes another row's result fails it as noisy —
+regenerate
 `80-validator/sensitivity.md` (and then the report) before the next run,
 or `p-sensitivity` fails on provenance.
 

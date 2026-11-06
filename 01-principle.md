@@ -1,24 +1,30 @@
 # The principle behind the method, generalized
 
-Method version 0.5.0 (see `VERSION`; the history of the changes, in
+Method version 0.6.0 (see `VERSION`; the history of the changes, in
 `CHANGELOG.md`).
 
-**Working hypothesis — two executed instances.** This document states the
-idea that sustains the method, writes that idea as a formula and says how
-to apply it to a target. It is not about any one kind of product, and it
+**Status: a working hypothesis, with a documentary validator; the gates
+of a target's domain enter as results the cell's own code produces and the
+validator checks; two executed instances, one of them auditable from this
+material.** This document states the idea that sustains the method, writes
+that idea as a scheme and says how to apply it to a target. It is not about any one kind of product, and it
 does not claim every target: it holds where the target has (a) a brief
 that an owner can declare, with a stopping criterion; (b) a discrete
 artifact, assemblable from intermediate parts; (c) sources of truth
 separable per content type; and (d) dependencies between those parts that
 can be kept acyclic. Two executed instances and three designed instances
-(not executed) stand behind what is here, and the scope of that support is
-declared, not implied: both executions are documentary productions by the
-same owner of this material (an audiovisual production method, owner-held,
-and the adoption guide of this method itself), so the inter-domain instances
-(car, text, HPC) carry the design, not a result — every rule below was born
-from an error that cost a round or that a review or a critical panel found
-[lessons], and the last column of the component table in section 4 gives a
-typical example of the error each component prevents.
+(designed sketches, not executed) stand behind what is here, and the scope of
+that support is declared, not implied: both executions are documentary
+productions by the same owner of this material — one auditable from this
+material (the adoption guide of this method, `instances/004-adoption-guide`),
+one held by the owner (an audiovisual production method, whose cited sections
+are committed by sha256 in the canon) — so the inter-domain instances (car,
+text, HPC) carry the design, not a result. The lessons of this application
+record the errors several of the rules below came from, each one an error
+that cost a round or that a review or a critical panel found
+[lessons:What became a gate or a rule in this round], and the last column
+of the component table in section 4 gives an example of the error each
+component prevents.
 
 The second execution produced a guide of 1054 words, inside the range of 900
 to 1400 its brief set, and its one review, in a separate dispatch without the
@@ -32,9 +38,10 @@ and the reasoning, not the family [prior:004-adoption-guide].
 **Producing a complex artifact is compiling a graph of typed artifacts, each
 with an owner, a contract and a gate, in which separate roles communicate only
 through artifacts and notes, quality is measured by what the system delivered
-and not by what was asked for, every review is independent and comparable
-between rounds, and every error that escapes becomes a new gate, until a
-declared stopping criterion.**
+and not by what was asked for, each review is made by someone who did not
+produce, with a rubric frozen before it, so that rounds are comparable, and
+every error that escapes becomes a new gate, until a declared stopping
+criterion.**
 
 Put another way: it replaces "one very capable agent does everything" with "a
 small organization, with explicit contracts, in which intelligence is raw
@@ -42,21 +49,22 @@ material and code is the glue that composes, checks and remembers".
 
 ## 2. Why separate into roles, if a single model could do everything
 
-Three reasons, each observed in practice, none measured against a production
-without the roles [hypothesis]:
+Three reasons, seen in the recorded rounds and not measured against a
+production without the roles [hypothesis]:
 
 1. **An agent that writes and checks its own work does not find its own
-   errors.** A first version is typically rejected by independent review with
-   blocking findings that correspond to pending items the work itself had
-   noted and let go. The separation between who makes and who measures is
-   not bureaucracy; it is the only way to get a second look that does not
-   share the same blind spots [hypothesis] (in the first round of the
-   reflexive application, the separate review found the blocker that every
-   gate let through [lessons]).
+   errors.** In the recorded productions, a first version was rejected by
+   the review with blocking findings that corresponded to pending items the
+   work itself had noted and let go. The separation between who makes and
+   who measures is not bureaucracy; it is the cheapest second look that does
+   not share the producer's reasoning [hypothesis]. In the first round of
+   the reflexive application, the separate review found the blocker that the
+   gates of that round let through
+   [lessons:What reflexivity showed about the method].
 2. **Narrow roles receive narrow instructions and err less** [hypothesis]. The writer who
    only writes, with a glossary and a canon in hand, produces text that the
    validator approves; a model "doing everything" mixes text with layout
-   and data-sourcing decisions and tends to leave all three half done.
+   and data-sourcing decisions and tends to leave the three half done.
 3. **Contracts between roles make the error locatable.** When a section lands
    at the wrong position, the problem may be a position key in a hand-off
    sheet, written by one role and read by another. Without the contract, the
@@ -76,18 +84,22 @@ the first reason above asks for.
   trade-offs takes the strongest available one. The card says which, in the
   code-conversion degree field, and the gate (not the model's confidence)
   decides whether the output is accepted.
-- **Independence needs a different model** [hypothesis]. The independent
-  review, and any role that audits another, runs on a model different from
-  the one that produced the artifact, ideally from a different family or
-  provider, so that the two do not share the same blind spots. For
-  high-stakes targets, two reviewers from different families look at the
-  same product; where they disagree, the disagreement becomes a note, not a
-  silent choice. The rule is a hypothesis, and the one datum is against it:
-  in experiment E1 the producer's own model, in another session, caught 2 of
-  2 injected defects, as the model of another family did, one run per cell
-  [experiment:E1]. No recorded production round has met the rule with a
-  frozen rubric (section 9). Whether it stays a norm, becomes a gate on the
-  round record or is relaxed is a decision of the owner, still open.
+- **Independence across families is recommended, not required**
+  [hypothesis]. The review, and any role that audits another, is best run
+  on a model of another family or provider than the producer's, so that the
+  two do not share the same blind spots; for high-stakes targets, two
+  reviewers of different families look at the same product, and where they
+  disagree the disagreement becomes a note. The cost is a second provider.
+  It is a recommendation because the one datum is against it as a rule: in
+  experiment E1 the producer's own model, in another session, caught 2 of 2
+  injected defects, as the model of another family did, one run per cell
+  [against:E1]; and no recorded production round met it with a frozen
+  rubric (section 9). What a pilot did show is the part a team can adopt
+  without a second provider: a rubric frozen beforehand with a mechanical
+  verdict rule turned a finding into a verdict [experiment:E3]. The round
+  record states, line by line, the reviewer's relation to the producer
+  (`reviewer_relation`), so the recommendation can be checked against what
+  was done. Section 9 says what would promote it to a rule.
 - **Code is not a model.** Whatever a gate can measure is measured by code,
   identically whichever model produced the artifact; models only cover the
   judgment the gates cannot.
@@ -106,7 +118,16 @@ the first reason above asks for.
   good as the owner-held map, and the material alone cannot detect a
   mislabeled letter.
 
-## 3. The formula
+## 3. The scheme
+
+A scheme of the method, not a formula with a testable property: it names
+the parts and the loop, and what can be tested of it is tested by the gates
+of section 4 and the experiments of section 9. One part of it has never
+been exercised: the recompilation by hash. In neither execution did an
+engine rebuild a stale artifact from the hash of its inputs; the writer and
+the orchestrator rebuilt by hand. The validator resolves the command each
+artifact declares against the paths it names (since v0.6.0), and does not
+run it; "only what changed is recompiled" is the design, not a result.
 
 Let a target `A` (the final product), a brief `B` (what the owner wants and
 the non-negotiable restrictions) and a corpus `F` (the facts, materials and
@@ -166,7 +187,7 @@ compile(graph, brief, corpus):
 | **Independent review with a fixed rubric** | Another agent, with no access to the producers' reasoning, measures the product with the same grid each round; the verdict has three values | The team approving its own work; and the impossibility of saying whether v4 is better than v3 when each review invents its own rubric |
 | **Instrument fixed at the root** | A false positive is never "ignored"; it becomes a fix to the rule, with a test that reproduces the case, and the previous round is redone to prove that no real finding disappeared | An automatic reviewer of which 10 of 12 notes were false, in the second pilot [prior:000-av-production]; each false rule was fixed at the root, with a test per case |
 | **Stopping criterion** | The owner declares when to stop: the review of the last version becomes a list of open notes, not a new version | Endless rounds; every round finds something |
-| **Gate sensitivity test** | Before trusting a gate, inject a known defect and check that it rejects; a gate that only measures what is easy to measure lets the defect that matters through | The reflexive application of this principle: the gate checked numbers, the non-negotiable was "nothing about the case outside the source", and a wrong statement without a number passed through everything until the independent review; the sensitivity test found, before the review, a validator that read line by line and missed numbers in broken sentences [lessons] |
+| **Gate sensitivity test** | Before trusting a gate, inject a known defect and check that it rejects; a gate that only measures what is easy to measure lets the defect that matters through | The reflexive application of this principle: the gate checked numbers, the non-negotiable was "nothing about the case outside the source", and a wrong statement without a number passed through everything until the independent review; the sensitivity test found, before the review, a validator that read line by line and missed numbers in broken sentences [lessons:What happened, in numbers] |
 
 ## 5. The golden rules, with the reason
 
@@ -187,13 +208,20 @@ compile(graph, brief, corpus):
    from the prose that cites it.
 3. **Every false positive is an instrument defect until proven otherwise.**
    The easy path is to loosen the limit; the right path is to understand why
-   the instrument read wrongly. Of the times loosening seemed right, none
-   was [hypothesis] (an observation of the recorded rounds, not a count).
+   the instrument read wrongly. In the recorded rounds, loosening the limit
+   has not yet turned out to be the right fix [hypothesis] (an observation,
+   not a count).
    There is a third way out, legitimate when the instrument has no way
    to accept exceptions: work around it (swap the word, move the element) and
    record the workaround as a note, so that it does not become a silent rule.
-4. **Every regression that escaped all the gates becomes a gate.** Before
-   fixing the defect, create the detector; otherwise it comes back. A gate
+4. **Every regression that escaped all the gates becomes a gate, or a
+   recorded decision not to make one.** Before fixing the defect, create the
+   detector; otherwise it comes back. When no code can read the defect, or
+   its rule moves into a contract, the decision not to make a gate is
+   written down with its reason. Since v0.6.0 the state ledger of the notes
+   records which (`escaped`, with `gate` or `no_gate`), and the validator
+   refuses an escaped regression closed with neither; the rule was broken
+   once without consequence before that (version 0.5.0). A gate
    leaves the same way, deliberately: when its object is gone or its rule
    moved into a contract, the gate and its perturbation are retired
    together, with the reason written down.
@@ -230,15 +258,21 @@ type of content, and what code-conversion degree the domain already allows.
 this material (`02-reflexive-application/80-validator/`) measures
 documents: terms, sections, links, form, numbers stated about registered
 priors, the contracts of its ledgers. A gate of a target's domain (the
-speedup of a library, the mass of a vehicle, the cost of a part) is not one
-it implements: such a gate is "contract + agent" (step 5 of the recipe in
-section 7) or code the cell writes and runs itself, and this version has
-no extension point that would let the validator run it or its sensitivity
-test cover it. Whether the method ships a documentary validator or a
-general framework with an interface for domain gates is a decision of
-scope that belongs to the owner and is still open; until then, the
-portability of the method across domains is a portability of vocabulary
-and of structure, not of instrument [hypothesis].
+identity of a library's results, its speedup, the mass of a vehicle) is
+not one it implements: since v0.6.0 such a gate is named `d-<name>` in the
+cell's gate table, the cell's own code measures it and writes a result file
+in the contract `domain-result.schema.json` (gate, magnitude, limit,
+result, and the sha256 of every input it measured), and the validator reads
+the result, refuses it when an input changed since it was written, turns a
+`fail` into a note and a missing result into a pending, never a pass. The
+validator does not run the cell's code, and its sensitivity test perturbs
+documents: the sensitivity of a domain gate is the cell's own (mutants, a
+reference with a known defect). What no code can measure stays "contract +
+agent" (step 5 of the recipe in section 7). The portability of the method
+across domains is, so far, a portability of vocabulary and of structure,
+with a reading interface for the domain's measurements; that it holds
+outside the documentary domain has not been shown by an execution
+[hypothesis].
 
 The table below shows three instantiations, only to calibrate what an
 "artifact", a "gate" and a "rubric" are in each case.
@@ -274,9 +308,10 @@ In order, and each step produces a file:
 6. **Independent review rubric**: the grid of dimensions that every reviewer
    will use in every round, and the three verdicts. Write it before the first
    review, otherwise each round measures something different. What the
-   review apparatus adds was measured once, for two defects checkable
-   against a source, one run per cell, with the card and the rubric removed
-   together: without them, two reviewers still named both defects injected
+   review apparatus adds was looked at once, in a pilot (experiment E3:
+   two defects checkable against a source, one run per cell, the card and
+   the rubric removed together, the prompt pointing at the classes
+   injected), not measured: without them, two reviewers still named both defects injected
    into a product, but classed an invented fact about a prior as high and
    accepted the product with conditions; with them, the same finding was
    blocking and the verdict was `rejected` [experiment:E3]. Within that
@@ -331,7 +366,14 @@ In order, and each step produces a file:
   and the card: about 56,000 input tokens, 41,000 to 46,000 output tokens
   and 10 to 13 minutes for the first executor, and again about 4 minutes,
   indicative, for the other [experiment:E3]. The cost of a production
-  round and of the instruments was not measured.
+  round and of the instruments was not measured. Minutes taken in two
+  sessions of different throughput are not comparable with each other; the
+  minutes above are indicative. The measure is the tokens of each call
+  (input, output, reasoning, cached, and the reason the generation ended),
+  and a wall time is reported only beside the throughput of the same run;
+  since v0.6.0 the round record takes those fields for each role (tokens,
+  calls, the end of the last call), and the round's wall time, crew, notes
+  and rounds to the stop, for the rounds to come.
 - It pays off when being wrong is expensive [hypothesis]; for a throwaway
   draft, it is dead weight. As a condition, still unmeasured: the
   probability of an error times its cost has to exceed the cost per round
@@ -364,7 +406,7 @@ In order, and each step produces a file:
   the external reviewer: in session and reasoning always, in family only
   where its executor really differs (see the next two items). In the first
   round of the reflexive application, it was that review that found the
-  blocker [lessons]. Where there is only one agent, at least the rubric and
+  blocker [lessons:What reflexivity showed about the method]. Where there is only one agent, at least the rubric and
   the review have to come from outside.
 - Using several models does not by itself create independence: two models
   from the same family, trained on similar data, can share the same blind
@@ -377,17 +419,64 @@ In order, and each step produces a file:
   a frozen rubric come from another family than the producer's. The one
   exception, without it, is the reading review of family A in v0.4.1, which
   had no frozen rubric, no verdict rule and no execution
-  [prior:004-adoption-guide] [lessons].
+  [prior:004-adoption-guide]
+  [lessons:The v0.4.1 round: a verdict needs its rubric, and a family needs a check].
 - The only reviews across families in the reviewer role, with a frozen
   rubric, are the runs of executor Y in experiment E1 [experiment:E1];
   experiment E3 ran the same executor without the rubric [experiment:E3].
   The critical panels that reviewed this material (the panels that reviewed
   v0.1.0, v0.2.0 and v0.2.3) had seats of several families, but no frozen
-  rubric, no verdict rule and no line in the round record [lessons].
+  rubric, no verdict rule and no line in the round record
+  [lessons:The v0.4.1 round: a verdict needs its rubric, and a family needs a check].
+
+
+### When the method fits, and what each gap costs
+
+The four conditions of section 1 decide whether a target can be produced
+this way at all. Inside them, four situations recur where the method still
+runs but loses a part of what it promises; the table says which part, and
+what it costs to run anyway. It is a declaration of scope, written before
+any of these cases was measured [hypothesis].
+
+| Situation | What is lost | What it costs to run anyway |
+| --- | --- | --- |
+| a single provider of models (every role from one family) | independence of family between producer and reviewer; what stays is independence of session and of reasoning, and the frozen rubric | the review is the producer's family reading its own work: record the relation in the round record (`reviewer_relation`), and get the rubric, or a reading review, from outside the run |
+| a target without a registered prior | the facts about a prior that `p-prior` checks, and a recipe already executed once | the canon starts empty of recorded facts, and the first execution is the one that becomes a prior; budget an extra round for the gates that turn out not to fit |
+| a short target (a page, a note) | proportion: the cost per round (one production, one review, the instruments) is fixed and the target is small | below a few pages the method is dead weight; a checklist and one review cost less, and the canon of the cell is larger than the target |
+| a target without an instrument of its domain (no code that measures identity, speed, mass) | the domain gates: only the documentary gates run, so the method degrades to a review with a rubric | the owner writes the domain instrument first (it is the expensive part), or declares in the brief which non-negotiable no gate measures, and the verdict says so |
+
+### What already exists, and what this adds
+
+The method borrows from established practice, and says so, so that an
+adopter can tell the vocabulary from the claim.
+
+| Here | Established practice | What this adds, if anything |
+| --- | --- | --- |
+| artifact graph, rebuild by hash | build systems (make and its successors) | the graph is of documents and decisions too, and a decision of the owner is a node |
+| gate with magnitude and limit | quality gates of continuous integration; acceptance criteria | the limit carries its justification and origin label, and a gate counts only after its perturbation |
+| gate sensitivity test | mutation testing; fault injection | it is a condition of every gate, recorded with its provenance, and a noisy perturbation fails |
+| frozen rubric, mechanical verdict | review checklists; scoring rubrics of assessment | frozen by hash before the review, so two rounds are comparable |
+| notes routed to their origin | issue trackers; defect triage | a note aims at the artifact where the defect was born, and an escaped regression becomes a gate or a reason |
+| role cards | RACI matrices; job descriptions | the "does not decide" field, and the code-conversion degree per role |
+| failure analysis per gate | FMEA | done for the validator's gates since the rework of v0.6.0, for one failure mode only, the false green: the table in `02-reflexive-application/06-gate-semantics.md` names its cause, its current detection, the probe that found it and the perturbation that covers it |
+
+### What would promote or withdraw a claim
+
+Written before the data, as the gates are, so that the material leaves the
+state of a working hypothesis by a measurement and not by a decision. The
+thresholds are the owner's to accept or adjust before experiment E4 (the
+seeded-escape design of `02-reflexive-application/60-experiments.md`) runs;
+together, the three rows are the measure of success of the material.
+
+| Claim | Promoted when | Withdrawn when |
+| --- | --- | --- |
+| A reviewer of another family adds to one of the producer's family | in E4 or an equivalent design, the arm of the other family finds at least 1 more defect per 10 seeded, in at least 2 of 3 repetitions | the difference is nil in 3 repetitions |
+| The review apparatus (validator and review with a frozen rubric) adds to a careful review without it | in E4, the escape rate of arm A is lower than that of arm B by at least 20 points | the difference is under 5 points |
+| The method is portable outside the documentary domain | one execution outside it, by someone who is not the owner, with its domain gates read by the validator and a verdict of the canon | that execution cannot reach a verdict without improvising instrument |
 
 ## 10. Ontological assumptions
 
-The formula above is not neutral about what a target is. It assumes:
+The scheme above is not neutral about what a target is. It assumes:
 
 - **The target is a discrete, assemblable artifact.** It has a shape declared
   before the work starts and a moment at which it is done. A continuous

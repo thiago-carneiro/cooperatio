@@ -3,10 +3,14 @@
   "$id": "notes-status.schema.json",
   "contract_version": "1",
   "title": "State ledger of the notes",
-  "description": "One JSON line per tracked note in state/notes-status.jsonl: the state of a note of a frozen ledger, which is never edited, or of a finding of a critical panel that became a correction. The validator (p-notes) requires exactly one line per note of the ledger passed with --notes, and a version in closed_in for a closing status. It is living state, not history: a change of status edits the line of that note, and the changelog records the change.",
+  "description": "One JSON line per tracked note in state/notes-status.jsonl: the state of a note of a frozen ledger, which is never edited, or of a finding of a critical panel that became a correction. The validator (p-notes) requires exactly one line per note of the ledger passed with --notes, and a version in closed_in for a closing status. Since v0.6.0 it is append-only: a change of status is a new line carrying prev (the hash chain), the last line of a ref is its state, and the lines written before v0.6.0 are never edited (until then a change of status edited the line).",
   "type": "object",
   "additionalProperties": false,
-  "required": ["ref", "status", "summary"],
+  "required": [
+    "ref",
+    "status",
+    "summary"
+  ],
   "properties": {
     "ref": {
       "type": "string",
@@ -15,16 +19,70 @@
     },
     "status": {
       "type": "string",
-      "enum": ["open", "fixed", "disputed", "out of scope"]
+      "enum": [
+        "open",
+        "fixed",
+        "disputed",
+        "out of scope"
+      ]
     },
     "closed_in": {
       "type": "string",
-      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
-      "description": "The method version that closed it; required for fixed and out of scope."
+      "pattern": "^([0-9]+\\.[0-9]+\\.[0-9]+|v[0-9][A-Za-z0-9.-]*)$",
+      "description": "The method version that closed it, or, in a cell, the cell's version label (e.g. v2, since v0.6.0); required for fixed and out of scope."
     },
     "summary": {
       "type": "string",
       "description": "What the note asked and where it was closed, or why it stays open; one line."
+    },
+    "prev": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "Since v0.6.0: the sha256 of every line above this one, each followed by LF; the validator recomputes the chain. A chained line may restate a ref already listed: the last line of a ref is its state."
+    },
+    "escaped": {
+      "type": "boolean",
+      "description": "Since v0.6.0: the note is a regression that escaped every gate (golden rule 4). Closed, it names the gate it became ('gate') or the recorded reason not to make one ('no_gate')."
+    },
+    "gate": {
+      "type": "string",
+      "description": "The gate an escaped regression became."
+    },
+    "no_gate": {
+      "type": "string",
+      "description": "Why an escaped regression did not become a gate (a rule moved into a contract, a defect no code can read): at least 8 words, a measure of its form and not of its content, unless 'decision' names a decided owner decision."
+    },
+    "decision": {
+      "type": "string",
+      "pattern": "\\S",
+      "description": "Since the closing pass of v0.6.0: the exact name of a decided entry of the owner's decisions that stands for the reason not to make a gate; a substring of a name no longer counts."
+    },
+    "opened_in": {
+      "type": "string",
+      "description": "The version the note was opened in, when the ref does not say it (a panel ref carries it; a note of the frozen ledger was opened in 0.1.0)."
+    },
+    "due": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Since v0.6.0: the version an open note is scheduled for; an open note older than the declared limit of rounds and not scheduled is a low note."
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "blocking"
+      ],
+      "description": "The severity of a tracked finding that is not a note of the ledger (whose severity is read there)."
+    },
+    "affects": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^nn-[a-z0-9][a-z0-9-]*$"
+      },
+      "description": "Since v0.6.0: the ids of the brief's non-negotiables the note affects; an open high or blocking note that affects one is blocking unless an owner decision that is decided covers it."
     }
   }
 }

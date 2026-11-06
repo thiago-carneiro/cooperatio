@@ -9,8 +9,9 @@ Creates the layout of the generic recipe (the tree that
 ``assemble_production_cell`` starts from): brief, sources of truth, canon as
 data, artifact list, one role card per role, the gates file, the rubric (with
 its hash placeholder), the contracts, validator and engine folders, state
-(with the empty note ledger and round record), review, lessons, open notes
-and the registry of prior instances. Each file is filled with the skeleton
+(with the empty state ledger of the notes and round record), review,
+lessons, the note ledger (open-notes.json, the one passed with --notes) and
+the registry of prior instances. Each file is filled with the skeleton
 from references/templates.md. The canon of the target carries the sections
 the recipe prescribes (numbers, variants, names, rules) and the empty
 sections the validator consumes (terms, lists, triggers, recorded facts):
@@ -75,6 +76,7 @@ CANON_CONSUMED_KEYS = (
     "prior-statement triggers",
     "recorded facts",
     "efficacy triggers",
+    "documents outside the artifact list",
 )
 # Embedded copy of the validator's builtin gates: the skill may be copied
 # alone, without the corpus, so it cannot import the validator module.
@@ -94,12 +96,14 @@ VALIDATOR_SRC = CORPUS_APPLICATION / "80-validator" / "validator.py"
 CORPUS_COPIES = (
     ("80-validator/validator.py", "08-validator/validator.py"),
     ("80-validator/sensitivity.py", "08-validator/sensitivity.py"),
+    ("80-validator/perturbation_set.py", "08-validator/perturbation_set.py"),
     ("05-contracts/notes.schema.json", "05-contracts/notes.schema.json"),
     ("05-contracts/notes-status.schema.json", "05-contracts/notes-status.schema.json"),
     ("05-contracts/round-record.schema.json", "05-contracts/round-record.schema.json"),
+    ("05-contracts/domain-result.schema.json", "05-contracts/domain-result.schema.json"),
 )
 EMPTY_DIRS = ("05-contracts", "08-validator", "09-engine", "review")
-# The contract version the validator reads (IM21, v0.5.0); the canon
+# The contract version the validator reads (since v0.5.0); the canon
 # contract written here declares it like the corpus contracts.
 CONTRACT_VERSION = "1"
 
@@ -256,9 +260,14 @@ def layout_doc() -> dict:
             "rubric": "07-rubric.md",
             "sensitivity": "08-validator/sensitivity.md",
             "perturbations": "08-validator/perturbations.json",
+            "report": "08-validator/report.md",
+            "lessons": "lessons.md",
         },
         "gates": {gate: "builtin-json-canon" for gate in BUILTIN_GATES},
         "registry": "priors.json",
+        # The result files the cell's own code writes for its 'd-<name>'
+        # gates (contract 05-contracts/domain-result.schema.json, v0.6.0).
+        "domain-results": [],
     }
 
 
@@ -389,8 +398,10 @@ def layout_files(target: str, roles: list[str], out: Path) -> tuple[dict[Path, s
         out / "07-rubric.md": rubric_text(target),
         out / "07-rubric.sha256": "not-frozen\n",
         out / "lessons.md": lessons_text(target),
+        # One note ledger (v0.6.0): open-notes.json, passed with --notes;
+        # state/notes-status.jsonl holds the state of its notes. The empty
+        # state/notes.jsonl no gate read is gone.
         out / "open-notes.json": "[]\n",
-        out / "state" / "notes.jsonl": "",
         out / "state" / "notes-status.jsonl": "",
         out / "state" / "round-record.jsonl": "",
     }
@@ -406,7 +417,7 @@ def layout_files(target: str, roles: list[str], out: Path) -> tuple[dict[Path, s
 
 
 def build_cell(target: str, roles: list[str], staging: Path) -> list[Path]:
-    """Write the whole cell into the staging folder (C14 helper)."""
+    """Write the whole cell into the staging folder (atomic scaffold, v0.2.2)."""
     files, json_files = layout_files(target, roles, staging)
     created: list[Path] = []
     for name in EMPTY_DIRS:
@@ -429,6 +440,14 @@ def build_cell(target: str, roles: list[str], staging: Path) -> list[Path]:
 def scaffold(target: str, roles: list[str], out: Path) -> list[Path]:
     if not target.strip():
         raise ScaffoldError("--target must not be empty")
+    if any(ch in target for ch in "\r\n"):
+        # v0.6.0: a line break in the target broke the title of every file.
+        raise ScaffoldError("--target is one line: it becomes the title of every file")
+    if not out.name or out.resolve() == Path.cwd().resolve():
+        # v0.6.0: '--out .' ended in a traceback (exit 1); the cell is a new
+        # folder, built beside its destination and renamed into place.
+        raise ScaffoldError("--out names the new folder of the cell, not the current folder "
+                            "(e.g. --out ./teamwork)")
     if not roles:
         raise ScaffoldError("at least one role is required")
     for role in roles:
@@ -438,7 +457,7 @@ def scaffold(target: str, roles: list[str], out: Path) -> list[Path]:
         raise ScaffoldError("duplicate role ids")
     if out.exists() and any(out.iterdir()):
         raise ScaffoldError(f"destination {out} is not empty; refusing to overwrite")
-    # C14 (second critical panel): the cell is built in a staging folder
+    # Since v0.2.2: the cell is built in a staging folder
     # SIBLING of the destination (same filesystem, so the rename is atomic)
     # and only then renamed into place — a failure in the middle of the
     # build leaves no partial cell, and no staging folder behind.
@@ -454,7 +473,13 @@ def scaffold(target: str, roles: list[str], out: Path) -> list[Path]:
     return [out / path.relative_to(staging) for path in created]
 
 
+MIN_PYTHON = (3, 9)  # the interpreter the material is tested on (v0.6.0)
+
+
 def main(argv: list[str] | None = None) -> int:
+    if sys.version_info < MIN_PYTHON:
+        print("error: Python 3.9 or later is required", file=sys.stderr)
+        return 2
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--target", required=True, help="name of the target")
     parser.add_argument("--roles", nargs="+", required=True, help="role ids, e.g. writer verifier")

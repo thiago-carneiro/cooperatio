@@ -282,3 +282,47 @@ whole review apparatus at once (rubric, card, gates file and the framing of
 the dispatch), so the result belongs to the apparatus, and the share of the
 severity table and the mechanical rule is a hypothesis [hypothesis]. Both
 records are corrected in place in `60-experiments.md`.
+
+## The v0.6.0 round: each closure moved what is measured to where nobody measured
+
+A maintenance round, not a production: it applies the panel of the
+material's own team on v0.5.0 (nine seats of one family, diverse by
+discipline and access) and the orchestrator's recommendations the owner
+asked for. What it taught:
+
+- **Each closure moved the definition of what is measured to a place that
+  is not measured.** The gate map moved to the artifact table, which no pin
+  covered; the sensitivity test ran on a copy without the root documents;
+  the word `executed` certified an experiment because the producer wrote
+  it; the history of the lessons was left to a version control the
+  published repository did not carry; acceptance by name let a deleted
+  report pass for a pending one. It is the first lesson of this record
+  again, one level up, as the entry of v0.5.0 had already found
+  [lessons:The v0.5.0 round: exit 0 is not green]. The replicable rule:
+  when a correction moves a definition, the place it moves to gets the pin,
+  the completeness check and the perturbation in the same round, or the
+  correction is declared incomplete.
+- **One object, one reading.** Three readings of a prior mark and three
+  readers of a fence each let a defect through the gap between them. Since
+  this round one expression reads the mark and one tokenizer reads the
+  fences, in every gate that needs them.
+- **The instrument freezes here.** After this version a change to the
+  instrument is made only for a failure that changes a verdict, or for a
+  new execution; the next budget goes to measuring value (experiment E4)
+  and portability (an execution outside the documentary domain by someone
+  who is not the owner).
+- **A mark that declares is not provenance.** The second pass named a
+  synthetic prior in a line of the report, and nothing read that line: a
+  clone deleted it and its report read as the owner's. The rework records
+  the sha256 of each document the report was made with and lets the
+  validator compare it with the pin, so what is synthetic is computed, not
+  declared. The same round showed the neighbor of that error three times:
+  a valve that blanked whatever it listed, a severity a later line could
+  lower, a decision that kept covering after it was reopened. In each, the
+  field the writer of a line controls decided what the gate saw. The
+  replicable rule: a gate reads what it can recompute, and a field it
+  cannot recompute only ever tightens, never loosens, what it measures.
+- **The state ledger says what is done, not what is meant.** Two findings
+  were closed as fixed with parts undone; the review caught it. A
+  closure names what was done, and what was not stays open with its
+  version due.

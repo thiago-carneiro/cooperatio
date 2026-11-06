@@ -27,51 +27,60 @@ measured, because its input was not provided; it is neither a pass nor a fail.
 | `../skills/cooperatio-teamwork/SKILL.md` | `p-canon-link` | 1 resolved, 0 unresolved | ≥ 1 resolved, 0 unresolved | pass |
 | `../skills/cooperatio-teamwork/SKILL.md` | `p-form` | 0 | 0 | pass |
 | `../skills/cooperatio-teamwork/SKILL.md` | `p-terms` | 0 | 0 | pass |
+| `../skills/cooperatio-teamwork/references/review-checklist.md` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
+| `../skills/cooperatio-teamwork/references/review-checklist.md` | `p-canon-link` | 1 resolved, 0 unresolved | ≥ 1 resolved, 0 unresolved | pass |
+| `../skills/cooperatio-teamwork/references/review-checklist.md` | `p-form` | 0 | 0 | pass |
+| `../skills/cooperatio-teamwork/references/review-checklist.md` | `p-terms` | 0 | 0 | pass |
+| `../skills/cooperatio-teamwork/references/templates.md` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
+| `../skills/cooperatio-teamwork/references/templates.md` | `p-canon-link` | 1 resolved, 0 unresolved | ≥ 1 resolved, 0 unresolved | pass |
+| `../skills/cooperatio-teamwork/references/templates.md` | `p-form` | 0 | 0 | pass |
+| `../skills/cooperatio-teamwork/references/templates.md` | `p-terms` | 0 | 0 | pass |
 | `00-brief.md` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
 | `00-brief.md` | `p-canon-link` | 1 resolved, 0 unresolved | ≥ 1 resolved, 0 unresolved | pass |
 | `00-brief.md` | `p-efficacy-mark` | 0 | 0 | pass |
 | `00-brief.md` | `p-form` | 0 | 0 | pass |
-| `00-brief.md` | `p-size` | 868 | 300 to 1200 | pass |
+| `00-brief.md` | `p-size` | 1009 | 300 to 1500 | pass |
 | `00-brief.md` | `p-terms` | 0 | 0 | pass |
 | `01-canon.md` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
 | `01-canon.md` | `p-form` | 0 | 0 | pass |
-| `01-canon.md` | `p-prior` | 18 labels, 0 unregistered, 0 numbers and 1 section references checked, 0 unverified | 0 | pass |
-| `01-canon.md` | `p-size` | 3491 | 800 to 3600 | pass |
+| `01-canon.md` | `p-prior` | 30 labels, 0 unregistered, 0 numbers and 1 section references checked, 0 unverified; 12 section commitments checked, 0 broken | 0 | pass |
+| `01-canon.md` | `p-size` | 4027 | 800 to 4800 | pass |
 | `01-canon.md` | `p-terms` | 0 | 0 | pass |
 | `02-artifacts.md` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
 | `02-artifacts.md` | `p-canon-link` | 1 resolved, 0 unresolved | ≥ 1 resolved, 0 unresolved | pass |
-| `02-artifacts.md` | `p-contract-shape` | 4 schema cells, 0 broken | 0 broken | pass |
+| `02-artifacts.md` | `p-contract-shape` | 5 schema cells, 0 broken | 0 broken | pass |
+| `02-artifacts.md` | `p-declared` | 43 files in 30 artifacts, 0 unmapped, shared or unmeasured | 0 | pass |
 | `02-artifacts.md` | `p-form` | 0 | 0 | pass |
 | `02-artifacts.md` | `p-references` | 0 | 0 | pass |
-| `02-artifacts.md` | `p-size` | 1522 | 400 to 1800 | pass |
+| `02-artifacts.md` | `p-size` | 1409 | 400 to 1800 | pass |
 | `02-artifacts.md` | `p-terms` | 0 | 0 | pass |
 | `03-roles/reviewer.md` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
 | `03-roles/reviewer.md` | `p-canon-link` | 1 resolved, 0 unresolved | ≥ 1 resolved, 0 unresolved | pass |
 | `03-roles/reviewer.md` | `p-card` | 0 fields missing, 0 placeholders | 0 | pass |
 | `03-roles/reviewer.md` | `p-form` | 0 | 0 | pass |
 | `03-roles/reviewer.md` | `p-references` | 0 | 0 | pass |
-| `03-roles/reviewer.md` | `p-size` | 464 | 250 to 900 | pass |
+| `03-roles/reviewer.md` | `p-size` | 458 | 250 to 900 | pass |
 | `03-roles/reviewer.md` | `p-terms` | 0 | 0 | pass |
-| `03-roles/validator.md` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
-| `03-roles/validator.md` | `p-canon-link` | 1 resolved, 0 unresolved | ≥ 1 resolved, 0 unresolved | pass |
-| `03-roles/validator.md` | `p-card` | 0 fields missing, 0 placeholders | 0 | pass |
-| `03-roles/validator.md` | `p-form` | 0 | 0 | pass |
-| `03-roles/validator.md` | `p-references` | 0 | 0 | pass |
-| `03-roles/validator.md` | `p-size` | 469 | 250 to 900 | pass |
-| `03-roles/validator.md` | `p-terms` | 0 | 0 | pass |
+| `03-roles/runner.md` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
+| `03-roles/runner.md` | `p-canon-link` | 1 resolved, 0 unresolved | ≥ 1 resolved, 0 unresolved | pass |
+| `03-roles/runner.md` | `p-card` | 0 fields missing, 0 placeholders | 0 | pass |
+| `03-roles/runner.md` | `p-form` | 0 | 0 | pass |
+| `03-roles/runner.md` | `p-references` | 0 | 0 | pass |
+| `03-roles/runner.md` | `p-size` | 520 | 250 to 900 | pass |
+| `03-roles/runner.md` | `p-terms` | 0 | 0 | pass |
 | `03-roles/verifier.md` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
 | `03-roles/verifier.md` | `p-canon-link` | 1 resolved, 0 unresolved | ≥ 1 resolved, 0 unresolved | pass |
 | `03-roles/verifier.md` | `p-card` | 0 fields missing, 0 placeholders | 0 | pass |
 | `03-roles/verifier.md` | `p-form` | 0 | 0 | pass |
 | `03-roles/verifier.md` | `p-references` | 0 | 0 | pass |
-| `03-roles/verifier.md` | `p-size` | 507 | 250 to 900 | pass |
+| `03-roles/verifier.md` | `p-size` | 515 | 250 to 900 | pass |
 | `03-roles/verifier.md` | `p-terms` | 0 | 0 | pass |
 | `03-roles/writer.md` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
 | `03-roles/writer.md` | `p-canon-link` | 1 resolved, 0 unresolved | ≥ 1 resolved, 0 unresolved | pass |
 | `03-roles/writer.md` | `p-card` | 0 fields missing, 0 placeholders | 0 | pass |
 | `03-roles/writer.md` | `p-form` | 0 | 0 | pass |
 | `03-roles/writer.md` | `p-references` | 0 | 0 | pass |
-| `03-roles/writer.md` | `p-size` | 523 | 250 to 900 | pass |
+| `03-roles/writer.md` | `p-size` | 511 | 250 to 900 | pass |
 | `03-roles/writer.md` | `p-terms` | 0 | 0 | pass |
 | `04-gates-and-rubric.md` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
 | `04-gates-and-rubric.md` | `p-canon-link` | 1 resolved, 0 unresolved | ≥ 1 resolved, 0 unresolved | pass |
@@ -79,16 +88,18 @@ measured, because its input was not provided; it is neither a pass nor a fail.
 | `04-gates-and-rubric.md` | `p-frozen-rubric` | equal | equal | pass |
 | `04-gates-and-rubric.md` | `p-limit` | 0 | 0 | pass |
 | `04-gates-and-rubric.md` | `p-references` | 0 | 0 | pass |
-| `04-gates-and-rubric.md` | `p-size` | 2865 | 900 to 3600 | pass |
+| `04-gates-and-rubric.md` | `p-size` | 3122 | 900 to 4200 | pass |
 | `04-gates-and-rubric.md` | `p-terms` | 0 | 0 | pass |
-| `05-contracts/notes-status.schema.json` | `p-contract-shape` | 11 keywords, 0 unsupported | 0 unsupported | pass |
+| `05-contracts/domain-result.schema.json` | `p-contract-shape` | 12 keywords, 0 unsupported | 0 unsupported | pass |
+| `05-contracts/notes-status.schema.json` | `p-contract-shape` | 12 keywords, 0 unsupported | 0 unsupported | pass |
 | `05-contracts/notes.schema.json` | `p-contract-shape` | 12 keywords, 0 unsupported | 0 unsupported | pass |
+| `05-contracts/owner-decisions.schema.json` | `p-contract-shape` | 12 keywords, 0 unsupported | 0 unsupported | pass |
 | `05-contracts/registry.schema.json` | `p-contract-shape` | 12 keywords, 0 unsupported | 0 unsupported | pass |
-| `05-contracts/round-record.schema.json` | `p-contract-shape` | 12 keywords, 0 unsupported | 0 unsupported | pass |
+| `05-contracts/round-record.schema.json` | `p-contract-shape` | 13 keywords, 0 unsupported | 0 unsupported | pass |
 | `06-gate-semantics.md` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
 | `06-gate-semantics.md` | `p-canon-link` | 1 resolved, 0 unresolved | ≥ 1 resolved, 0 unresolved | pass |
 | `06-gate-semantics.md` | `p-form` | 0 | 0 | pass |
-| `06-gate-semantics.md` | `p-size` | 3156 | 400 to 3400 | pass |
+| `06-gate-semantics.md` | `p-size` | 9133 | 400 to 9800 | pass |
 | `06-gate-semantics.md` | `p-terms` | 0 | 0 | pass |
 | `10-generic-recipe.md` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
 | `10-generic-recipe.md` | `p-canon-link` | 2 resolved, 0 unresolved | ≥ 1 resolved, 0 unresolved | pass |
@@ -97,7 +108,7 @@ measured, because its input was not provided; it is neither a pass nor a fail.
 | `10-generic-recipe.md` | `p-prior` | 13 labels, 0 unregistered, 19 numbers and 7 section references checked, 0 unverified | 0 | pass |
 | `10-generic-recipe.md` | `p-prior-mark` | 0 | 0 | pass |
 | `10-generic-recipe.md` | `p-recipe` | 15 steps, 0 missing | ≥ 12 steps, 0 missing | pass |
-| `10-generic-recipe.md` | `p-size` | 5383 | 3000 to 7500 | pass |
+| `10-generic-recipe.md` | `p-size` | 5213 | 3000 to 7500 | pass |
 | `10-generic-recipe.md` | `p-terms` | 0 | 0 | pass |
 | `20-instance-car.md` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
 | `20-instance-car.md` | `p-canon-link` | 1 resolved, 0 unresolved | ≥ 1 resolved, 0 unresolved | pass |
@@ -110,7 +121,7 @@ measured, because its input was not provided; it is neither a pass nor a fail.
 | `20-instance-car.md` | `p-prior-mark` | 0 | 0 | pass |
 | `20-instance-car.md` | `p-references` | 0 | 0 | pass |
 | `20-instance-car.md` | `p-sections` | 14/14 | 14/14 | pass |
-| `20-instance-car.md` | `p-size` | 5217 | 3500 to 8500 | pass |
+| `20-instance-car.md` | `p-size` | 4541 | 3500 to 8500 | pass |
 | `20-instance-car.md` | `p-table` | 14/14, 0 empty | 14/14, 0 empty | pass |
 | `20-instance-car.md` | `p-terms` | 0 | 0 | pass |
 | `21-instance-text-2027.md` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
@@ -124,7 +135,7 @@ measured, because its input was not provided; it is neither a pass nor a fail.
 | `21-instance-text-2027.md` | `p-prior-mark` | 0 | 0 | pass |
 | `21-instance-text-2027.md` | `p-references` | 0 | 0 | pass |
 | `21-instance-text-2027.md` | `p-sections` | 14/14 | 14/14 | pass |
-| `21-instance-text-2027.md` | `p-size` | 4734 | 3500 to 8500 | pass |
+| `21-instance-text-2027.md` | `p-size` | 4145 | 3500 to 8500 | pass |
 | `21-instance-text-2027.md` | `p-table` | 14/14, 0 empty | 14/14, 0 empty | pass |
 | `21-instance-text-2027.md` | `p-terms` | 0 | 0 | pass |
 | `22-instance-hpc.md` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
@@ -138,43 +149,51 @@ measured, because its input was not provided; it is neither a pass nor a fail.
 | `22-instance-hpc.md` | `p-prior-mark` | 0 | 0 | pass |
 | `22-instance-hpc.md` | `p-references` | 0 | 0 | pass |
 | `22-instance-hpc.md` | `p-sections` | 14/14 | 14/14 | pass |
-| `22-instance-hpc.md` | `p-size` | 4429 | 3500 to 8500 | pass |
+| `22-instance-hpc.md` | `p-size` | 3842 | 3500 to 8500 | pass |
 | `22-instance-hpc.md` | `p-table` | 14/14, 0 empty | 14/14, 0 empty | pass |
 | `22-instance-hpc.md` | `p-terms` | 0 | 0 | pass |
 | `60-experiments.md` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
 | `60-experiments.md` | `p-canon-link` | 1 resolved, 0 unresolved | ≥ 1 resolved, 0 unresolved | pass |
 | `60-experiments.md` | `p-efficacy-mark` | 0 | 0 | pass |
 | `60-experiments.md` | `p-form` | 0 | 0 | pass |
-| `60-experiments.md` | `p-prior` | 3 labels, 0 unregistered, 2 numbers and 0 section references checked, 0 unverified | 0 | pass |
+| `60-experiments.md` | `p-prior` | 3 labels, 0 unregistered, 3 numbers and 0 section references checked, 0 unverified | 0 | pass |
 | `60-experiments.md` | `p-prior-mark` | 0 | 0 | pass |
-| `60-experiments.md` | `p-size` | 5399 | 400 to 6000 | pass |
+| `60-experiments.md` | `p-size` | 6865 | 400 to 8500 | pass |
 | `60-experiments.md` | `p-terms` | 0 | 0 | pass |
-| `80-validator/sensitivity.md` | `p-sensitivity` | 20 of 20 gates covered, 0 missed of 35 | every gate covered, 0 missed | pass |
+| `80-validator/sensitivity.md` | `p-sensitivity` | 20 of 20 gates covered, 50 of 182 pairs (27 %), 0 missed of 65, 0 noisy | every gate covered, ≥ 25 % of pairs, 0 missed, 0 noisy | pass |
+| `90-review/auditor-notes.json` | `p-frozen-rubric` | equal | equal | pass |
+| `90-review/auditor-report.md` | `p-frozen-rubric` | equal | equal | pass |
 | `90-review/notes.json` | `p-contract-shape` | 0 violations | 0 | pass |
+| `90-review/notes.json` | `p-frozen-rubric` | equal | equal | pass |
 | `90-review/notes.json` | `p-notes` | 22 notes, 0 invalid | 0 invalid | pass |
 | `90-review/replies.md` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
 | `90-review/replies.md` | `p-form` | 0 | 0 | pass |
+| `90-review/replies.md` | `p-frozen-rubric` | equal | equal | pass |
 | `90-review/replies.md` | `p-terms` | exempt by design (frozen ledger) | 0 | pass |
+| `90-review/rubric.sha256` | `p-frozen-rubric` | equal | equal | pass |
 | `99-lessons.md` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
 | `99-lessons.md` | `p-canon-link` | 1 resolved, 0 unresolved | ≥ 1 resolved, 0 unresolved | pass |
 | `99-lessons.md` | `p-efficacy-mark` | 0 | 0 | pass |
 | `99-lessons.md` | `p-form` | 0 | 0 | pass |
+| `99-lessons.md` | `p-frozen-rubric` | equal | equal | pass |
 | `99-lessons.md` | `p-prior` | 0 labels, 0 unregistered, 0 numbers and 0 section references checked, 0 unverified | 0 | pass |
-| `99-lessons.md` | `p-size` | 3076 | 300 to 4000 | pass |
+| `99-lessons.md` | `p-size` | 3488 | 300 to 4800 | pass |
 | `99-lessons.md` | `p-terms` | 0 | 0 | pass |
 | `README.md` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
 | `README.md` | `p-canon-link` | 1 resolved, 0 unresolved | ≥ 1 resolved, 0 unresolved | pass |
 | `README.md` | `p-efficacy-mark` | 0 | 0 | pass |
 | `README.md` | `p-form` | 0 | 0 | pass |
-| `README.md` | `p-size` | 1425 | 150 to 1500 | pass |
+| `README.md` | `p-size` | 1914 | 150 to 3200 | pass |
 | `README.md` | `p-terms` | 0 | 0 | pass |
 | `state/notes-status.jsonl` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
-| `state/notes-status.jsonl` | `p-contract-shape` | 48 lines, 0 violations | 0 | pass |
-| `state/notes-status.jsonl` | `p-notes` | 21 open, 27 fixed, 0 disputed, 0 out of scope; 0 invalid | every note tracked, 0 invalid | pass |
+| `state/notes-status.jsonl` | `p-contract-shape` | 157 lines, 0 violations | 0 | pass |
+| `state/notes-status.jsonl` | `p-notes` | 17 open, 96 fixed, 0 disputed, 3 out of scope; 0 invalid | every note tracked, 0 invalid | pass |
+| `state/owner-decisions.jsonl` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
+| `state/owner-decisions.jsonl` | `p-contract-shape` | 8 lines, 0 violations | 0 | pass |
 | `state/round-record.jsonl` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
-| `state/round-record.jsonl` | `p-contract-shape` | 10 lines, 0 violations | 0 | pass |
+| `state/round-record.jsonl` | `p-contract-shape` | 11 lines, 0 violations | 0 | pass |
 
-Pending accepted by the caller (--allow-pending): `p-anonymity` (24 rows).
+Pending accepted by the caller (--allow-pending): `p-anonymity` (27 rows).
 Pending not accepted: none.
 
 ## Instrument measurement
@@ -187,6 +206,8 @@ unless --determinism was passed.
 | Measurement | Artifact | Magnitude | Expected | Result |
 | --- | --- | --- | --- | --- |
 | `m-determinism` | `80-validator/report.md` | sha256 equal in 2 runs | equal | pass |
+
+Self-test: 185 checks passed. Test suite sha256: ec554ff2db8ced3093ec35149e32aa9707515320584949646cc420f1212c7366.
 
 ## Notes
 

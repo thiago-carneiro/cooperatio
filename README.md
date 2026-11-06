@@ -1,6 +1,11 @@
 # Cooperatio
 
-Method version 0.5.0 (see `VERSION`; the history of the changes, in
+**Status: a working hypothesis, with a documentary validator; the gates of
+a target's domain enter as results the cell's own code produces and the
+validator checks; two executed instances, one of them auditable from this
+material.** See "Status" below for what that covers and what it does not.
+
+Method version 0.6.0 (see `VERSION`; the history of the changes, in
 `CHANGELOG.md`). The terms follow the
 [canon](02-reflexive-application/01-canon.md) of the reflexive application.
 
@@ -10,32 +15,63 @@ target, and a skill that creates the files that set that team up.
 The idea in one sentence: produce the target by compiling a graph of typed
 artifacts, each with an owner, a contract and a measurable gate; let separate
 roles talk only through artifacts and notes; measure what the system delivered
-rather than what was requested; make every review independent and comparable
-across rounds; turn every error that escapes into a new gate; and stop at a
-criterion declared in advance. That the review is independent of the
-producer's family is the method's rule and still a hypothesis: no recorded
-production round has met it with a frozen rubric (see the principle,
+rather than what was requested; have each review made by someone who did not
+produce, with a rubric frozen before it, so that rounds are comparable; turn
+every error that escapes into a new gate; and stop at a criterion declared in
+advance. A reviewer of another family than the producer's is recommended, a
+hypothesis with a cost (a second provider), not a rule: the one datum is
+against it as a rule, and what a pilot did show is that a frozen rubric with a
+mechanical verdict rule turned a finding into a verdict (the principle,
 sections 2 and 9).
 
 ## Contents
 
 | Path | What it is |
 | --- | --- |
-| [`01-principle.md`](01-principle.md) | The method: the idea, the formula, the components, the golden rules, what changes by domain, how to instantiate it, warning signs, limits and ontological assumptions |
-| [`02-reflexive-application/`](02-reflexive-application/) | The method applied to itself: a generic recipe, three designed instances (a physical product, a long text, a software library), the role cards, the gates and rubric, a validator and a sensitivity test written as code, the experiments about the method, an independent review and the lessons of every round |
-| [`skills/cooperatio-teamwork/`](skills/cooperatio-teamwork/) | An agent skill that creates the teamwork files (brief, canon, artifact graph, role cards, gates, rubric, notes) for a given task, process or product; its scaffold copies the validator and the sensitivity test of this material into the new cell |
-| [`instances/`](instances/) | The registry of the known instances (`registry.json`) and the cell of the second executed instance (`004-adoption-guide/`, executed under method version 0.2.2, kept as history). The cell's list of forbidden identifiers (`state/forbidden.txt`) stayed with the owner, outside the material, since it contains what it forbids: the cell's commands that pass `--forbidden state/forbidden.txt` exit 2 in a copy, and the cell is kept as it is, its files still naming the list |
-| `VERSION`, `CHANGELOG.md`, `LICENSE` | The version of the method, its history, the license |
+| [`01-principle.md`](01-principle.md) | The method: the idea, the scheme, the components, the golden rules, what changes by domain, how to instantiate it, warning signs, limits, what would promote or withdraw a claim, and ontological assumptions |
+| [`02-reflexive-application/`](02-reflexive-application/) | The method applied to itself: a generic recipe, three designed sketches of instances (a physical product, a long text, a software library; designed, not executed), the role cards, the gates and rubric, a validator and a sensitivity test written as code, the experiments about the method, the review of its first round and the lessons of every round |
+| [`skills/cooperatio-teamwork/`](skills/cooperatio-teamwork/) | An agent skill that creates the teamwork files (brief, canon, artifact graph, role cards, gates, rubric, notes) for a target whose quality documents can carry, or whose domain measurements the cell's own code can write as results; its scaffold copies the validator and the sensitivity test of this material into the new cell |
+| [`instances/`](instances/) | The registry of the known instances (`registry.json`) and the cell of the second executed instance (`004-adoption-guide/`), the record of an execution under method version 0.2.2: read its [`ERRATA.md`](instances/004-adoption-guide/ERRATA.md) first; it is not an example to copy. Its list of forbidden identifiers stayed with the owner, outside the material, since it contains what it forbids |
+| `VERSION`, `CHANGELOG.md`, `LICENSE`, `.gitattributes` | The version of the method, its history, the license, and the rule that checks every text file out with LF line breaks (the hash policy of the material) |
 
 ## Where to start
 
 - To understand the method, read [`01-principle.md`](01-principle.md).
 - To apply it to a new target, read
-  [`02-reflexive-application/10-generic-recipe.md`](02-reflexive-application/10-generic-recipe.md),
-  then the instance closest to your target.
+  [`02-reflexive-application/10-generic-recipe.md`](02-reflexive-application/10-generic-recipe.md);
+  the three instances there are designed sketches that show what an
+  artifact, a gate and a rubric are in each domain, not executions.
 - To have an agent create the files for you, install the skill in
   [`skills/cooperatio-teamwork/`](skills/cooperatio-teamwork/) (see its
-  `SKILL.md`) and ask it to set up teamwork for your task or process.
+  `SKILL.md`) and ask it to set up teamwork for your target.
+
+Requirements: Python 3.9 or later for the scripts (they exit 2 below it),
+the standard library only; `pytest` for the test suites.
+
+### The ten-minute path
+
+1. Read the first section and section 7 of
+   [`01-principle.md`](01-principle.md) (the idea and the recipe).
+2. Run `python3 skills/cooperatio-teamwork/scripts/scaffold.py --target
+   "My target" --roles writer reviewer --out ./teamwork` from inside the
+   material.
+3. Fill the brief, give each non-negotiable an id (`nn-<name>`), fill the
+   lists of `02-canon.json` the validator reads and one card per role
+   (the skill's `references/templates.md` has a filled example).
+4. Freeze the rubric, run the sensitivity test, then the validator, with the
+   commands of the skill ("The commands of a cell"); read every pending row
+   before reading the exit code.
+
+### What an adopter carries
+
+Separated from the research the material also is (the reflexive
+application, the experiments, the panels): the fixed cost of a cell is the
+24 files the scaffold writes with two roles, among them the instrument it
+copies, about 5,300 lines of Python (the validator 4,490, the sensitivity
+test 499, its perturbation set 333) that the adopter runs and does not have to read, plus
+one review per round. The history that matters to an adopter is the
+"Migration note" of each version in `CHANGELOG.md`; the rest of the
+changelog is the research.
 
 ## Using the skill
 
@@ -43,13 +79,13 @@ Copy or link the `skills/cooperatio-teamwork/` folder into your agent's
 skills directory, and ask for the teamwork files for a
 target. The skill also ships a small scaffolding script that creates the empty
 folder structure without overwriting anything. The scaffold copies the
-validator, the sensitivity test and three contracts from this material into
+validator, the sensitivity test and four contracts from this material into
 the new cell, so run it from inside the material (or keep the skill folder
-inside it); copied alone, the skill creates the cell without them, and the
-cell has no validator until you copy one in:
+inside it); copied alone, the skill creates the cell without them, says so,
+and the cell has no validator until you copy one in:
 
 ```text
-python skills/cooperatio-teamwork/scripts/scaffold.py \
+python3 skills/cooperatio-teamwork/scripts/scaffold.py \
     --target "My target" --roles writer verifier reviewer --out ./teamwork
 ```
 
@@ -60,26 +96,82 @@ canon, the artifact list and the gates and measures every gate on every
 document the artifact list assigns it to. Its self-test needs no inputs:
 
 ```text
-python 02-reflexive-application/80-validator/validator.py --self-test
+python3 02-reflexive-application/80-validator/validator.py --self-test
 ```
 
 The validator measures documents: terms, sections, links, form, numbers
-stated about registered priors, the contracts of its ledgers. A gate of a
-target's domain (a speedup, a mass, a cost) is not one it implements: it
-is "contract + agent", or code the cell writes and runs itself, and this
-version has no extension point for it (the scope of the validator is an
-open decision of the owner). A run exits 0 only when every gate was
-measured or its pending was accepted by name with `--allow-pending`; a gate
-left unmeasured exits 4. The runbook is in
+stated about registered priors, the contracts and the chains of its
+ledgers. A gate of a target's domain (the identity of a library's results,
+a speedup, a mass) is measured by the cell's own code, which writes a
+result file in the contract `domain-result.schema.json`; the validator reads
+the result, refuses it when an input changed since it was written, and turns
+a failure into a note and a missing result into a pending. It does not run
+the cell's code. A run exits 0 only when every gate was measured, or its
+pending was accepted by name with `--allow-pending`, which accepts only
+`p-anonymity`, `p-prior` and `p-prior-pin` (the inputs the material does not
+distribute) and `p-sensitivity-synthetic` (a sensitivity report a clone
+regenerated without the owner's document); a gate left unmeasured exits 4. The runbook is in
 [`02-reflexive-application/README.md`](02-reflexive-application/README.md).
 
-The method document of the prior instance `000` is owner-held, so a clone
-of this material does not have it. A clone reaches exit 0 with the run the
-runbook gives for that case (no `--case`, the three gates that need it
-accepted by name; passing only the document of `004` is blocking), and it
-cannot regenerate the sensitivity report: a clone that edits the
-validator, the canon or the "Gates" section of the gates file cannot get
-back to green without the owner.
+## What a clone verifies, and what rests on the owner
+
+The validator checks the internal coherence of the material; the integrity
+of its past rests on the version history and, for the owner-held evidence,
+on the owner.
+
+| A clone verifies | Only the owner verifies |
+| --- | --- |
+| every gate on every document; the pin and the numbers of the second instance, `004`, whose document is distributed (the clone run passes it with `--case`); the frozen rubric; the provenance of the sensitivity report, the sha256 of each prior document it was made with included; the hash chain of the three ledgers | the numbers stated about the first instance, `000`, whose document is owner-held (its cited sections are committed by sha256 in the canon, so it cannot be swapped unseen, but a clone cannot read them); that the sensitivity report was made with that document, by regenerating it |
+| that a ledger line written since v0.6.0 was not edited without recomputing the chain (an honest or careless edit) | an edit that recomputed the chain (one sha256 per line, which no gate detects), the lines before the chain, the history of the lessons and the record of the experiments' raw files |
+| the family letter each round line records, and the form of its salted commitment | the map from a family letter to a family, and its salt, which stay outside the material and prove the commitment |
+
+A clone reaches exit 0 with the run the runbook gives for that case: the
+document of `004` passed with `--case`, so its pin and its numbers are
+measured, and the three gates that need the owner's document accepted by
+name, so the rows of `000` say "owner-held evidence, not measured here".
+The published sensitivity report is made with the owner's document; its
+header records the sha256 of each prior document it was made with, and the
+validator compares it with the registry's pin. A clone that edits the
+validator, the canon, the "Gates" section of the gates file or the gate map
+of the artifact table cannot regenerate that report: it can regenerate one
+against a synthetic prior built from the canon's recorded facts, whose
+sha256 is not the pin, and the validator then never reads it as a pass —
+the row becomes `p-sensitivity-synthetic`, pending, accepted only when the
+clone names that gate with `--allow-pending`, and refused in a run that
+passes the owner's document. Such a report shows that the gates react; it
+does not show that the owner's document holds the facts, nor that the
+validator reads that document's format (the synthetic is written in the
+heading style the registry declares, which narrows that gap and does not
+close it). The pin of the registry is public, so a clone can also write the
+`case sha256` line of `000` by hand with the real pin, over a report made
+with the synthetic one. That passes the clone run. Until the closing pass of
+v0.6.0 it also passed the owner's run, and the owner's regeneration came out
+identical to the forged report whenever the real and the synthetic document
+gave the same rows, which is the common case. Since the closing pass the
+report also records a `case attestation` for each document, the sha256 of
+the document's text together with the provenance digests, which nobody
+computes without the document. The owner's run recomputes it and refuses a
+report whose attestation does not match. A clone run cannot recompute it,
+so in a clone the forged line still passes, and a frozen record re-pinned in
+the canon shows only in the diff against a signed version. A deleted report
+is blocking, and `p-sensitivity` cannot be accepted by name.
+The chain detects an edit nobody recomputed; it does not stop whoever
+controls the whole tree, and an anchor outside it (a signed tag per
+version) is the owner's to add. The git history distributes the name of the
+author and the dates of the commits; the gates measure the content, not the
+history. A pseudonym made of the hash of a host name or a user name is not
+anonymity (a dictionary reverses it): the material uses family letters and
+commits to their map with a salted hash the owner holds (since the rework
+of v0.6.0; the canonical form is in `02-reflexive-application/06-gate-semantics.md`).
+
+## Freeze policy
+
+After 0.6.0 the instrument (the validator, the sensitivity test, the
+scaffold) changes only for a failure that changes a verdict, or for a new
+execution. The next budget goes to measuring value (experiment E4, the
+seeded-escape design of `02-reflexive-application/60-experiments.md`) and
+portability (an execution outside the documentary domain by someone who is
+not the owner), not to more instrument.
 
 ## License
 
@@ -88,31 +180,39 @@ full text is in [`LICENSE`](LICENSE).
 
 ## Status
 
-**Working hypothesis — two executed instances.** The method stands on two
-executed instances (`000-av-production` and `004-adoption-guide`, both
-registered in [`instances/registry.json`](instances/registry.json) and pinned
-by sha256) and on three designed instances, not executed. The scope of that
-evidence is narrow, and it is declared rather than implied: both executions
-are documentary productions by the same owner of this material — `000` is
-an audiovisual production method (owner-held, not distributable) and `004`
-is the adoption guide of this method itself; the inter-domain instances
-(car, text, HPC) remain designed, not executed, so cross-domain portability
-is an assumption, not a result. Claims tagged `[hypothesis]` are assumptions
-awaiting confirmation on executed instances.
+**Working hypothesis — two executed instances, one auditable.** One part of
+the method has never been exercised: the recompilation by hash. In neither
+execution did an engine rebuild a stale artifact from the hash of its
+inputs; the validator resolves the command an artifact declares against the
+paths it names, and does not run it. The method
+stands on two executed instances, both registered in
+[`instances/registry.json`](instances/registry.json): `004-adoption-guide`,
+the adoption guide of this method itself, whose cell is distributed here
+and whose method document is pinned by sha256; and `000-av-production`, an
+audiovisual production method held by the owner, not distributable, whose
+cited sections are committed by sha256 in the canon. Three designed
+instances (car, text, HPC) are sketches, not executed. The scope of that
+evidence is narrow, and it is declared rather than implied: both
+executions are documentary productions by the same owner, so portability
+beyond the documentary domain is an assumption, not a result. Claims
+tagged `[hypothesis]` are assumptions awaiting confirmation on executed
+instances, and the principle says, in a table written before the data, what
+would promote or withdraw each kind of claim.
 
 Of the two executions, the second ran under method version 0.2.2; no
-production has run under 0.4 or 0.5, and the cell of `004`, distributed in
-`instances/004-adoption-guide/`, does not run under the current validator
-without a migration.
+production has run under 0.4, 0.5 or 0.6, and the cell of `004` does not run
+under the current validator without a migration: it is the record of that
+execution, with its errata beside the guide.
 
-The first round of the reflexive application was produced by the method and
-received one independent review; its blocking and high findings were
-fixed, and the remaining notes are kept in
+The first round of the reflexive application was a production under the
+method and received one review, from a separate session; its blocking and
+high findings were fixed, and the remaining notes are kept in
 `02-reflexive-application/90-review/`, with their state (fixed or open) in
 `02-reflexive-application/state/notes-status.jsonl`. The rounds after it
-are maintenance rounds outside the brief of that production, run by an
-orchestrator with decisions the owner delegated and recorded in
-`CHANGELOG.md`.
+are maintenance rounds of the material, not productions under the method:
+each one is recorded in the round record with `kind` maintenance, its scope
+and the reviewer's relation to the producer, and none emits a verdict of the
+canon. Their decisions are recorded in `CHANGELOG.md`.
 
 In v0.2 the corpus was corrected: seven unsupported claims and two numbers
 that the review of round 1 found in `01-principle.md` were removed or aligned

@@ -94,7 +94,7 @@ recipe. Here is the content of each one:
 | `prototypes` | manufacturing engineer | `virtual-vehicle`, `bom`, `dfm-analysis`, `vehicle-software` | build record per prototype: CAD and software tags, deviations, weighed mass | `g-mass-budget` |
 | `test-reports` | validation engineer | `prototypes`, `validation-plan` | one report per test: instrument, calibration, uncertainty, prototype tag, result | `g-test-instrument`, `g-thermal-propagation`, `g-noise`, `g-charging` |
 | `sim-test-correlation` | simulation analyst | `simulations`, `test-reports` | per quantity: simulated, measured, error, cause of the difference | `g-correlation` |
-| `validation-report` | validator | `canon`, `requirements`, `subsystem-cad`, `bom`, `vehicle-software`, `simulations`, `test-reports` | deterministic report per rule | `g-validation` |
+| `validation-report` | runner | `canon`, `requirements`, `subsystem-cad`, `bom`, `vehicle-software`, `simulations`, `test-reports` | deterministic report per rule | `g-validation` |
 | `homologation-dossier` | homologation specialist | `regulatory-matrix`, `test-reports`, `safety-analysis` | per matrix item: evidence and status | `g-dossier` |
 | `design-review` | independent reviewer | `virtual-vehicle`, `simulations`, `safety-analysis`, `bom`, `test-reports`, `validation-report`, `homologation-dossier` | report format of the rubric | frozen rubric |
 | `phase-release` | owner | `design-review`, `homologation-dossier` | recorded decision with verdict, accepted open notes and accepted risks | exists; signed |
@@ -284,7 +284,7 @@ electrical and electronic, interior), all with the same format.
 - **Code-conversion degree:** (c) reading a standard is human work, with an
   agent extracting requirements for review; the code checks completeness.
 
-### Validator
+### Runner
 
 - **Decides:** nothing beyond the rules it executes.
 - **Does not decide:** whether a note of its own is a false positive (the

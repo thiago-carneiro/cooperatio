@@ -6,7 +6,12 @@
   "description": "One JSON line per round of the method, appended to state/round-record.jsonl. The rubric_hash ties the round to the frozen sha256 of the 'Rubric' section the verdict applied to; the verdict enum mirrors the mechanical rule of that section (rejected, accepted, accepted with conditions); rubric_author names who wrote that rubric.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["method_version", "round", "models", "summary"],
+  "required": [
+    "method_version",
+    "round",
+    "models",
+    "summary"
+  ],
   "properties": {
     "method_version": {
       "type": "string",
@@ -20,7 +25,10 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["role", "model"],
+        "required": [
+          "role",
+          "model"
+        ],
         "additionalProperties": false,
         "properties": {
           "role": {
@@ -29,6 +37,38 @@
           "model": {
             "type": "string",
             "description": "The executor of the role, by family (a letter kept stable across the material, e.g. 'family A') and effort, never by model identifier: a product identifier changes and leaks the provider, and the family is what the rule of independence uses. The map from letter to identifier stays with the owner, outside the material. A route or alias is not a family: two executors differ when what their names map to differs. Since v0.5.0 a reviewer is described by its relation to the producer ('reviewer, same family as the producer' or 'reviewer, another family'), never as 'independent' when the family is the same; the lines written before are never rewritten."
+          },
+          "tokens": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Since v0.6.0, optional: the tokens the role used in the round, from the usage the endpoint returned.",
+            "properties": {
+              "input": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "output": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "reasoning": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "cached": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          },
+          "calls": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Since v0.6.0, optional: the calls the role made."
+          },
+          "finish": {
+            "type": "string",
+            "description": "Since v0.6.0, optional: how the generation of the role's last call ended (stop, length, error); a length is a tool failure, never a result."
           }
         }
       }
@@ -39,7 +79,11 @@
     },
     "verdict": {
       "type": "string",
-      "enum": ["rejected", "accepted", "accepted with conditions"]
+      "enum": [
+        "rejected",
+        "accepted",
+        "accepted with conditions"
+      ]
     },
     "rubric_hash": {
       "type": "string",
@@ -47,7 +91,59 @@
     },
     "rubric_author": {
       "type": "string",
-      "description": "Who wrote the rubric the round applies: a role name, or 'producer', 'reviewer side' or 'owner'. Step 8 of the recipe gives the rubric to the owner and the reviewing side; a rubric written by the producer is recorded as such, never left implicit."
+      "description": "Who wrote the rubric the round applies: a role name, or 'producer', 'reviewer side' or 'owner'. Step 8 of the recipe gives the rubric to the owner and the reviewing side; a rubric written by the producer is recorded as such, never left implicit. Since the rework of v0.6.0 a chained line with 'rubric_applied' true and 'rubric_author' 'producer' is a low note of the validator ('rubric written by the producer')."
+    },
+    "family_map_commitment": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "Since the rework of v0.6.0, required on a chained line of method_version 0.6.0 or later: a salted commitment to the map from the letters the lines use (family A, B, ...) to the families they stand for. Canonical form: the sha256, over UTF-8, of json.dumps(map, sort_keys=True, separators=(',', ':'), ensure_ascii=False) + '\\n' + salt, where map is the object letter -> description of the family and salt a string of 64 hex characters the owner keeps. The map and the salt stay with the owner, outside the material; the validator checks the form (64 hex) only, and the owner proves the commitment by revealing both. It lets a later reader check that the letters were not reassigned after the fact, without the material naming any family."
+    },
+    "prev": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "Since v0.6.0: the sha256 of every line above this one, each followed by LF (for a file with no blank line, the sha256 of the file before the line was appended). The validator recomputes the chain: an earlier line edited, removed or reordered breaks it. Lines written before the chain carry none; the canon's 'Chained ledgers' table says how many."
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "production",
+        "maintenance"
+      ],
+      "description": "Since v0.6.0, required on a chained line: a production runs the method on a target (brief, rubric on the reviewing side, stop); a maintenance round corrects the material and emits no verdict of the canon."
+    },
+    "reviewer_relation": {
+      "type": "string",
+      "enum": [
+        "another family",
+        "same family, separate session",
+        "same model, separate route",
+        "none"
+      ],
+      "description": "Since v0.6.0, required on a chained line with a reviewer role: the reviewer's relation to the producer."
+    },
+    "rubric_applied": {
+      "type": "boolean",
+      "description": "Since v0.6.0: true when the round's review applied the frozen rubric; the validator then compares rubric_hash with the sha256 of the frozen rubric. A rubric_hash on a line without it records the pin in force, not that it was applied."
+    },
+    "rounds_to_stop": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Since v0.6.0, optional: the rounds the target took until its stopping criterion (a production)."
+    },
+    "wall_seconds": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Since v0.6.0, optional: the wall time of the round, beside the throughput of the same run when it is compared."
+    },
+    "notes_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Since v0.6.0, optional: the notes the round's review and validator emitted."
+    },
+    "crew": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Since v0.6.0, optional: the roles that ran in the round."
     }
   }
 }

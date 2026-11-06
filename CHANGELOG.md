@@ -2,6 +2,341 @@
 
 One entry per version of the method. Version is state; dates are not.
 
+## 0.6.0
+
+A maintenance round, not a production under the method: the corrections of
+the panel of the material's own team on v0.5.0 (nine seats of one family,
+diverse by discipline and access, by the owner's choice) that do not depend
+on the owner, and the execution of the orchestrator's recommendations on
+the decisions the panel left open, which the owner asked for. The panel
+drove the instrument to exit 0 with a file of an artifact repointed, with a
+mark outside its grammar, with an invented number between backticks, with
+the sensitivity report deleted and accepted by name, and with a domain
+regression the validator never read; each is now a regression test and,
+where it is a defect of a document, a perturbation. The ids below are the
+panel's (CR, IM, SUG); `state/notes-status.jsonl` records the state of each,
+appended as chained lines.
+
+The instrument:
+
+- **CR3 — one reading of a prior mark.** One expression, `[prior:...]`,
+  for every gate; an id outside the grammar `[0-9a-z-]+`, outside code
+  spans, is a blocking "malformed mark" (it used to satisfy `p-prior-mark`
+  and switch the number check off); the numbers of a marked unit are read
+  inside code spans too; the "Recorded facts" section of the canon is
+  exempt by name. Perturbations "prior mark with an uppercase id" and
+  "prior number in a code span".
+- **CR2 and R1 — `--allow-pending` is closed, a missing report is
+  blocking.** Only `p-anonymity`, `p-prior` and `p-prior-pin` can be
+  accepted by name; any other gate is exit 2; `p-sensitivity` never; an
+  accepted gate with nothing pending is printed (SUG10). This closes the
+  path the panel used (a clone that edits the canon and deletes the report
+  got exit 0); it did not by itself make a clone unable to get back to
+  green, which the independent review of this round refuted with a
+  synthetic report, closed in the rework below.
+- **CR1 — the map in the provenance, and its completeness.** The
+  sensitivity report records `map sha256`, over the sorted pairs of gate and
+  resolved path; `p-declared` reports a Markdown document of the folder no
+  artifact declares and the canon does not list (new canon table
+  "Documents outside the artifact table"), a file of two artifacts, a
+  document of "Size ranges" no artifact declares, and each literal path that
+  does not exist. Perturbations "file of an artifact repointed", "literal
+  file of an artifact deleted", "sensitivity report deleted".
+- **IM1 — portability.** `.gitattributes` (`* text eol=lf`); one hash
+  policy for every object, the validator included (the text read as UTF-8,
+  BOM dropped, LF); UTF-8 streams and children; Python 3.9 or later, exit 2
+  below it.
+- **CR2 — the sensitivity test.** It copies the whole material; it compares
+  each perturbed report with the baseline row by row (a noisy perturbation
+  fails, unless it declares by design, `also`, what else it reaches; eleven
+  do); it reports coverage by (document, gate) pair, pending below a
+  quarter (a hypothesis); it refuses a gate the validator does not
+  implement (exit 2); a row of a prior whose document was not passed is not
+  measured, by prior (S5); a name with a comma is refused (SUG6). Sixteen
+  perturbations for the corrections of this round and eight for pairs no
+  one reached: the first pass ended at 59, caught 59, 0 noisy, 44 of 165
+  pairs; the second pass and the rework at 65, caught 65, 0 noisy, 50 of
+  182 pairs (27 %). The provenance
+  compares both the running validator and the one next to the report
+  (IM4).
+- **CR4 and recommendation 1 — domain gates as results.** A `d-<name>`
+  gate is measured by the cell's code, which writes a result file in the
+  contract `05-contracts/domain-result.schema.json`; the layout lists them
+  under `domain-results`; the validator recomputes the sha256 of the
+  inputs (stale is blocking), turns `fail` into a note, `tool-failure` into
+  exit 2, and a declared gate without a result into a pending. The
+  regression of the seat that instantiated a library is a test.
+- **IM2, IM3, IM5, SUG5 — limits, fences, instance tables, paths.** The
+  numbers of a Limit cell are compared with the applied limit; a gate with
+  two rows is exit 2; one CommonMark reader of fences in every reader, and
+  `<!--` is an HTML tag; a placeholder in the artifact table of an instance
+  fails; the `m-determinism` row and the report header name the layout's
+  report path (new layout keys `report`, `lessons`, `round-record`).
+- **CR5, first half — labels.** `[experiment:<id>]` needs an executed
+  experiment with a provenance table (the sha256 of its inputs and
+  outputs), else it reads as `[hypothesis]` with a note; E1 and E3 have
+  theirs. `[lessons]` became `[lessons:<title>]`, checked against the
+  headings of the lessons; a `[hypothesis]` claim with a number or
+  "every", "always", "none" is a low note. Every label of the material was
+  migrated.
+- **CR5 and CR6, the mechanical part — ledgers.** The round record and the
+  state ledger carry `prev` from their first line of this version on (the
+  sha256 of everything above it); the canon's "Chained ledgers" table
+  counts the lines before the chain (10 and 48), never edited; a chained
+  round line declares `kind`, the `reviewer_relation` when a reviewer is
+  listed, no verdict when it is maintenance, and a `rubric_hash` equal to
+  the pin when `rubric_applied` is true. Declared reach: an edit nobody
+  announced, not an insider.
+- **Recommendation 4 — section commitments.** The canon commits to the
+  sha256 of the twelve cited sections of the owner-held document of the
+  first prior; with `--case`, `p-prior` on the canon compares them; without
+  it, every row of that prior says "owner-held evidence, not measured here".
+- **IM13 and SUG4 — the adopter's path.** An example of the JSON canon in
+  the templates and the skill; canon links in the templates of the brief
+  and the sources; one note ledger in the cell (`open-notes.json`; the
+  empty `state/notes.jsonl` is gone); a summary line on stderr with
+  `--output`; requirements declared; `python3` in the commands; `--out .`
+  and a target with a line break refused with exit 2.
+- **IM14 — panel ids out of the code and the adopter's path.** Comments and
+  docstrings name the defect and the version; the skill and the READMEs
+  carry no panel id. This changelog keeps them, as history.
+
+The text:
+
+- **CR6, CR7, IM10 — errata and positioning.** The root README, the
+  skill and the principle open with the status; the
+  instances of car, text and HPC are designed sketches, not executed; "two
+  executed instances, one auditable"; "pinned by sha256" replaced by what a
+  clone verifies and what rests on the owner; the guide of 004 leaves the
+  adopter's path. The principle: independence across families as a
+  recommendation with its cost; the pilot of E3 as the shown part; a table
+  "What would promote or withdraw a claim"; the formula called a scheme;
+  the frequency and the universal quantifiers out of the founding phrases
+  (SUG1); "produced by the method" for round 1 only. The brief: the
+  maintenance rounds and their protocol. The skill: the entry sentence names
+  the limit of the instrument, and one block on several models, the
+  principle's (SUG17).
+- **CR7 and recommendation 7 — the cell of 004.** `ERRATA.md` beside the
+  guide (three statements false now, and the sentence true now); the cell's
+  copy of the validator refuses to run without `--historical`, the only
+  change to the cell since it was distributed (the pin covers the method
+  document, which did not change).
+- **IM7 and recommendation 6 — experiments.** E3 reads as a pilot; E4, a
+  seeded-escape design (two arms, two families, ten defect classes one of
+  them outside the rubric, three repetitions, the same harness, provenance
+  per run, refutation bands under half the space), and E5, an execution
+  outside the documentary domain by a third party, designed.
+
+The second pass of the round, on the owner's request to execute every
+correction, closes the findings the first pass left open:
+
+- **IM6 — golden rule 4, mechanical.** The rule now reads "becomes a gate,
+  or a recorded decision not to make one"; a line of the state ledger marks
+  an escaped regression (`escaped`) and closes it with its `gate` or a
+  `no_gate` reason, and `p-notes` refuses one closed with neither. Six
+  findings of the panel are recorded so.
+- **IM8 — commands and versions.** The recompilation by hash is declared
+  never exercised (README, principle). A record's `command` is resolved
+  against the paths it names (never run), under `p-references`; paths and
+  commands take `{version}` from the layout's `version-label`; `closed_in`
+  takes the cell's label.
+- **IM9 and SUG16 — costs.** Tokens per call, and a wall time only beside
+  the throughput of the same run (principle, recipe); the round record takes
+  optional tokens, calls and the end of the last call per role, and the
+  round's wall time, crew, notes and rounds to the stop.
+- **IM11 — the age of a note and the owner's decisions.** An open note
+  older than 3 rounds (a hypothesis) and not scheduled (`due`) is a low
+  note; the 16 open notes of round 1 are scheduled. The owner's decisions
+  are a chained ledger, `state/owner-decisions.jsonl`, with a contract,
+  holding the eight decisions the recommendations left to the owner.
+- **IM12 — anonymity.** Months in Portuguese and Spanish, dates year first
+  with slashes, UNC paths, e-mail addresses, host names under a private
+  suffix; a `#!` line 1 and the canon's "Accepted paths" as the valve of a
+  declared false positive; forbidden entries as `sha256:<hex>`.
+- **IM14 — vocabulary.** Canon entries for unit, family, dispatch, wave,
+  teamwork and runner; the role that runs the validator is the runner
+  (`03-roles/runner.md`, the owner of the validation reports, in the corpus
+  and the three instances), the instrument keeps the name; test functions
+  without panel ids.
+- **IM15 — maintenance by someone else.** The checker is one class per
+  family of gates over a core with one interface, the methods moved
+  unchanged (the corpus report byte-identical before and after); the
+  perturbation set is a module of its own, `perturbation_set.py`, so the
+  validator no longer imports the sensitivity script; `--synthetic-prior`
+  regenerates a full sensitivity report in a clone, with a document built
+  from the canon's recorded facts and pinned in the copies only, and says
+  so. The self-test stays embedded (the runbook and the cells use it
+  without pytest). The two perturbations that named the owner's sha now
+  alter the pin of `004` and the label of a section commitment.
+- **IM16 — the stop.** Non-negotiables with ids in the brief; `affects` on a
+  tracked note; an open high or blocking note that affects one is blocking
+  unless a decided owner decision covers it; evidence that names a file of
+  the material has to exist (the frozen ledger exempt by design).
+- **The suggestions.** SUG2 `[against:<id>]`; SUG3 the self-test count and
+  the suite's sha256 in the report; SUG7 the templates and the checklist
+  under the skill's gates; SUG8 an empty set exits 4; SUG9 a repeated key in
+  a JSON line is a finding; SUG11 `p-size` without the pipes of a table;
+  SUG12 `p-limit` declared a proxy; SUG13 the second determinism run changes
+  the locale, and the protocol says what was varied by hand; SUG14 E1b, E1c
+  and E3b as designs beside E4; SUG15 a table of equivalence with
+  established practice in the principle; SUG17 a ten-minute path; SUG18 the
+  warning on translated headings; SUG19 the base of each count; SUG20 a
+  reversible hash is no pseudonym; SUG21 a failing test, a reproduction
+  anchor, the producer's rubric as a gap; SUG22 the review's records and the
+  history of the lessons pinned as frozen records of the canon
+  (`p-frozen-rubric`), and the adopter's path separated in the README. SUG1,
+  4, 5, 6 and 10 were closed in the first pass.
+
+Recommendations adopted (the orchestrator's, on the owner's request): 1, the
+validator reads domain results; 2, independence is a recommendation with
+its cost, and each round line states the reviewer's relation; 3, the
+maintenance rounds are outside the reflexive production, with a light
+recorded protocol and no verdict; 4, two executed instances, one auditable,
+and section commitments for the other; 5, internal coherence checked by the
+validator, chained ledgers, and the signed tag left to the owner; 6, the
+instrument freezes and the next budget measures value and portability; 7,
+the cell of 004 stays a record, with errata; 8, the criteria to promote or
+withdraw a claim, written before the data.
+
+**Freeze policy.** After 0.6.0 the instrument (validator, sensitivity
+test, scaffold) changes only for a failure that changes a verdict, or for a
+new execution.
+
+**Migration note.** A cell migrating to 0.6.0: lists its Markdown
+documents outside the artifact list under "documents outside the artifact
+list" in its canon; gives every literal path of its artifacts a file;
+writes its `d-*` gates as result files and lists them under the layout key
+`domain-results`; uses `[lessons:<title>]` and a provenance table for each
+executed experiment it cites; freezes its rubric and passes `--notes`
+(their pending can no longer be accepted); regenerates its sensitivity
+report (map, specificity, pairs); copies `perturbation_set.py` beside the
+two scripts; gives its non-negotiables ids and keeps its owner's decisions in
+`state/owner-decisions.jsonl`; and schedules (`due`), disputes or closes the
+open notes older than three rounds. The migration note of 0.5.0 lacked its
+first two steps, completed here: a cell from before 0.4.0 adds
+`p-efficacy-mark` to the gate map of its layout (else exit 2 "more than one
+parser"), and its JSON canon declares `"version": "v1"`.
+
+**Errata of earlier entries** (the entries are not rewritten): the
+headings "Closing pass after the independent review" of 0.5.0 and "Rework
+after the independent review of this round" of 0.4.0 name reviews of the
+producer's family, in a separate session; read "after the review". The
+sentence of the 0.5.0 README that a clone cannot get back to green without
+the owner was false under 0.5.0 (a deleted report, accepted by name, gave
+exit 0). Under 0.6.0 it was false again until the rework: a report
+regenerated with a synthetic prior, its marking line deleted, gave exit 0
+to a clone that had rewritten a verdict and re-pinned the canon. Since the
+rework it reads: a clone gets back to green without the owner only by
+accepting `p-sensitivity-synthetic` by name, which the report prints. The
+rework said a hand edit of the recorded sha256 was detected by the owner's
+regeneration; the re-review refuted that (the regeneration came out
+identical to the forged report), and since the closing pass the owner's run
+detects it by the attestation of the document, while a clone run does not.
+
+**Rework after the independent review of this round** (a review of the
+producer's family in a separate session, which saw the code and not the
+coder's conclusions; verdict "needs work", three high, eight medium and
+seven low findings, each reproduced before it was fixed and each fix a
+regression test):
+
+- **The sensitivity report records its case documents.** One line
+  `case sha256: <id> <sha256>` per prior document, computed by
+  `sensitivity.py`; a report without them is refused. A synthetic prior is
+  told by its sha256 differing from the registry's pin, not by a line that
+  declares it (the line `synthetic priors:` of the second pass could be
+  deleted). A synthetic report is never a pass: pending under
+  `p-sensitivity-synthetic`, accepted only by that name, without the
+  owner's document; refused with it. The README's table of what a clone
+  verifies and the two sentences above are corrected.
+- **The synthetic prior in the real heading style.** The registry gains
+  `heading_style` (a section, a subsection, a step; `### Passo {label}.`
+  for 000), and the synthetic document writes each label in it, a label the
+  canon cites as a step as a step: the reviewer's regression of the reader
+  (the step headings left unread) passed on the old synthetic and fails on
+  the new one. Declared: the synthetic does not test a format the registry
+  does not describe.
+- **The pin, prior by prior.** An owner-held cited prior without its
+  document is pending by name; a distributed one stays blocking. The clone
+  run of the runbook passes the document of 004, so its pin and numbers are
+  measured (an edited document of 004, or an invented number about it, was
+  exit 0 in the old clone run), and the sensitivity test with only that
+  document catches the perturbation of the pin of 004 (it was a miss).
+- **Accepted paths are paths.** An entry has the shape of a path or is a
+  tool failure; only a path hit equal to it is dropped, nothing is blanked
+  before the checks of identifiers and dates, and the canon cannot accept
+  for itself.
+- **Golden rule 4 and the protection of the non-negotiables.** An escape
+  closes with a gate the gate table declares, or a reason of 8 words or
+  more, or the name of a decided owner decision. The severity of a note is
+  the highest any line or the note ledger gave it; `affects` is the union
+  of every line; a decision covers while its last line is `decided`; a high
+  or blocking note opened since 0.6.0 names what it affects.
+- **Domain results bound to their row.** The inputs include every file of
+  the artifacts of the gate's row; a result its own numbers contradict is
+  blocking (a limit with a comparison, or a bare zero); a Severity column
+  below high counts only for a gate a decided owner decision covers.
+- **The parts of IM10, IM12 and CR5 left undone.** A table of when the
+  method fits and what each gap costs, in the principle (one provider, no
+  prior, a short target, no domain instrument); the months of French,
+  German and Italian, the brief's "Languages:" line and the canon's "Month
+  names" for any other language (pending by name without it); one-segment
+  roots read when another segment follows, when common, or when the
+  canon's "Machine roots" names them; `family_map_commitment`, a salted
+  commitment to the map of families, required on a chained round line of
+  0.6.0 or later, its form checked, its proof the owner's; a low note for a
+  rubric the producer wrote and applied; a table of the false greens of the
+  validator's gates in `06-gate-semantics.md`.
+- **A defect the rework's own probe found.** With only the document of
+  004, the perturbation of its pin made the recorded case read as
+  synthetic, and the renamed row of `p-sensitivity` counted as noise; the
+  specificity now leaves out the row of this gate under either name, and
+  the report was regenerated a second time, byte-identical on reproduction.
+- **Texts.** The canon and the gate table say that `p-prior` checks the
+  section commitments (not `p-prior-pin`); the reach of the chain is "an
+  edit that did not recompute it"; three chained ledgers, not two; the
+  final counts of the sensitivity; the deviation from recommendation 4 (the
+  notice inside the magnitude of a "pending accepted" row) declared in the
+  gate semantics; the round-record line of 0.6.0 describes the three passes,
+  the review and its family relation, and its commitment.
+
+**Closing pass after the re-review** (the same reviewer, on the rework;
+verdict "needs work" for three small points that change a verdict, and four
+low ones):
+
+- **The attestation of a prior document.** A `case sha256` line written by
+  hand with the real pin, which the registry publishes, passed the clone
+  run and the owner's run, and the owner's regeneration came out identical
+  to the forged report: the detector the rework declared did not detect.
+  The report now records `case attestation: <id> <sha256>` for each
+  document, over its text and the provenance digests; a run with the
+  document recomputes it and refuses a mismatch. Declared what remains: in
+  a clone run the forged line passes, and a frozen record re-pinned in the
+  canon shows only in the diff against a signed version.
+- **The floor before the synthetic name.** A synthetic report below the
+  floor of the pairs, or with a gate without a perturbation, became
+  `p-sensitivity-synthetic`, which a caller accepts; the floor is read
+  first now, and that pending is no name's to accept.
+- **Golden rule 4, by name.** A decision counts when the line's `decision`
+  is exactly its name (a substring and an empty name counted); the contract
+  refuses an empty name; the eight words of `no_gate` are distinct words,
+  declared a measure of form, not of content.
+- **The low ones.** The chain does not cover the last line of a ledger and a
+  domain result with hashes recomputed by hand is the same as running the
+  gate again: both declared. Dates in a declared language without month
+  names are pending under `p-anonymity-language`, which no caller accepts
+  (accepting `p-anonymity` stands for the forbidden list only). An accepted
+  path at the end of a sentence is compared without its final period.
+- The round line of 0.6.0, the last of its ledger, was rewritten again to
+  say so, before any line follows it.
+
+**Round infra.** `VERSION`, the version citations bumped to 0.6.0; the
+scripts changed first, then the canon, the gate section and the artifact
+table the provenance pins, then the sensitivity report, then the other
+documents; a round-record line added (the eleventh, the first chained,
+`kind` maintenance, no review yet); the lessons appended. Still open, and
+recorded as open: the anchor outside the tree (a signed tag, the owner's),
+and, after the second pass and the rework, CR5 only for that anchor.
+
 ## 0.5.0
 
 The corrections of the critical panel that reviewed v0.4.2 that do not

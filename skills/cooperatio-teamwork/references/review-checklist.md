@@ -1,7 +1,8 @@
 # Review checklist for a set of teamwork files
 
 Use before handing the files over, and as a reviewer's starting list. Each item
-is checkable; "looks fine" is not a result.
+is checkable; "looks fine" is not a result. The terms follow the
+[canon](../../../02-reflexive-application/01-canon.md) of the method.
 
 ## Structure
 - [ ] Every file in the set points to the canon (the canon itself excepted).
@@ -20,7 +21,9 @@ is checkable; "looks fine" is not a result.
 - [ ] The sensitivity report was regenerated after the last change to the validator, the gates file or the canon.
 - [ ] The gate table has one row per gate the artifact list assigns, naming the same artifacts.
 - [ ] No field, gate row or artifact record still holds a placeholder (`<...>`, TBD, TODO).
-- [ ] The validator exits 0; any pending gate it reports is accepted by name, with the reason, never read as a pass.
+- [ ] The validator exits 0; any pending gate it reports is one of the three it accepts by name (`p-anonymity`, `p-prior`, `p-prior-pin`), with the reason, never read as a pass.
+- [ ] Every non-negotiable of the domain (identity, speed, mass) is a `d-<name>` gate whose result the cell's code writes and the validator reads; none is left to the validator's exit 0.
+- [ ] Every Markdown document of the cell belongs to an artifact or to the canon's list of documents outside it.
 - [ ] No limit was loosened to make a finding go away.
 
 ## Contracts
@@ -34,7 +37,7 @@ is checkable; "looks fine" is not a result.
 - [ ] The verdict rule is mechanical and has three values (rejected, accepted with conditions, accepted).
 - [ ] The reviewer cannot see the producers' reasoning.
 - [ ] With a single agent behind all roles, the rubric and the review come from outside.
-- [ ] Every role has a named executor; the independent reviewer's executor differs from the producers', checked on what each alias or route maps to, not on its name.
+- [ ] Every role has a named executor; the round record states the reviewer's relation to the producer (another family, same family in a separate session, same model through another route, or none), checked on what each alias or route maps to, not on its name.
 - [ ] The round record names each executor by family (a stable letter) and effort, never by model identifier; the letter-to-identifier map stays with the owner, outside the files.
 
 ## Language and honesty

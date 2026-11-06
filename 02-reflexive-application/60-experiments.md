@@ -50,9 +50,12 @@ are. Every run works on copies; the historical cell is never touched.
 - **A, the control.** The guide untouched.
 - **B, the perturbed product.** The guide with two injected defects:
   - an invented number about the first prior: the guide's count of roles,
-    `18 papéis`, becomes `21 papéis` (the first prior has eighteen roles
-    with a card) [prior:000-av-production]; the frozen rubric classes a
-    false claim about the corpus as `blocking`;
+    `18 papéis`, becomes `21 papéis`; the frozen rubric classes a false
+    claim about the corpus as `blocking`;
+    - the fact it falsifies: the first prior has 18 roles with a card
+      [prior:000-av-production] (*reworded in v0.6.0, content unchanged:
+      the gate now reads the numbers inside code spans of a marked unit,
+      and the injected number is no fact about the prior*);
   - a method term with its sense swapped, which also contradicts the
     principle: the guide's sentence saying that several models do not
     create independence by themselves (models of one family share blind
@@ -288,13 +291,49 @@ producing model is not an independent review) follows from the principle,
 not from this experiment: it was noted before the results, and X's 2 of 2
 is, if anything, a datum against it.
 
+### Provenance
+
+The files of the runs, by role, with the sha256 of each under the material's
+hash policy (its text as UTF-8, no byte-order mark, line breaks as LF; for
+these files, equal to the sha256 of their bytes), recorded in v0.6.0 from
+the raw files the owner keeps outside the material. They let the owner,
+and anyone the owner hands the files to, check that the results above come
+from these inputs; they do not show that the protocol text above is the
+text that was fixed before the runs, since that text was not hashed before
+them (declared). The model behind each family letter stays with the owner.
+
+| File | Kind | sha256 |
+| --- | --- | --- |
+| system prompt | input | `43a2eaa9b6a13dedf9e569a80e4c8b39e3ec9e804a504a62bdce9757c8cfb101` |
+| task prompt | input | `c5b97983767f22730aac6f480ce2d3ccabb77f0c6a039c880181fb86721c34d4` |
+| reviewer card | input | `d4fac843d9e284c711f43c57719cec6623c59e919ba2848739a19342ca0b0cbd` |
+| gates and rubric copy | input | `e2254ae601527a5e04f42cb19a97b8040c4eb4de71e5aeba727fcba5418045c3` |
+| principle copy (v0.3.1) | input | `7bf6e8a242fdd17c3f575b80f352538360e7228674adeebd476f025d8d405267` |
+| guide, arm A | input | `d6c149b0a35cbcacbf159c6e85be88e946e2ef7ac802e3e9af75957181b51fff` |
+| guide, arm B | input | `694a188d2c8f304a1dc0b8f2324a209cb9416afc5103417e5193b7ad442ae75a` |
+| method document of the first prior | input | `02f61349c00de94d93c64abcbbdf401f64216a555071bdb86e7d4bea643d25a0` |
+| dispatch script of X | input | `27c144559a2f1777941663dfbac48e75c9c86dd35f9f2e5f656333539823eb99` |
+| dispatch script of X, repetition | input | `2e6f20aaa4f8d1139cb29f79c33862537a4867e61d493c716a1d43e184a4554c` |
+| report A-X | output | `ed62aa279b473104563c868e68def190c06688a7fc3ad4c939fc6dea38b63a21` |
+| raw response A-X | output | `08a716d9c352c50a8bd9279b305b7b930e1fe87d91bf0da2b0acebf798c437ed` |
+| report A-X2 | output | `f09ee36ae7dfceb6a430e832f124dbc385e6aa86ff6b582f59ce5bbd2c98d981` |
+| raw response A-X2 | output | `8ae42e4dbbfcba9aea8c479bccbe4deda7ca3770d28e86fe0948c3bd2cf5fa47` |
+| report B-X | output | `9f9f58e89cb8d790c15d0df20ec5d28d5e7a01a012237047475ca5464539b6d6` |
+| raw response B-X | output | `f89e4e750560c6fa073e4a5908b42ee4055e0dcaf09d03083ff9a5cc55755977` |
+| report A-Y | output | `2d2b8a1a9c96259ec0fa5ce8af0a2e8cb9a6edd16b4bb3978c70a8b5cf5cd169` |
+| report B-Y | output | `5924c8cdc6d49e119c1f07e45da3b556602e049d8ac20a6b99b1f8422d264d06` |
+| dispatch log of X | output | `f485110ba705a438acf9e2f9cad95c73c490c0d2fe34b5e0a5b6bde3fa40e303` |
+| run log of X | output | `04f7ff56cd4c5cccec9b3b0751ff080198901f000b933b1451d3fe16f426f148` |
+| start mark of Y | output | `2d0e467fcad39770dc4b821b853d329cac0f49e197835e494ca34222d97c87f6` |
+| end mark of Y | output | `6b04c108a1de22da9886014253cc07d71fd4ec534c1dfcb3085d6b4928e1a8dc` |
+
 ## E2 — the counterfactual, designed and not executed
 
 | Field | Value |
 | --- | --- |
 | Id | E2 |
 | Status | `designed` |
-| Origin | the same panel: everything the method found was found under the method, so there is no escape rate to compare [lessons] |
+| Origin | the same panel: everything the method found was found under the method, so there is no escape rate to compare [lessons:The v0.4.0 round: evidence about the method is subject to the method] |
 | Owner | verifier |
 
 ### Question
@@ -324,10 +363,18 @@ No number is stated until the design runs.
 
 ## E3 — the reviewer without the rubric
 
+*Read as a pilot since v0.6.0.* One run per cell, the whole review
+apparatus removed at once (rubric, card, gates file and the framing of the
+dispatch), and a task prompt that points at the two classes of defect
+injected: the design isolates no factor, and its prediction P3 was close to
+forced by the prompt. Its result is what a pilot shows (a direction worth
+measuring), and every unit that cites it reads it so; E4 below is the
+design that measures it.
+
 | Field | Value |
 | --- | --- |
 | Id | E3 |
-| Status | `executed`; protocol and predictions fixed before the runs and not edited after them; four runs, no re-run; deviations declared below |
+| Status | `executed`, as a pilot (reclassified in v0.6.0); protocol and predictions fixed before the runs and not edited after them; four runs, no re-run; deviations declared below |
 | Origin | the cheap counterfactual of the v0.4.1 round: E1 measured the reviewer with the frozen rubric, and E2, the full counterfactual, costs two productions and stays designed; E3 removes the review apparatus, the rubric and the reviewer card, and keeps the output contract (*corrected after the runs: this row first said "one element, the rubric"*) |
 | Owner | verifier |
 
@@ -505,3 +552,187 @@ other, those of X in series. Declared after the review of this round:
   the sentence named the severity table and the mechanical rule, which the
   design does not separate; they stay as a hypothesis*).
 - A lesson, appended to `99-lessons.md` in the v0.4.1 round.
+
+### Provenance
+
+The files of the runs, by role, with the sha256 of each under the material's
+hash policy (its text as UTF-8, no byte-order mark, line breaks as LF; for
+these files, equal to the sha256 of their bytes), recorded in v0.6.0 from
+the raw files the owner keeps outside the material. They let the owner,
+and anyone the owner hands the files to, check that the results above come
+from these inputs; they do not show that the protocol text above is the
+text that was fixed before the runs, since that text was not hashed before
+them (declared). The model behind each family letter stays with the owner.
+
+| File | Kind | sha256 |
+| --- | --- | --- |
+| system prompt | input | `7e985f2b5772c9340c98160bde75200a9d1f41cb3b5f02fc376933eba267ff6b` |
+| task prompt | input | `0aa21c04ce2c1704a3108103604a00f86138e8b43d0106c6606a379bdd14d452` |
+| principle copy (v0.3.1) | input | `7bf6e8a242fdd17c3f575b80f352538360e7228674adeebd476f025d8d405267` |
+| guide, arm A | input | `d6c149b0a35cbcacbf159c6e85be88e946e2ef7ac802e3e9af75957181b51fff` |
+| guide, arm B | input | `694a188d2c8f304a1dc0b8f2324a209cb9416afc5103417e5193b7ad442ae75a` |
+| method document of the first prior | input | `02f61349c00de94d93c64abcbbdf401f64216a555071bdb86e7d4bea643d25a0` |
+| dispatch script of X | input | `759f5d870c65a434d6efff2264f046ead80d37155a372ab0b6acf8ad17508f33` |
+| report A-X | output | `28bc9693f72dfecf18f66a46cb023dd8e36db6c15ff10b926c4eb8a1ddfe8186` |
+| raw response A-X | output | `76bcca32522682aec81d65dff9e43d361bc11a05a23513cc6c18c65e2a52c28f` |
+| report B-X | output | `f894e48c233b4b5139ace81ef31cb819ad01f0a35d10ca99357653890374b144` |
+| raw response B-X | output | `e977c3537d06e19a68c2ec5a96192f05cb2f76be0944b2a61836c1d3915d4802` |
+| report A-Y | output | `915af4cff0efb568a43866609f357723d544da79ab619ca49de90255dce29645` |
+| report B-Y | output | `b4c30b9fa410d7102f6a48d6c7c1949459da5d34f2a304a774f99e46f99cca88` |
+| dispatch log of X | output | `159288432a35258ef702f26dc09d3e4fb8d0b6afe6180da99cd073bee9249b7d` |
+| run log of X | output | `43eabcc3c6778278bf04a502bf2d2ed5819576bcf000bbe37c68c82ecd414aef` |
+| start mark of Y | output | `911f9fab29cbd25de647bf5696591dcc3fd1c9d6124ddd1e39087d95601eb01c` |
+| end mark of Y | output | `b5dbbc2712ebaac0d28413387d42546af229ea946b9b58f18af5f9589e61ecc3` |
+
+## E4 — seeded escape, designed and not executed
+
+| Field | Value |
+| --- | --- |
+| Id | E4 |
+| Status | `designed` (v0.6.0); protocol and predictions written before any run, for the owner to approve, budget and run |
+| Origin | the panel of the material's own team on v0.5.0: E2 needs two productions per target, and a seeded-escape design answers the same question, what the apparatus adds to a careful review, at about a tenth of the cost; E1 and E3 had both defects in one arm, a prompt pointing at the classes injected and two harnesses |
+| Owner | verifier |
+
+### Question
+
+On the same product, with the same seeded defects, does the review
+apparatus of the method (the validator and a review with the frozen rubric
+and its mechanical rule) let fewer defects escape than a careful review
+without it (a checklist and a free review)? And does a reviewer of another
+family let fewer escape than one of the producer's family?
+
+### Object
+
+The output of one writer, before any review: a document of a few thousand
+words written under a cell of the method, with its canon and its sources,
+copied once per run.
+
+### Conditions
+
+- **Arm A, the apparatus.** The validator of the cell, run first, then a
+  review with the frozen rubric, the reviewer card and the mechanical
+  verdict rule.
+- **Arm B, the careful baseline.** A checklist of the same length as the
+  rubric, written by someone who did not write the rubric, and a free
+  review with the same sources.
+- **Families.** Within each arm, one reviewer of the producer's family and
+  one of another family, the same harness and the same dispatch for both.
+- **Seeded defects.** k = 10 per copy, one per class: an invented number
+  about a registered prior, a number that exists in the source but in
+  another context, a term used in a sense the canon does not give, a
+  sentence that contradicts the principle, an absolute path, a broken link
+  to the canon, a claim of efficacy without a label, an omitted step of the
+  recipe, a limit without a justification, and a factual error outside every
+  class the rubric anticipates. The positions and the wording are drawn once
+  by a third party and sealed (their sha256 recorded in the protocol row of
+  the provenance table before the first run).
+
+### Protocol
+
+1. Seal the ten defects and the clean copy; record their sha256.
+2. For each of the four cells (arm by family), three repetitions in a
+   randomized order, one defect set per repetition, the same set across
+   the four cells of a repetition.
+3. Each run receives the copy, the sources and its arm's apparatus, and no
+   hint of how many defects there are or of their classes; the task prompt
+   is the same in the two arms but for the apparatus it names.
+4. A defect counts as found when a note names its location and its nature;
+   two readers who did not run the review adjudicate, blind to the arm, and
+   their disagreements are recorded.
+5. Each run records its provenance: the sha256 of every input and output,
+   the parameters of sampling, the tokens per call and the reason the
+   generation ended; a run that ends for length is a tool failure and is
+   re-run once.
+
+### Predictions (written before measuring)
+
+- **P1 (the apparatus).** The escape rate of arm A is lower than that of
+  arm B by at least 20 points, pooled over families, in at least 2 of 3
+  repetitions. Refuted when the difference is under 5 points in at least 2
+  of 3 repetitions.
+- **P2 (the family).** Within arm A, the reviewer of another family finds
+  at least 1 more defect of 10 than the reviewer of the producer's family,
+  in at least 2 of 3 repetitions. Refuted when the difference is nil in all
+  3 repetitions.
+- **P3 (outside the rubric).** In both arms, the defect outside every class
+  the rubric anticipates escapes at least as often as the median class.
+  Refuted when it is found in every run.
+
+Each refutation band covers less than half of the space of results its
+prediction ranges over, so each can fail; the thresholds of P1 and P2 are
+the ones the principle's table "What would promote or withdraw a claim"
+uses, for the owner to accept or adjust before the runs.
+
+### Cost, estimated
+
+Twelve review runs plus the validator runs, and the adjudication of the two
+readers: by the costs of E1, an order of magnitude below the two
+productions per target of E2 [hypothesis].
+
+### What it would show and what it would not
+
+It would measure escape rates on one kind of product, with seeded defects
+whose classes the designer chose, and nothing about defects nobody thought
+to seed. It would not measure a whole production, nor the cost of the
+instruments over a production.
+
+### Smaller designs that can run before it
+
+Proposed by the panel's seat of metrology, recorded here as designs, not
+yet experiments with an id of their own:
+
+- **E1b, the floor of noise.** The same review, one executor, five
+  repetitions per cell of {control, only the invented number, only the
+  swapped term}, in a randomized order, with the throughput of each run:
+  the agreement per dimension and per verdict across repetitions, and the
+  rate of detection with its interval.
+- **E1c, a defect outside the rubric.** A number that exists in the source
+  but in another context, and a step of the recipe omitted in silence: what
+  "defects the rubric does not anticipate" are worth.
+- **E3b, one factor at a time.** The arm with the defects, one executor, the
+  apparatus removed piece by piece (the rubric without the card, the card
+  without the rubric, only the framing, only the verdict rule), three
+  repetitions each: the share of each part, which E3 left a hypothesis.
+
+## E5 — an execution outside the documentary domain, designed and not executed
+
+| Field | Value |
+| --- | --- |
+| Id | E5 |
+| Status | `designed` (v0.6.0); for the owner to approve and to find who runs it |
+| Origin | the same panel: a seat instantiated a small software library from the material and found that, with no reading of the domain's measurements, the validator stayed at exit 0 with the identity gate and the tests failing; v0.6.0 added that reading |
+| Owner | verifier |
+
+### Question
+
+Can someone who is not the owner take the material as distributed, set up a
+cell for a target whose non-negotiables are domain measurements, and reach a
+verdict of the canon without improvising instrument?
+
+### Design
+
+- **Who.** A third party who did not write the material, with the material
+  as distributed and no help from the owner beyond the brief.
+- **Target.** A small software library with two non-negotiables: identity
+  of results against a frozen reference, and a speedup at a declared point.
+  The cell of the panel's seat is the starting point of the design, not of
+  the run: the third party writes its own cell.
+- **Instrument.** The domain gates are `d-*` rows whose results the cell's
+  code writes; the validator reads them; a regression is seeded once (a
+  candidate that breaks identity) and has to leave the run red.
+- **Record.** The round record of the cell, its notes, and a log of every
+  point where the material did not say what to do, which counts as an
+  improvisation.
+
+### Predictions (written before measuring)
+
+- **P1.** The cell reaches a verdict of the canon with at most two
+  improvisations, none of them in the instrument. Refuted when it cannot
+  reach a verdict without writing instrument the material does not ship.
+- **P2.** The seeded regression leaves the validator at exit 1. Refuted
+  when the run with the regression exits 0.
+
+### Cost, estimated
+
+One production of a small target by a third party, and the owner's time to
+brief them; not estimated in tokens.

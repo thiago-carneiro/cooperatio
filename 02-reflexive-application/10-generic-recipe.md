@@ -615,8 +615,11 @@ that would serve any target is badly filled in.
 
 ## When not to use
 
-The method costs, per round, one production, one independent review and the
-maintenance of the instruments; the costs measured so far, those of review
+The method costs, per round, one production, one review and the
+maintenance of the instruments; measure it in tokens per call (input,
+output, reasoning, cached, and how the generation ended), and give a wall
+time only beside the throughput of the same run, since minutes from two
+sessions are not comparable (the minutes below are indicative); the costs measured so far, those of review
 runs, are recorded with experiments E1 and E3 in `60-experiments.md`. In E1,
 about 58,000 input tokens (most of them the prior's method document the reviewer
 checks against, not the guide of about a thousand words under review),
