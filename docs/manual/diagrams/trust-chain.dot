@@ -1,4 +1,4 @@
-// What pins what: the integrity structure of the material at v0.6.0.
+// What pins what: the integrity structure of the material at v0.7.2.
 digraph trust_chain {
   rankdir=TB;
   graph [fontname="Helvetica", fontsize=15, nodesep=0.25, ranksep=0.5, ratio=compress, size="6.4,9.4"];
@@ -7,7 +7,6 @@ digraph trust_chain {
 
   subgraph cluster_owner {
     label="outside the material: the owner"; style="rounded"; color="#BBBBBB"; fontcolor="#555555";
-    doc000 [label="method document of 000\n(owner-held)", fillcolor="#FBE9D7"];
     familymap [label="family map + salt\n(letter → family)", fillcolor="#FBE9D7"];
     forbidden [label="forbidden identifiers list", fillcolor="#FBE9D7"];
   }
@@ -16,7 +15,7 @@ digraph trust_chain {
     label="inside the material"; style="rounded"; color="#BBBBBB"; fontcolor="#555555";
     registry [label="instances/registry.json\nsha256 pin per executed prior"];
     doc004 [label="method document of 004\n(distributed)"];
-    canon [label="canon: section commitments\n(sha256 of each cited section of 000)\n+ the frozen records table"];
+    canon [label="canon: section commitments\n(sha256 of each cited section of 004)\n+ the frozen records table"];
     frozen [label="90-review/* and the lessons above\nthe measured heading (never edited)"];
     rubricpin [label="rubric.sha256\n(frozen before the review)"];
     sens [label="sensitivity.md header\nvalidator · gates · canon · map sha256\ncase sha256 + case attestation per prior"];
@@ -27,10 +26,8 @@ digraph trust_chain {
 
   tag [label="a signed tag per version\n(the anchor outside the tree;\nrecommended, not yet made)", fillcolor="#FBE9D7", style="rounded,filled,dashed"];
 
-  doc000 -> registry [label="pinned by"];
   doc004 -> registry [label="pinned by"];
-  doc000 -> canon [label="committed section by section"];
-  doc000 -> sens [label="attested (the owner's run recomputes)"];
+  doc004 -> canon [label="committed section by section"];
   doc004 -> sens [label="attested (every run recomputes)"];
   validator -> sens [label="provenance"];
   canon -> sens [label="provenance"];

@@ -1,0 +1,24 @@
+// What the installer does for each known harness.
+digraph installer_flow {
+  rankdir=TB;
+  graph [fontname="Helvetica", fontsize=15, nodesep=0.35, ranksep=0.45, ratio=compress, size="6.4,8.0"];
+  node  [fontname="Helvetica", fontsize=14, shape=box, style="rounded,filled", fillcolor="#F5F3EE", color="#555555"];
+  edge  [fontname="Helvetica", fontsize=12, color="#555555", arrowsize=0.7];
+
+  start [label="for each harness in the table\n(or only those named with --harness)"];
+  detected [label="its configuration folder\nexists in the home folder?", shape=diamond, style="filled", fillcolor="#E8EEF5"];
+  skip [label="skipped: never creates the\nconfiguration of a harness not found", fillcolor="#EEEEEE"];
+  entry [label="the skills folder already has an entry\nnamed cooperatio-teamwork?", shape=diamond, style="filled", fillcolor="#E8EEF5"];
+  make [label="create the skills folder if missing;\nlink to the skill (or copy with --copy)", fillcolor="#E3F1E3"];
+  ours [label="a link to this skill, or a\ncopy carrying the marker?", shape=diamond, style="filled", fillcolor="#E8EEF5"];
+  done [label="already installed\n(a marked copy is refreshed with --copy)", fillcolor="#E3F1E3"];
+  conflict [label="conflict, left untouched;\nexit 1 at the end", fillcolor="#FBE9D7"];
+
+  start -> detected;
+  detected -> skip [label="no"];
+  detected -> entry [label="yes"];
+  entry -> make [label="no"];
+  entry -> ours [label="yes"];
+  ours -> done [label="yes"];
+  ours -> conflict [label="no"];
+}

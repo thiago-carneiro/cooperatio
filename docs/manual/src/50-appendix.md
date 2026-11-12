@@ -135,6 +135,23 @@ in the set is a tool failure (exit 2).
 Run from inside the material, so that it finds the validator, the
 sensitivity script, the perturbation module and the contracts to copy.
 
+## `install.py`
+
+`skills/cooperatio-teamwork/scripts/install.py` links the skill into the
+user-level skills folder of every agent harness it detects (chapter 17).
+
+| Option | Meaning |
+| --- | --- |
+| `--list` | show every known harness, `detected` or `absent`, the state of the skill there and the path of the entry |
+| `--dry-run` | say what would change, change nothing |
+| `--harness NAME` | only this harness, detected or not, repeatable; the names are those of `--list` |
+| `--copy` | copy the folder (with the marker `.cooperatio-install`) instead of linking it |
+| `--uninstall` | remove the links and marked copies the installer made |
+| `--home FOLDER` | the home folder to use instead of the real one |
+
+Exit codes: 0 done or nothing to do; 1 a conflict or an I/O error; 2
+invalid input or Python below 3.9; 3 no harness detected.
+
 ## The historical validator of instance 004
 
 `instances/004-adoption-guide/08-validator/validator.py` is the instrument
@@ -172,7 +189,7 @@ not an exhaustive list.
 | `p-declared` | a declared path that matches nothing, a repointed file, a document no artifact declares | each literal path and each glob, the resolved map pinned in the sensitivity's provenance | file of an artifact repointed |
 
 # Appendix E — File index of the material {-}
-The 79 files the material tracks at 0.6.0, grouped.
+The 236 files the material tracks at 0.7.2, grouped: 81 of the material proper, 94 of the benchmark and 61 of the manual and the history.
 
 | Path | Contents |
 | --- | --- |
@@ -189,26 +206,28 @@ The 79 files the material tracks at 0.6.0, grouped.
 | `02-reflexive-application/90-review/rubric.sha256`, `auditor-report.md`, `auditor-notes.json`, `notes.json`, `replies.md` | the frozen records of round 1 |
 | `02-reflexive-application/99-lessons.md` | the lessons, one entry per round |
 | `02-reflexive-application/state/round-record.jsonl`, `notes-status.jsonl`, `owner-decisions.jsonl` | the three chained ledgers |
-| `skills/cooperatio-teamwork/SKILL.md`, `references/templates.md`, `references/review-checklist.md`, `scripts/scaffold.py`, `scripts/test_scaffold.py` | the skill |
+| `skills/cooperatio-teamwork/SKILL.md`, `references/templates.md`, `references/review-checklist.md`, `scripts/scaffold.py`, `scripts/test_scaffold.py`, `scripts/install.py`, `scripts/test_install.py` | the skill, its scaffold and its installer |
 | `instances/registry.json` | the instance registry |
-| `instances/004-adoption-guide/` | the cell of the second executed instance: brief, sources of truth, JSON canon, artifacts, four cards, two contracts, gates, rubric and pin, the validator of 0.2.2 with its rules and reports, the engine's README, the two wave reports and the round-1 notes, the state ledgers, lessons, open notes, priors, layout, the guide (`guia-de-adocao.md`), the method document (`metodo-de-producao.md`) and `ERRATA.md` |
+| `instances/004-adoption-guide/` | the cell of the one executed instance: brief, sources of truth, JSON canon, artifacts, four cards, two contracts, gates, rubric and pin, the validator of 0.2.2 with its rules and reports, the engine's README, the two wave reports and the round-1 notes, the state ledgers, lessons, open notes, priors, layout, the guide (`guia-de-adocao.md`), the method document (`metodo-de-producao.md`) and `ERRATA.md` |
+| `benchmark/` | the seeded material of E4: `README.md`, `MANIFEST.sha256`, `document/` (the clean and seeded guides, the defect sets and annotated keys, and the inputs each review received), `code/` (per program: the anonymized pristine and seeded excerpts, the answer key, the upstream license, a notice, the anonymization rules and the gates' detection table; the shared gates code, rubric, checklist, card and prompts) |
 | `docs/manual/` | this manual: `src/`, `diagrams/`, `filters/`, `Makefile`, the built `manual.md`, `manual.pdf` and `build/manual.tex` |
+| `docs/history/` | the curated record of the sessions that produced the material |
 
 # Appendix F — Open owner decisions {-}
-The lines of `02-reflexive-application/state/owner-decisions.jsonl` at
-0.6.0, all `open`; each names what it blocks. Only the owner can close
-one, with a new chained line.
+The decisions of `02-reflexive-application/state/owner-decisions.jsonl`
+at 0.7.2, by their last chained line. Only the owner can change one, with
+a new chained line.
 
-| Decision | What it blocks |
-| --- | --- |
-| sign the tag of the version (create a signing key and sign `v0.6.0`) | the anchor of integrity outside the tree |
-| publish an extract of the first prior, or not | a clone's check of the numbers about `000-av-production` |
-| accept or adjust the thresholds to promote or withdraw a claim | experiment E4 |
-| approve the budget and run E4 | the measure of value of the material |
-| find the third party for E5 | the measure of portability |
-| promote independence across families to a rule | the rule of independence |
-| open the next production of the material as a production, with its own brief, a rubric of the reviewing side and a stop | a new verdict of the canon on the material |
-| replace the cell of 004 as the example (a new cell under 0.6.0 would be the third execution) | an executable example of a cell |
+| Decision | State | What it blocks |
+| --- | --- | --- |
+| sign the tag of the version (create a signing key and sign it) | open | the anchor of integrity outside the tree |
+| find the third party for E5 | open | the measure of portability |
+| promote independence across families to a rule | open | the rule of independence |
+| open the next production of the material as a production, with its own brief, a rubric of the reviewing side and a stop | open | a new verdict of the canon on the material |
+| replace the cell of 004 as the example (a new cell would be the second execution) | open | an executable example of a cell |
+| publish an extract of the prior held by the owner, or not | decided at 0.7.0: nothing to publish; the prior left the material | — |
+| accept or adjust the thresholds to promote or withdraw a claim | decided at 0.7.0: the owner's thresholds of chapter 10 | — |
+| approve the budget and run E4 | decided at 0.7.0; E4 ran at 0.7.1 | — |
 
 # Appendix G — Building this manual {-}
 The manual lives in `docs/manual/`:

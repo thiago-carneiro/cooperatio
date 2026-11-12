@@ -184,7 +184,7 @@
 }
 \makeatother
 \subtitle{Architecture, capabilities and purpose of the method and of
-its instrument --- method version 0.6.0}
+its instrument --- method version 0.7.2}
 \author{}
 \date{}
 
@@ -226,11 +226,42 @@ here is stated with more precision in the file it comes from, and the
 manual names that file. Where the manual and the material disagree, the
 material wins; please report the disagreement as a note.
 
-\textbf{Version.} The manual describes method version 0.6.0, as recorded
+\textbf{Version.} The manual describes method version 0.7.2, as recorded
 in \texttt{VERSION}. The counts it quotes (gates, perturbations, tests,
-files) were measured on that version; later versions change them, and
-the ``Migration note'' of each entry in
-\texttt{CHANGELOG.\allowbreak{}md} says what a cell has to change.
+files) were measured on that version unless a sentence names another
+one; later versions change them, and the ``Migration note'' of each
+entry in \texttt{CHANGELOG.\allowbreak{}md} says what a cell has to
+change.
+
+\textbf{What changed since the first edition (0.6.0).} Four things a
+reader of the earlier manual needs to know:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{One executed instance.} Version 0.7.0 removed from the living
+  material the prior the owner held and did not distribute, and its
+  registry entry. The evidence now rests on one execution,
+  \texttt{004-\allowbreak{}adoption-\allowbreak{}guide}: documentary, by
+  the owner, auditable from the material. A rule whose only support was
+  the removed prior keeps its text with \texttt{[hypothesis]}, or says
+  that no recorded execution supports it.
+\item
+  \textbf{The value test ran, and withdrew a claim.} Experiment E4
+  measured the review apparatus against a careful checklist review on
+  seeded defects, under thresholds the owner fixed before the runs. The
+  claim that the apparatus adds to a careful review without it is
+  \textbf{withdrawn} \texttt{[against:\allowbreak{}E4]} (chapter 10).
+\item
+  \textbf{A benchmark.} The seeded material of E4 and its answer keys
+  are kept in \texttt{benchmark/\allowbreak{}}, so that a later run
+  compares with it.
+\item
+  \textbf{An installer.}
+  \texttt{skills/\allowbreak{}cooperatio-\allowbreak{}teamwork/\allowbreak{}scripts/\allowbreak{}install.\allowbreak{}py}
+  links the skill into every agent harness it finds on the machine
+  (chapter 17).
+\end{itemize}
 
 \textbf{Conventions.} File names and identifiers appear in
 \texttt{monospace}; paths are relative to the root of the material, or
@@ -253,9 +284,9 @@ two are drawn from the same description and differ only in layout.
 \textbf{Status of the method, in the material's own words.} A working
 hypothesis, with a documentary validator; the gates of a target's domain
 enter as results the cell's own code produces and the validator checks;
-two executed instances, one of them auditable from the material. The
-manual repeats this on purpose wherever a reader could take a described
-capability for a measured one.
+one executed instance, documentary, by the owner, auditable from the
+material. The manual repeats this on purpose wherever a reader could
+take a described capability for a measured one.
 
 \part{Purpose and scope}
 
@@ -311,7 +342,7 @@ owner before the last round.
 \section{What the material
 distributes}\label{what-the-material-distributes}
 
-The material is a folder under version control. At version 0.6.0 it
+The material is a folder under version control. At version 0.7.2 it
 holds:
 
 {\def\LTcaptype{none} % do not increment counter
@@ -356,12 +387,22 @@ record, domain result, owner decision \\
 The skill &
 \texttt{skills/\allowbreak{}cooperatio-\allowbreak{}teamwork/\allowbreak{}}
 & an agent skill that creates the teamwork files for a target, with a
-scaffold script, templates and a review checklist \\
+scaffold script, an installer for the agent harnesses, templates and a
+review checklist \\
 The instances & \texttt{instances/\allowbreak{}} &
 \texttt{registry.\allowbreak{}json}, the record of the known instances
 pinned by sha256, and
 \texttt{004-\allowbreak{}adoption-\allowbreak{}guide/\allowbreak{}}, the
-cell of the second executed instance, distributed as a record \\
+cell of the one executed instance, distributed as a record \\
+The benchmark & \texttt{benchmark/\allowbreak{}} & the seeded material
+of experiment E4 and its annotated answer keys: a guide with three
+seeded copies, and three anonymized open-source program excerpts
+(Python, C, C++) with their seeded copies, licenses and notices, under a
+sha256 manifest; it holds the answers and is never given to a
+reviewer \\
+The manual & \texttt{docs/\allowbreak{}manual/\allowbreak{}} & this
+manual, and \texttt{docs/\allowbreak{}history/\allowbreak{}}, a curated
+record of the sessions that produced the material \\
 The owner records & \texttt{VERSION},
 \texttt{CHANGELOG.\allowbreak{}md}, \texttt{LICENSE},
 \texttt{.\allowbreak{}gitattributes} & the version of the method, its
@@ -404,15 +445,15 @@ throughout:
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  \textbf{Two executed instances, both documentary, both by the same
-  owner.} Instance \texttt{000-\allowbreak{}av-\allowbreak{}production},
-  an audiovisual production method held by the owner and not
-  distributable, from which the method was generalized; and instance
+  \textbf{One executed instance, documentary, by the owner.} Instance
   \texttt{004-\allowbreak{}adoption-\allowbreak{}guide}, the adoption
   guide of the method itself, whose cell is distributed under
   \texttt{instances/\allowbreak{}} and whose method document is pinned
-  by sha256. The three other instances in the registry (a car, a book
-  about 2027, an HPC library) are designed sketches, not executions.
+  by sha256. The method was first generalized from a production the
+  owner ran and did not distribute; since 0.7.0 the material cites
+  nothing from it. The three other instances in the registry (a car, a
+  book about 2027, an HPC library) are designed sketches, not
+  executions.
 \item
   \textbf{One part of the scheme has never been exercised: the
   recompilation by hash.} In neither execution did an engine rebuild a
@@ -420,11 +461,16 @@ throughout:
   command an artifact declares against the paths it names and does not
   run it.
 \item
-  \textbf{Efficacy is one-armed.} Everything the method found, it found
-  under the method; no production of the same target ran without the
-  gates, so there is no escape rate to compare. The counterfactual is
-  experiment E2, designed and not run; the cheaper seeded-escape design
-  is E4, designed and awaiting the owner's budget (chapter 10).
+  \textbf{Efficacy is one-armed, and the one measurement of the review
+  went against it.} No production of the same target ran without the
+  gates, so there is no escape rate of a whole production to compare;
+  that counterfactual is experiment E2, designed and not run. The
+  cheaper seeded-escape design, E4, ran at 0.7.1 on the review stage:
+  reviewers with the validator report, the frozen rubric and the
+  reviewer card let no fewer seeded defects escape than reviewers with a
+  checklist, for more than twice the added input tokens, and the claim
+  that the apparatus adds to a careful review is withdrawn
+  \texttt{[against:\allowbreak{}E4]} (chapter 10).
 \end{enumerate}
 
 The principle keeps a table, written before any data, of what would
@@ -575,14 +621,20 @@ E1 & Y, another family & not separable per call & not separable & about
 E3 (without the rubric and the card) & X & about 56,000 & 41,000 to
 46,000 & 10 to 13 minutes \\
 E3 & Y & not separable & not separable & about 4 minutes, indicative \\
+E4 (per review run, added input only) & D, the family measured in every
+run & document part: about 3,250 added by the apparatus against 2,320 by
+the checklist; code part: about 5,100 against 1,230 & not part of the
+owner's measure & not reported \\
 \end{longtable}
 }
 
 The material is careful about these numbers: minutes taken in two
 sessions of different throughput are not comparable, so the measure is
 the tokens of each call, and a wall time is reported only beside the
-throughput of the same run. The cost of a production round and of the
-instruments has not been measured.
+throughput of the same run. E4 measured, at the owner's request, only
+the input tokens each arm adds to what both arms read, output and
+reasoning apart. The cost of a production round and of the instruments
+has not been measured.
 
 The method pays off when being wrong is expensive \texttt{[hypothesis]};
 stated as a condition still unmeasured, the probability of an error
@@ -651,9 +703,10 @@ The root \texttt{README.\allowbreak{}md} gives three entry points:
   the three instances there show what an artifact, a gate and a rubric
   are in each domain;
 \item
-  to have an agent create the files, install the skill in
-  \texttt{skills/\allowbreak{}cooperatio-\allowbreak{}teamwork/\allowbreak{}}
-  and ask it to set up teamwork for the target.
+  to have an agent create the files, install the skill with
+  \texttt{python3 skills/\allowbreak{}cooperatio-\allowbreak{}teamwork/\allowbreak{}scripts/\allowbreak{}install.\allowbreak{}py}
+  (it links the skill into every agent harness it finds; chapter 17) and
+  ask the agent to set up teamwork for the target.
 \end{itemize}
 
 Its ``ten-minute path'' is reproduced, with the commands verified, in
@@ -665,10 +718,10 @@ research}\label{what-an-adopter-carries-and-what-is-research}
 The material separates the two. The fixed cost of a cell is the set of
 files the scaffold writes (24 with two roles; chapter 17 lists them),
 among them the instrument it copies: three Python scripts the adopter
-runs and does not have to read, about 5,700 lines at version 0.6.0
-(\texttt{validator.\allowbreak{}py} 4,859,
+runs and does not have to read, about 5,700 lines at version 0.7.2
+(\texttt{validator.\allowbreak{}py} 4,857,
 \texttt{sensitivity.\allowbreak{}py} 550,
-\texttt{perturbation\_\allowbreak{}set.\allowbreak{}py} 333, measured by
+\texttt{perturbation\_\allowbreak{}set.\allowbreak{}py} 336, measured by
 line count), plus one review per round. The history that matters to an
 adopter is the ``Migration note'' of each version in
 \texttt{CHANGELOG.\allowbreak{}md}; the rest of the changelog --- the
@@ -705,10 +758,13 @@ has one line per round, naming the executor of each role by
 
 After 0.6.0 the instrument is frozen: the validator, the sensitivity
 test and the scaffold change only for a failure that changes a verdict,
-or for a new execution. The next budget goes to measuring value
-(experiment E4) and portability (an execution outside the documentary
-domain by someone who is not the owner, experiment E5), not to more
-instrument.
+or for a new execution (0.7.0 lifted the freeze once, by the owner's
+decision, for data and comments only). The budget of 0.7.1 went to
+measuring value (experiment E4, which withdrew a claim); what stays open
+is portability (an execution outside the documentary domain by someone
+who is not the owner, experiment E5). Versions 0.7.0 to 0.7.2 are
+maintenance rounds, not productions under the method: each says so in
+its changelog entry.
 
 \section{License}\label{license}
 
@@ -870,9 +926,8 @@ grid each round; three verdicts & the team approving its own work;
 rounds that cannot be compared \\
 \textbf{Instrument fixed at the root} & a false positive becomes a fix
 to the rule, with a test that reproduces the case, and the previous
-round is redone & an automatic reviewer of which 10 of 12 notes were
-false, in the second pilot of the first instance
-\texttt{[prior:\allowbreak{}000-\allowbreak{}av-\allowbreak{}production]} \\
+round is redone & \texttt{[hypothesis]}: no recorded execution in the
+material measures the cost of an instrument fixed downstream \\
 \textbf{Stopping criterion} & the owner declares when to stop: the
 review of the last version becomes a list of open notes, not a new
 version & endless rounds \\
@@ -1511,7 +1566,7 @@ instance'', ``of the case'', ``the executed instance'', ``instance 0'')
 without the mark is a finding of
 \texttt{p-\allowbreak{}prior-\allowbreak{}mark}.
 
-The registry at 0.6.0:
+The registry at 0.7.2:
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -1536,9 +1591,6 @@ Method version
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\texttt{000-\allowbreak{}av-\allowbreak{}production} & executed & the
-owner's method document, pinned by sha256 & owner-held, not
-distributable & --- \\
 \texttt{001-\allowbreak{}car},
 \texttt{002-\allowbreak{}text-\allowbreak{}2027},
 \texttt{003-\allowbreak{}hpc} & designed & none & none & --- \\
@@ -1554,18 +1606,21 @@ An executed entry carries \texttt{document}, \texttt{sha256},
 \texttt{locator} and \texttt{number\_\allowbreak{}format}
 (\texttt{point-\allowbreak{}decimal} or
 \texttt{comma-\allowbreak{}decimal}), none of them null; a designed
-entry keeps the four null, so it can never pass for a pinned prior. The
-entry of \texttt{000-\allowbreak{}av-\allowbreak{}production} also
-declares a \texttt{heading\_\allowbreak{}style} (the shape of its
-section, subsection and step headings), which the synthetic prior of the
-sensitivity test follows (chapter 14).
+entry keeps the four null, so it can never pass for a pinned prior. An
+entry may also declare a \texttt{heading\_\allowbreak{}style} (the shape
+of its section, subsection and step headings), which the synthetic prior
+of the sensitivity test follows (chapter 14); the instrument keeps that
+mechanism for a cell whose prior is held outside its material, which
+this material no longer uses.
 
 Numbers about a prior do not enter the documents before they have a row
 in the canon's ``Recorded facts'' table, which names the number, its
 context (with the mark) and the sections of the prior's document where
 it lives. The canon also commits, by sha256, to the text of each cited
-section of the owner-held document, so that a later rewrite of a cited
-section is detectable without publishing the text (chapter 15).
+section of the prior's document (at 0.7.2, the four cited sections of
+\texttt{004-\allowbreak{}adoption-\allowbreak{}guide}), so that a later
+rewrite of a cited section is detectable even where the text is not
+published (chapter 15).
 
 \section{Claims of efficacy and their
 labels}\label{claims-of-efficacy-and-their-labels}
@@ -1651,10 +1706,14 @@ E3 & executed & the same reviewers without the rubric and the reviewer
 card & both still named 2 of 2, but classed the invented fact
 \texttt{high} and accepted with conditions: the apparatus turned the
 finding into a verdict \\
-E4 & designed & seeded escape: does the apparatus let fewer of ten
-seeded defects escape than a careful baseline, and does another family
-find more? & protocol and predictions written; awaits the owner's
-thresholds and budget \\
+E4 & executed (0.7.1) & seeded escape: does the apparatus let fewer
+seeded defects escape than a careful checklist review, for how many
+added input tokens, and does another family find more? & 39 reviews in a
+document part and a code part; with the failed runs counted as all
+escaped, 79 escapes against 67 for +136 \% added input tokens; with the
+family measured in every run alone, 21 against 21 for +135 \%; the claim
+of the apparatus is withdrawn, the comparison of families is not
+decidable \\
 E5 & designed & can a third party set up a cell for a target with domain
 measurements and reach a verdict without improvising instrument? &
 awaits the owner finding the third party \\
@@ -1667,14 +1726,17 @@ claim}\label{what-would-promote-or-withdraw-a-claim}
 Written before the data, as the gates are
 (\texttt{01-\allowbreak{}principle.\allowbreak{}md}, section 9), so that
 the material leaves the state of a working hypothesis by a measurement
-and not by a decision. The thresholds are the owner's to accept or
-adjust before E4 runs:
+and not by a decision. The owner fixed the thresholds of the review
+apparatus at 0.7.0, before any run of E4: half the escapes and half the
+added input tokens to promote it; more added tokens without a
+proportional drop in escapes to withdraw it.
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}@{}}
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Claim
@@ -1682,6 +1744,8 @@ Claim
 Promoted when
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 Withdrawn when
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+State after the data
 \end{minipage} \\
 \midrule\noalign{}
 \endhead
@@ -1690,16 +1754,55 @@ Withdrawn when
 a reviewer of another family adds to one of the producer's family & in
 E4 or an equivalent design, the arm of the other family finds at least 1
 more defect per 10 seeded, in at least 2 of 3 repetitions & the
-difference is nil in 3 repetitions \\
-the review apparatus adds to a careful review without it & in E4, the
-escape rate of arm A is lower than that of arm B by at least 20 points &
-the difference is under 5 points \\
+difference is nil in 3 repetitions & open: 11 of the 16 reviews of the
+producer's family were tool failures (the generation hit its output
+limit), too few valid runs to compare \\
+the review apparatus (validator and review with a frozen rubric) adds to
+a careful review without it & in E4, pooled over families, in at least 2
+of 3 repetitions, arm A lets at most half as many seeded defects escape
+as arm B and consumes at most half its additional input tokens & in E4,
+pooled over families and repetitions, arm A consumes more additional
+input tokens than arm B and its relative reduction of escapes is smaller
+than its relative increase in those tokens & \textbf{withdrawn} by E4 in
+both readings: 79 escapes against 67 (-18 \%) for +136 \% added input
+tokens; with the family measured in every run alone, 21 against 21 (0
+\%) for +135 \% \texttt{[against:\allowbreak{}E4]} \\
 the method is portable outside the documentary domain & one execution
 outside it, by someone who is not the owner, with its domain gates read
 by the validator and a verdict of the canon & that execution cannot
-reach a verdict without improvising instrument \\
+reach a verdict without improvising instrument & open: E5 is designed
+and not run \\
 \end{longtable}
 }
+
+The withdrawal holds for what E4 measured: one design, the review stage
+only, seeded defects of classes its designer chose, and added input
+tokens by the owner's definition, which favored the arm with fewer files
+by construction. On escapes alone the family measured in every run found
+21 against 21, so the withdrawal does not rest on the tokens
+\texttt{[against:\allowbreak{}E4]}. What E4 showed besides:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{the noise floor}: one defect set repeated gave differences of
+  1 or 2 escapes per run, within run-to-run variation;
+\item
+  \textbf{clean copies}: every valid review of an unseeded copy still
+  produced 8 to 14 findings and, but for one, a negative verdict, so the
+  verdict did not separate a clean copy from a seeded one, in either
+  arm;
+\item
+  \textbf{the instrument alone}: the document validator reported 4 or 5
+  of the 10 seeded classes per set; the static report of the code part
+  named the lines of 6, 0 and 2 of the 12 defects per program;
+\item
+  \textbf{by class}: in the code part, readability and design defects
+  escaped less with the apparatus, logic defects no less.
+\end{itemize}
+
+The frozen rubric still does what E1 and E3 showed: it keeps two rounds
+comparable and turns a finding into a verdict.
 
 \part{The material and the instrument}
 
@@ -2128,12 +2231,13 @@ accept \\
 only four names: \texttt{p-\allowbreak{}anonymity},
 \texttt{p-\allowbreak{}prior} and
 \texttt{p-\allowbreak{}prior-\allowbreak{}pin} (the halves that need an
-input the material does not distribute: the forbidden list, the
-owner-held prior document) and
+input the material does not distribute: the forbidden list, or a prior
+document a cell keeps outside its material) and
 \texttt{p-\allowbreak{}sensitivity-\allowbreak{}synthetic} (a
-sensitivity report a clone regenerated with a synthetic prior). Any
-other name is exit 2, \texttt{p-\allowbreak{}sensitivity} included; a
-missing sensitivity report is blocking; and
+sensitivity report regenerated with a synthetic prior); this corpus
+needs only \texttt{p-\allowbreak{}anonymity}. Any other name is exit 2,
+\texttt{p-\allowbreak{}sensitivity} included; a missing sensitivity
+report is blocking; and
 \texttt{p-\allowbreak{}anonymity-\allowbreak{}language} (a language the
 brief declares without month names) cannot be accepted either. The
 history behind the closed list: the panel that reviewed v0.5.0 deleted
@@ -2154,12 +2258,13 @@ whatever its code page.
 suite}\label{the-self-test-and-the-test-suite}
 
 \texttt{validator.\allowbreak{}py -\allowbreak{}-\allowbreak{}self-\allowbreak{}test}
-runs 185 checks (at 0.6.0) embedded in the script, with no inputs; the
+runs 185 checks (at 0.7.2) embedded in the script, with no inputs; the
 runbook and every cell use it without pytest, and the report prints its
 count. The pytest suite
 (\texttt{80-\allowbreak{}validator/\allowbreak{}test\_\allowbreak{}validator.\allowbreak{}py},
-280 tests together with the scaffold's
-\texttt{test\_\allowbreak{}scaffold.\allowbreak{}py} at 0.6.0) runs the
+294 tests together with the scaffold's
+\texttt{test\_\allowbreak{}scaffold.\allowbreak{}py} and the installer's
+\texttt{test\_\allowbreak{}install.\allowbreak{}py} at 0.7.2) runs the
 self-test and one case per rule: one that passes and one that is
 rejected. Both are run with
 \texttt{python3 -\allowbreak{}B -\allowbreak{}m pytest -\allowbreak{}p no:\allowbreak{}cacheprovider},
@@ -2181,12 +2286,12 @@ until one is copied in. Chapter 17 lists what it writes.
 \chapter{The gate catalogue}\label{the-gate-catalogue}
 
 This chapter is the reference of the gates the validator implements at
-version 0.6.0: 17 builtin gates measured per document, 4 global gates
-measured once per run, one measurement of the instrument, and the family
-of domain gates a cell supplies. For each gate: the artifacts the
-reflexive application assigns it to, what it reads, its limit, when it
-is pending, and the semantics worth knowing before reading a note. The
-authoritative text is the gate table of
+version 0.7.2 (unchanged since 0.6.0): 17 builtin gates measured per
+document, 4 global gates measured once per run, one measurement of the
+instrument, and the family of domain gates a cell supplies. For each
+gate: the artifacts the reflexive application assigns it to, what it
+reads, its limit, when it is pending, and the semantics worth knowing
+before reading a note. The authoritative text is the gate table of
 \texttt{04-\allowbreak{}gates-\allowbreak{}and-\allowbreak{}rubric.\allowbreak{}md}
 and the declared semantics of
 \texttt{06-\allowbreak{}gate-\allowbreak{}semantics.\allowbreak{}md}.
@@ -2663,9 +2768,9 @@ ledgers}{ --- the note ledgers}}\label{p-notes-the-note-ledgers}
   rounds and not scheduled (low).
 \item
   \textbf{Limit:} 0. \texttt{[hypothesis]}: a note aimed at an artifact
-  the graph does not know is undeliverable; the note router of the first
-  instance rejected such a target
-  \texttt{[prior:\allowbreak{}000-\allowbreak{}av-\allowbreak{}production]}.
+  the graph does not know is undeliverable, and no recorded execution
+  measured the cost of letting one through; here the contract is checked
+  by code.
 \item
   \textbf{Pending:} without \texttt{-\allowbreak{}-\allowbreak{}notes};
   that pending cannot be accepted.
@@ -2758,9 +2863,8 @@ two consecutive runs on the same input, the second with another hash
 seed and the C locale; measured only with
 \texttt{-\allowbreak{}-\allowbreak{}determinism}, and a difference is a
 high note. \texttt{[hypothesis]}: a report that changes by itself is not
-evidence; the continuity ledger the validator of the first instance
-wrote was deterministic
-\texttt{[prior:\allowbreak{}000-\allowbreak{}av-\allowbreak{}production]}.
+evidence, and no recorded measurement stands behind this limit beyond
+that reasoning.
 
 \section{Domain gates}\label{domain-gates}
 
@@ -2859,7 +2963,7 @@ gates.}\label{fig-sensitivity-flow}
 
 The corpus keeps its set in
 \texttt{perturbation\_\allowbreak{}set.\allowbreak{}py} (65
-perturbations at 0.6.0), a module the validator reads without importing
+perturbations at 0.7.2), a module the validator reads without importing
 the sensitivity script; a cell keeps its own as data,
 \texttt{08-\allowbreak{}validator/\allowbreak{}perturbations.\allowbreak{}json},
 named by the layout key \texttt{artifacts.\allowbreak{}perturbations}.
@@ -2918,9 +3022,9 @@ Two examples from the corpus's set:
 \NormalTok{Perturbation("avoid{-}word inserted", "10{-}generic{-}recipe.md",}
 \NormalTok{             "\#\# The orchestrator in pseudocode",}
 \NormalTok{             "\#\# The orchestrator of the pipeline", "p{-}terms")}
-\NormalTok{Perturbation("prior number altered", "10{-}generic{-}recipe.md",}
-\NormalTok{             "the validator gave 38", "the validator gave 39", "p{-}prior",}
-\NormalTok{             needs\_case=True, prior="000{-}av{-}production")}
+\NormalTok{Perturbation("prior number altered", "../01{-}principle.md",}
+\NormalTok{             "produced a guide of 1054 words", "produced a guide of 1055 words",}
+\NormalTok{             "p{-}prior", needs\_case=True, prior=PRIOR\_004)}
 \end{Highlighting}
 \end{Shaded}
 
@@ -2954,8 +3058,8 @@ assigns, except \texttt{p-\allowbreak{}sensitivity}, the measurements
 and the domain gates, has at least one perturbation) and by pair (the
 (document, gate) rows of the baseline report that at least one measured
 perturbation targets). The magnitude reads ``k of n gates covered, p of
-q pairs (r \%), 0 missed of m, 0 noisy''; at 0.6.0 the corpus reads 20
-of 20 gates and 50 of 182 pairs (27 \%). An assigned gate without a
+q pairs (r \%), 0 missed of m, 0 noisy''; at 0.7.2 the corpus reads 20
+of 20 gates and 54 of 182 pairs (29 \%). An assigned gate without a
 perturbation, or fewer than 25 \% of the pairs, leaves
 \texttt{p-\allowbreak{}sensitivity} pending with the reason, never a
 pass; the floor is a hypothesis, the first this version commits to,
@@ -2987,13 +3091,17 @@ provenance. Deleting the report does not help: a missing report is
 blocking, and \texttt{p-\allowbreak{}sensitivity} cannot be accepted by
 name.
 
-\section{The synthetic prior, for a
-clone}\label{the-synthetic-prior-for-a-clone}
+\section{The synthetic prior, for a prior held
+elsewhere}\label{the-synthetic-prior-for-a-prior-held-elsewhere}
 
-Five rows of the corpus's set need the method document of the first
-prior, which the owner keeps. A maintainer who edits the instrument
-without it regenerates a full report with
-\texttt{-\allowbreak{}-\allowbreak{}synthetic-\allowbreak{}prior 000-\allowbreak{}av-\allowbreak{}production}:
+Since 0.7.0 the one executed prior of this material is distributed, so a
+clone regenerates the report with the real document and needs none of
+this section. The instrument keeps the mechanism for a cell whose prior
+is held outside its material: its registry entry carries the reserved
+locator \texttt{owner-\allowbreak{}held, not distributable}, and a
+maintainer who edits the instrument without that document regenerates a
+full report with
+\texttt{-\allowbreak{}-\allowbreak{}synthetic-\allowbreak{}prior PRIOR\_\allowbreak{}ID}:
 the script generates a document from the canon's recorded facts (one
 numbered section per label the facts cite, holding the facts' numbers in
 the prior's number format), in the \texttt{heading\_\allowbreak{}style}
@@ -3024,11 +3132,12 @@ run. Since then the report records, for each document it was made with,
 a \texttt{case attestation}: the sha256 of the document's text followed
 by the validator, gates, canon and map digests of the report, which only
 whoever holds the text can compute. A run that passes the document
-recomputes it and refuses a mismatch; that is the owner's run for
-\texttt{000} and every run for \texttt{004}. What it leaves, declared: a
-run without the document compares nothing, so \textbf{in a clone the
-forged line still passes}, and a frozen record re-pinned in the canon
-shows there only in the diff against a signed version.
+recomputes it and refuses a mismatch; for this material, whose prior
+document is distributed, that is every run. What it leaves, declared:
+for a prior held elsewhere, a run without the document compares nothing,
+so \textbf{in a clone of such a cell the forged line still passes}, and
+a frozen record re-pinned in the canon shows there only in the diff
+against a signed version.
 
 \chapter{Ledgers, records and
 integrity}\label{ledgers-records-and-integrity}
@@ -3191,9 +3300,9 @@ owner}\label{what-a-clone-verifies-and-what-rests-on-the-owner}
 
 \begin{figure}
 \centering
-\pandocbounded{\includegraphics[keepaspectratio,alt={What pins what: the integrity structure of the material at version 0.6.0.}]{diagrams/trust-chain.pdf}}
+\pandocbounded{\includegraphics[keepaspectratio,alt={What pins what: the integrity structure of the material at version 0.7.2.}]{diagrams/trust-chain.pdf}}
 \caption{What pins what: the integrity structure of the material at
-version 0.6.0.}\label{fig-trust-chain}
+version 0.7.2.}\label{fig-trust-chain}
 \end{figure}
 
 {\def\LTcaptype{none} % do not increment counter
@@ -3210,14 +3319,12 @@ Only the owner verifies
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-every gate on every document; the pin and the numbers of \texttt{004},
-whose document is distributed; the frozen rubric; the provenance of the
-sensitivity report, the sha256 of each prior document included; the hash
-chain of the three ledgers & the numbers stated about \texttt{000},
-whose document is owner-held (its cited sections are committed by
-sha256, so it cannot be swapped unseen, but a clone cannot read them);
-that the sensitivity report was made with that document, by regenerating
-it \\
+every gate on every document; the pin, the numbers and the committed
+sections of \texttt{004}, whose document is distributed; the frozen
+rubric; the provenance of the sensitivity report, its attestation
+included; the hash chain of the three ledgers & nothing about the
+numbers since 0.7.0: every number stated about a prior is checkable in a
+clone \\
 that a ledger line written since v0.6.0 was not edited without
 recomputing the chain & an edit that recomputed the chain; the lines
 before the chain; the history of the lessons and the record of the
@@ -3227,13 +3334,14 @@ commitment & the map from a family letter to a family, and its salt \\
 \end{longtable}
 }
 
-The residual risks the material declares, as they stand at 0.6.0:
+The residual risks the material declares, as they stand at 0.7.2:
 
 \begin{itemize}
 \tightlist
 \item
-  in a clone without the owner's document, a forged \texttt{case sha256}
-  line passes;
+  for a cell whose prior is held elsewhere, a forged
+  \texttt{case sha256} line passes in a clone without that document
+  (this material no longer has such a prior);
 \item
   the 8 distinct words of a \texttt{no\_\allowbreak{}gate} reason
   measure form, not content;
@@ -3250,42 +3358,23 @@ The residual risks the material declares, as they stand at 0.6.0:
 
 \chapter{The instances}\label{the-instances}
 
-\section{Instance 000: the audiovisual production
-method}\label{instance-000-the-audiovisual-production-method}
+\section{Where the method came from}\label{where-the-method-came-from}
 
-The first executed instance, from which the method was generalized: an
-audiovisual production method, written in Brazilian Portuguese, held by
-the owner and not distributable. The registry pins its method document
-by sha256 and declares its number format
-(\texttt{comma-\allowbreak{}decimal}) and its heading style (a section
-\texttt{\#\# 6.\allowbreak{}}, a subsection
-\texttt{\#\#\# 1.\allowbreak{}1}, a step
-\texttt{\#\#\# Passo 15.\allowbreak{}}), and the canon commits, section
-by section, to the text of the twelve sections the recorded facts cite.
-The facts the material states about it are the rows of the canon's
-``Recorded facts'' table --- among them 18 roles with a card, 49
-artifacts in the graph of its first pilot, 2 maximum rounds per
-artifact, the review of v1 with 3 blocking, 4 high, 12 medium and 12 low
-findings, 26 low notes open at v5, a drift gate whose wrong instrument
-read a p95 of 0.546 s at v1 and 0.10 s once fixed, and an automatic
-reviewer of which 10 of 12 notes were false
-\texttt{[prior:\allowbreak{}000-\allowbreak{}av-\allowbreak{}production]}.
-Several rules of the recipe carry the error of this instance that the
-step prevents, as a measured size of the error.
-
-Its historical vocabulary is recorded in the canon so that the frozen
-records of round 1 can be read: the validator was its ``continuity
-checker''; the verdicts were ``publishable'', ``publishable with minor
-corrections'' and ``rejected''; the production cell carried a media
-term; the quarantine mark of a bracketed word became
-\texttt{[prior:\allowbreak{}<id>]}.
+The method was first generalized from a production the owner ran and did
+not distribute. Until 0.6.0 the material cited it as a registered prior
+held by the owner; version 0.7.0 removed those citations and its
+registry entry, so that every statement of evidence can be checked from
+the material. A rule whose only support was that production keeps its
+text with \texttt{[hypothesis]}, or says that no recorded execution
+supports it. The canon still records the historical vocabulary of round
+1, so that its frozen records can be read.
 
 \section{Instance 004: the adoption
 guide}\label{instance-004-the-adoption-guide}
 
-The second executed instance: the adoption guide of the method itself,
-in Brazilian Portuguese, of 900 to 1,400 words by its brief, produced
-under method version 0.2.2 with a writer of one family and a review in a
+The one executed instance: the adoption guide of the method itself, in
+Brazilian Portuguese, of 900 to 1,400 words by its brief, produced under
+method version 0.2.2 with a writer of one family and a review in a
 separate dispatch without the producer's reasoning, which gave
 \texttt{accepted} with no dimension below 4 and a guide of 1,054 words
 \texttt{[prior:\allowbreak{}004-\allowbreak{}adoption-\allowbreak{}guide]}.
@@ -3314,9 +3403,9 @@ since v0.5.0, as a \textbf{record, not an example to copy}:
   its \texttt{ERRATA.\allowbreak{}md} lists what the guide says that is
   no longer true when read against the material as it stands (the rubric
   is frozen before the first review, not before the production; the
-  registry holds two executed instances; the skill copied alone creates
-  a cell without the validator; independence across families is a
-  recommendation, not a rule);
+  registry holds one executed instance, this one; the skill copied alone
+  creates a cell without the validator; independence across families is
+  a recommendation, not a rule);
 \item
   its list of forbidden identifiers stayed with the owner, outside the
   material, since it contains what it forbids.
@@ -3339,8 +3428,8 @@ The cell shows the shape of a JSON-layout cell at 0.2.2:
 \texttt{priors.\allowbreak{}json}, \texttt{layout.\allowbreak{}json},
 the guide, the method document and the errata.
 
-Whether a new cell under 0.6.0 replaces it as the example is an open
-owner decision (appendix F).
+Whether a new cell under the current version replaces it as the example
+is an open owner decision (appendix F).
 
 \section{The three designed
 instances}\label{the-three-designed-instances}
@@ -3444,6 +3533,315 @@ than as a number.
 
 \chapter{Quick start}\label{quick-start}
 
+\section{Installing the skill}\label{installing-the-skill}
+
+The skill is the folder
+\texttt{skills/\allowbreak{}cooperatio-\allowbreak{}teamwork/\allowbreak{}}.
+An agent harness (Claude Code, GitHub Copilot, OpenCode, Codex, Gemini
+CLI and the others) finds a skill when that folder, or a link to it,
+sits in the harness's skills folder; the agent then reads
+\texttt{SKILL.\allowbreak{}md} when a request matches its description.
+The installer puts a link in every harness it finds on the machine.
+
+\subsection{Before installing}\label{before-installing}
+
+\begin{itemize}
+\tightlist
+\item
+  A checkout of the material, kept where it is: the installer links to
+  the folder inside the checkout, so moving or deleting the checkout
+  breaks the links (run \texttt{-\allowbreak{}-\allowbreak{}uninstall}
+  first).
+\item
+  Python 3.9 or later; the installer uses the standard library only.
+\item
+  At least one harness already installed and run once, so that its
+  configuration folder exists in the home folder.
+\end{itemize}
+
+\subsection{Install}\label{install}
+
+From the root of the material:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{python3}\NormalTok{ skills/cooperatio{-}teamwork/scripts/install.py }\AttributeTok{{-}{-}list}     \CommentTok{\# known, found}
+\ExtensionTok{python3}\NormalTok{ skills/cooperatio{-}teamwork/scripts/install.py }\AttributeTok{{-}{-}dry{-}run}  \CommentTok{\# would do}
+\ExtensionTok{python3}\NormalTok{ skills/cooperatio{-}teamwork/scripts/install.py            }\CommentTok{\# do it}
+\end{Highlighting}
+\end{Shaded}
+
+\texttt{-\allowbreak{}-\allowbreak{}list} prints one line per known
+harness: its name, \texttt{detected} or \texttt{absent}, the state of
+the skill there (\texttt{absent}, \texttt{ours-\allowbreak{}link},
+\texttt{ours-\allowbreak{}copy} or \texttt{foreign}) and the full path
+of the entry. The install prints one line per entry it touched:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{claude{-}code: linked: \textless{}home\textgreater{}/.claude/skills/cooperatio{-}teamwork}
+\NormalTok{opencode: linked: \textless{}home\textgreater{}/.config/opencode/skills/cooperatio{-}teamwork}
+\NormalTok{codex, cline: linked: \textless{}home\textgreater{}/.agents/skills/cooperatio{-}teamwork}
+\end{Highlighting}
+\end{Shaded}
+
+A second run changes nothing and says \texttt{already installed}. Open a
+new session of each harness afterwards: a harness reads its skills
+folder when a session starts.
+
+\begin{figure}
+\centering
+\pandocbounded{\includegraphics[keepaspectratio,alt={What the installer does for each known harness.}]{diagrams/installer-flow.pdf}}
+\caption{What the installer does for each known
+harness.}\label{fig-installer-flow}
+\end{figure}
+
+\subsection{The harnesses it knows}\label{the-harnesses-it-knows}
+
+A harness is detected by its configuration folder. Paths that start with
+\texttt{\textasciitilde{}} are in the home folder; those under
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}config} follow
+\texttt{XDG\_\allowbreak{}CONFIG\_\allowbreak{}HOME} when it is set, and
+Claude Code follows
+\texttt{CLAUDE\_\allowbreak{}CONFIG\_\allowbreak{}DIR}.
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}lll@{}}
+\toprule\noalign{}
+Harness & Detected by & The skill goes to \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{claude-\allowbreak{}code} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}claude} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}claude/\allowbreak{}skills/\allowbreak{}} \\
+\texttt{github-\allowbreak{}copilot} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}copilot} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}copilot/\allowbreak{}skills/\allowbreak{}} \\
+\texttt{pi} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}pi/\allowbreak{}agent}
+&
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}pi/\allowbreak{}agent/\allowbreak{}skills/\allowbreak{}} \\
+\texttt{opencode} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}config/\allowbreak{}opencode}
+&
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}config/\allowbreak{}opencode/\allowbreak{}skills/\allowbreak{}} \\
+\texttt{codex} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}codex} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}agents/\allowbreak{}skills/\allowbreak{}} \\
+\texttt{gemini-\allowbreak{}cli} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}gemini} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}gemini/\allowbreak{}skills/\allowbreak{}} \\
+\texttt{cursor} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}cursor} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}cursor/\allowbreak{}skills/\allowbreak{}} \\
+\texttt{windsurf} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}codeium/\allowbreak{}windsurf}
+&
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}codeium/\allowbreak{}windsurf/\allowbreak{}skills/\allowbreak{}} \\
+\texttt{droid} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}factory} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}factory/\allowbreak{}skills/\allowbreak{}} \\
+\texttt{goose} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}config/\allowbreak{}goose}
+&
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}config/\allowbreak{}goose/\allowbreak{}skills/\allowbreak{}} \\
+\texttt{kiro-\allowbreak{}cli} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}kiro} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}kiro/\allowbreak{}skills/\allowbreak{}} \\
+\texttt{qwen-\allowbreak{}code} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}qwen} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}qwen/\allowbreak{}skills/\allowbreak{}} \\
+\texttt{cline} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}cline} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}agents/\allowbreak{}skills/\allowbreak{}} \\
+\texttt{kimi-\allowbreak{}code-\allowbreak{}cli} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}kimi} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}agents/\allowbreak{}skills/\allowbreak{}} \\
+\texttt{roo} & \texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}roo}
+&
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}roo/\allowbreak{}skills/\allowbreak{}} \\
+\texttt{amp} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}config/\allowbreak{}amp}
+&
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}config/\allowbreak{}agents/\allowbreak{}skills/\allowbreak{}} \\
+\texttt{continue} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}continue} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}continue/\allowbreak{}skills/\allowbreak{}} \\
+\texttt{crush} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}config/\allowbreak{}crush}
+&
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}config/\allowbreak{}crush/\allowbreak{}skills/\allowbreak{}} \\
+\texttt{augment} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}augment} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}augment/\allowbreak{}skills/\allowbreak{}} \\
+\texttt{kilo} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}kilo} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}kilo/\allowbreak{}skills/\allowbreak{}} \\
+\texttt{junie} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}junie} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}junie/\allowbreak{}skills/\allowbreak{}} \\
+\texttt{openhands} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}openhands} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}openhands/\allowbreak{}skills/\allowbreak{}} \\
+\texttt{trae} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}trae} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}trae/\allowbreak{}skills/\allowbreak{}} \\
+\texttt{mistral-\allowbreak{}vibe} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}vibe} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}vibe/\allowbreak{}skills/\allowbreak{}} \\
+\texttt{devin} &
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}config/\allowbreak{}devin}
+&
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}config/\allowbreak{}devin/\allowbreak{}skills/\allowbreak{}} \\
+\end{longtable}
+}
+
+The skills folders follow the list kept by the vercel-labs/skills
+project and each harness's own documentation where one was found. They
+were verified on a machine for Claude Code, GitHub Copilot, pi and
+OpenCode only; the others are as documented, not tested
+\texttt{[hypothesis]}. Harnesses change their paths: when one moves, the
+fix is one row of the table at the top of
+\texttt{install.\allowbreak{}py}, and
+\texttt{-\allowbreak{}-\allowbreak{}harness NAME} with a hand-made link
+covers the gap meanwhile.
+
+\subsection{Link or copy}\label{link-or-copy}
+
+The default is a symbolic link to the skill folder inside the material,
+for two reasons. The scaffold reaches the validator, the sensitivity
+test and the contracts through the path it resolves, so a linked skill
+still creates cells with the instrument; and a \texttt{git pull} of the
+material updates every harness at once.
+
+\texttt{-\allowbreak{}-\allowbreak{}copy} writes an independent copy
+instead, for a harness that does not follow links or a machine where the
+material will not stay. The copy carries a marker file,
+\texttt{.\allowbreak{}cooperatio-\allowbreak{}install}, by which a later
+\texttt{-\allowbreak{}-\allowbreak{}copy} refreshes it and
+\texttt{-\allowbreak{}-\allowbreak{}uninstall} removes it. A copied
+skill creates cells without the validator, says so, and the cell has no
+validator until one is copied in. To switch an entry between link and
+copy, uninstall it first; the installer refuses to switch by itself.
+
+\subsection{Options}\label{options}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Option
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Effect
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{-\allowbreak{}-\allowbreak{}list} & show every known harness,
+whether it is detected, and the state of the skill there \\
+\texttt{-\allowbreak{}-\allowbreak{}dry-\allowbreak{}run} & say what
+would change, change nothing \\
+\texttt{-\allowbreak{}-\allowbreak{}harness NAME} & only this harness,
+detected or not (repeatable); a named harness gets its skills folder
+even when its configuration folder is missing \\
+\texttt{-\allowbreak{}-\allowbreak{}copy} & copy the folder instead of
+linking it \\
+\texttt{-\allowbreak{}-\allowbreak{}uninstall} & remove the links and
+marked copies this installer made; anything else is a conflict, left
+untouched \\
+\texttt{-\allowbreak{}-\allowbreak{}home FOLDER} & use another home
+folder (for tests, or to prepare another account's folders) \\
+\end{longtable}
+}
+
+Exit codes: 0 done, or nothing to do; 1 at least one conflict or I/O
+error (the other entries are still installed); 2 invalid input, or
+Python below 3.9; 3 no known harness detected.
+
+\subsection{When something goes wrong}\label{when-something-goes-wrong}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Symptom
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Cause
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+What to do
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{no known harness detected}, exit 3 & no configuration folder of
+a known harness in the home folder & run the harness once, or name it
+with \texttt{-\allowbreak{}-\allowbreak{}harness NAME} \\
+\texttt{conflict:\allowbreak{} .\allowbreak{}.\allowbreak{}.\allowbreak{} exists and was not installed by this script}
+& an entry of the same name that this installer did not make: an older
+hand-made copy, or a link to another checkout & look at it; remove it by
+hand if it is yours to remove, then run again \\
+the agent lists the skill twice & some harnesses also read the folders
+of others (OpenCode and Cursor read
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}claude/\allowbreak{}skills};
+several read
+\texttt{\textasciitilde{}/\allowbreak{}.\allowbreak{}agents/\allowbreak{}skills})
+&
+\texttt{install.\allowbreak{}py -\allowbreak{}-\allowbreak{}uninstall -\allowbreak{}-\allowbreak{}harness NAME}
+for the duplicate \\
+the agent does not see the skill & the session started before the
+install, or the harness reads another folder than the table says & open
+a new session; check the harness's documentation and use
+\texttt{-\allowbreak{}-\allowbreak{}harness} or a hand-made link \\
+a new cell has no validator & the skill was copied, or the checkout
+behind the link moved & reinstall as a link from the checkout \\
+\end{longtable}
+}
+
+\subsection{Installing by hand, or for one
+project}\label{installing-by-hand-or-for-one-project}
+
+Linking the folder by hand works as well:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{ln} \AttributeTok{{-}s} \StringTok{"}\VariableTok{$PWD}\StringTok{/skills/cooperatio{-}teamwork"}\NormalTok{ \textasciitilde{}/.claude/skills/cooperatio{-}teamwork}
+\end{Highlighting}
+\end{Shaded}
+
+Most harnesses also read a project-level skills folder
+(\texttt{.\allowbreak{}claude/\allowbreak{}skills/\allowbreak{}},
+\texttt{.\allowbreak{}agents/\allowbreak{}skills/\allowbreak{}},
+\texttt{.\allowbreak{}opencode/\allowbreak{}skills/\allowbreak{}} and so
+on, at the root of a repository). The installer handles only the
+user-level folders; for one project, link or copy the folder into that
+project's skills folder by hand.
+
+\subsection{Using it from an agent}\label{using-it-from-an-agent}
+
+With the skill installed, ask the agent in plain words; the description
+in \texttt{SKILL.\allowbreak{}md} is what makes the agent load it:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{Set up the cooperatio teamwork for the quarterly report: roles writer,}
+\NormalTok{verifier and reviewer; the brief is in notes/brief.md.}
+\end{Highlighting}
+\end{Shaded}
+
+The agent follows \texttt{SKILL.\allowbreak{}md}: it asks for what the
+brief lacks, runs the scaffold, fills the files, and stops at the points
+the owner decides (the non-negotiables, the stop, the freeze of the
+rubric). The rest of this chapter is the same path done by hand.
+
 \section{The ten-minute path}\label{the-ten-minute-path}
 
 The root \texttt{README.\allowbreak{}md} gives a four-step path; here it
@@ -3543,8 +3941,9 @@ deleted card field) \\
 \section{The first run is red, by
 design}\label{the-first-run-is-red-by-design}
 
-Verified on a cell scaffolded with three roles at 0.6.0: the self-test
-passes (185 checks), and the first validator run
+Verified on a cell scaffolded with three roles at 0.7.2 (the same counts
+as at 0.6.0): the self-test passes (185 checks), and the first validator
+run
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -3905,69 +4304,49 @@ From
 \begin{Shaded}
 \begin{Highlighting}[]
 \ExtensionTok{python3}\NormalTok{ 80{-}validator/sensitivity.py }\AttributeTok{{-}{-}folder}\NormalTok{ . }\DataTypeTok{\textbackslash{}}
-    \AttributeTok{{-}{-}case}\NormalTok{ PRIOR\_000\_DOCUMENT\_PATH }\DataTypeTok{\textbackslash{}}
     \AttributeTok{{-}{-}case}\NormalTok{ ../instances/004{-}adoption{-}guide/metodo{-}de{-}producao.md }\DataTypeTok{\textbackslash{}}
     \AttributeTok{{-}{-}rubric{-}hash}\NormalTok{ 90{-}review/rubric.sha256 }\AttributeTok{{-}{-}notes}\NormalTok{ 90{-}review/notes.json }\DataTypeTok{\textbackslash{}}
     \AttributeTok{{-}{-}work}\NormalTok{ SCRATCH\_FOLDER }\AttributeTok{{-}{-}output}\NormalTok{ 80{-}validator/sensitivity.md}
 \ExtensionTok{python3}\NormalTok{ 80{-}validator/validator.py }\AttributeTok{{-}{-}folder}\NormalTok{ . }\DataTypeTok{\textbackslash{}}
-    \AttributeTok{{-}{-}case}\NormalTok{ PRIOR\_000\_DOCUMENT\_PATH }\DataTypeTok{\textbackslash{}}
     \AttributeTok{{-}{-}case}\NormalTok{ ../instances/004{-}adoption{-}guide/metodo{-}de{-}producao.md }\DataTypeTok{\textbackslash{}}
     \AttributeTok{{-}{-}rubric{-}hash}\NormalTok{ 90{-}review/rubric.sha256 }\AttributeTok{{-}{-}notes}\NormalTok{ 90{-}review/notes.json }\DataTypeTok{\textbackslash{}}
     \AttributeTok{{-}{-}allow{-}pending}\NormalTok{ p{-}anonymity }\AttributeTok{{-}{-}determinism} \AttributeTok{{-}{-}output}\NormalTok{ 80{-}validator/report.md}
 \ExtensionTok{python3}\NormalTok{ 80{-}validator/validator.py }\AttributeTok{{-}{-}self{-}test}
 \ExtensionTok{python3} \AttributeTok{{-}B} \AttributeTok{{-}m}\NormalTok{ pytest }\AttributeTok{{-}p}\NormalTok{ no:cacheprovider 80{-}validator/test\_validator.py }\DataTypeTok{\textbackslash{}}
-\NormalTok{    ../skills/cooperatio{-}teamwork/scripts/test\_scaffold.py}
+\NormalTok{    ../skills/cooperatio{-}teamwork/scripts/test\_scaffold.py }\DataTypeTok{\textbackslash{}}
+\NormalTok{    ../skills/cooperatio{-}teamwork/scripts/test\_install.py}
 \end{Highlighting}
 \end{Shaded}
 
-The published report is made with exactly that command; at 0.6.0 it
+The published report is made with exactly that command; at 0.7.2 it
 exits 0 with no notes, 27 rows of \texttt{p-\allowbreak{}anonymity}
 pending and accepted (the identifier half, with no forbidden list),
 \texttt{m-\allowbreak{}determinism} passed, the self-test at 185 checks;
-the sensitivity report reads 65 of 65 caught, 0 noisy, 50 of 182 pairs;
-the test suites pass 280 tests.
+the sensitivity report reads 65 of 65 caught, 0 noisy, 54 of 182 pairs;
+the test suites pass 294 tests.
 
 \section{The clone run}\label{the-clone-run}
 
-The method document of instance 000 stays with the owner, so a clone of
-the material does not have it. The clone passes the document of 004 and
-accepts by name the gates that need the owner's:
+Since 0.7.0 the one executed prior of the material is distributed, so a
+clone runs the commands of the corpus as they are: the pin, the numbers
+and the committed sections of
+\texttt{004-\allowbreak{}adoption-\allowbreak{}guide} are measured (its
+edited document, or an invented number about it, is a blocking note,
+exit 1), and the sensitivity report can be regenerated by anyone who
+edits the instrument. The clone run and the owner's run are one command.
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\ExtensionTok{python3}\NormalTok{ 80{-}validator/validator.py }\AttributeTok{{-}{-}folder}\NormalTok{ . }\DataTypeTok{\textbackslash{}}
-    \AttributeTok{{-}{-}case}\NormalTok{ ../instances/004{-}adoption{-}guide/metodo{-}de{-}producao.md }\DataTypeTok{\textbackslash{}}
-    \AttributeTok{{-}{-}rubric{-}hash}\NormalTok{ 90{-}review/rubric.sha256 }\AttributeTok{{-}{-}notes}\NormalTok{ 90{-}review/notes.json }\DataTypeTok{\textbackslash{}}
-    \AttributeTok{{-}{-}allow{-}pending}\NormalTok{ p{-}anonymity,p{-}prior,p{-}prior{-}pin }\AttributeTok{{-}{-}determinism}
-\end{Highlighting}
-\end{Shaded}
-
-Expected: exit 0, no notes, the report on the standard output, the three
-gates listed as pending accepted by the caller, the pin and the numbers
-of 004 measured (its edited document, or an invented number about it, is
-a blocking note, exit 1), and the rows of 000 saying ``owner-held
-evidence, not measured here''. Without any
-\texttt{-\allowbreak{}-\allowbreak{}case} the same run still exits 0,
-but measures neither pin.
-
-A clone that edits the instrument cannot regenerate the sensitivity
-report with the owner's document; it regenerates one with a synthetic
-prior:
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\ExtensionTok{python3}\NormalTok{ 80{-}validator/sensitivity.py }\AttributeTok{{-}{-}folder}\NormalTok{ . }\DataTypeTok{\textbackslash{}}
-    \AttributeTok{{-}{-}case}\NormalTok{ ../instances/004{-}adoption{-}guide/metodo{-}de{-}producao.md }\DataTypeTok{\textbackslash{}}
-    \AttributeTok{{-}{-}synthetic{-}prior}\NormalTok{ 000{-}av{-}production }\DataTypeTok{\textbackslash{}}
-    \AttributeTok{{-}{-}rubric{-}hash}\NormalTok{ 90{-}review/rubric.sha256 }\AttributeTok{{-}{-}notes}\NormalTok{ 90{-}review/notes.json }\DataTypeTok{\textbackslash{}}
-    \AttributeTok{{-}{-}work}\NormalTok{ SCRATCH\_FOLDER }\AttributeTok{{-}{-}output}\NormalTok{ 80{-}validator/sensitivity.md}
-\end{Highlighting}
-\end{Shaded}
-
-and then adds \texttt{p-\allowbreak{}sensitivity-\allowbreak{}synthetic}
-to \texttt{-\allowbreak{}-\allowbreak{}allow-\allowbreak{}pending} of
-the clone run. The report stays pending until the owner regenerates it
-with the document (chapter 14).
+A cell whose prior is held outside its material uses the mechanism the
+instrument keeps for it (chapter 14): the registry entry carries the
+reserved locator \texttt{owner-\allowbreak{}held, not distributable}; a
+run without the document leaves that prior's rows pending with the
+notice ``owner-held evidence, not measured here'', accepted only with
+\texttt{-\allowbreak{}-\allowbreak{}allow-\allowbreak{}pending p-\allowbreak{}prior,p-\allowbreak{}prior-\allowbreak{}pin};
+and a maintainer without the document regenerates the sensitivity report
+with
+\texttt{-\allowbreak{}-\allowbreak{}synthetic-\allowbreak{}prior PRIOR\_\allowbreak{}ID},
+then adds \texttt{p-\allowbreak{}sensitivity-\allowbreak{}synthetic} to
+\texttt{-\allowbreak{}-\allowbreak{}allow-\allowbreak{}pending}. That
+report stays pending until whoever holds the document regenerates it.
 
 \section{Reading a report}\label{reading-a-report}
 
@@ -4150,7 +4529,7 @@ contract or gate), and a line goes to
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{\{"method\_version": "0.6.0", "round": "v2", "kind": "production",}
+\NormalTok{\{"method\_version": "0.7.2", "round": "v2", "kind": "production",}
 \NormalTok{ "models": [\{"role": "writer", "model": "family A, high effort"\},}
 \NormalTok{            \{"role": "reviewer", "model": "family B, high effort"\}],}
 \NormalTok{ "reviewer\_relation": "another family",}
@@ -4362,6 +4741,15 @@ non-negotiables ids and keep the owner's decisions in
 \texttt{state/\allowbreak{}owner-\allowbreak{}decisions.\allowbreak{}jsonl};
 schedule, dispute or close the open notes older than three rounds;
 declare \texttt{"version":\allowbreak{} "v1"} in its JSON canon \\
+0.7.0 & nothing, if it registers a prior of its own; a cell that cited
+this material's removed prior removes the citation or registers its own
+source, since the numbers it stated about that prior have no support
+here any longer \\
+0.7.1 & nothing; a cell that adopted the review apparatus expecting it
+to find more than a careful review reads E4, which withdrew that claim;
+a cell that reuses the benchmark follows its README and checks its
+manifest first \\
+0.7.2 & nothing; the installer is optional \\
 \end{longtable}
 }
 
@@ -4372,23 +4760,28 @@ declare \texttt{"version":\allowbreak{} "v1"} in its JSON canon \\
 \ExtensionTok{python3}\NormalTok{ 02{-}reflexive{-}application/80{-}validator/validator.py }\AttributeTok{{-}{-}self{-}test}
 \ExtensionTok{python3} \AttributeTok{{-}B} \AttributeTok{{-}m}\NormalTok{ pytest }\AttributeTok{{-}p}\NormalTok{ no:cacheprovider }\DataTypeTok{\textbackslash{}}
 \NormalTok{    02{-}reflexive{-}application/80{-}validator/test\_validator.py }\DataTypeTok{\textbackslash{}}
-\NormalTok{    skills/cooperatio{-}teamwork/scripts/test\_scaffold.py}
+\NormalTok{    skills/cooperatio{-}teamwork/scripts/test\_scaffold.py }\DataTypeTok{\textbackslash{}}
+\NormalTok{    skills/cooperatio{-}teamwork/scripts/test\_install.py}
 \end{Highlighting}
 \end{Shaded}
 
 The suite runs the self-test, one passing and one failing case per rule,
 the regression tests of the probes the panels found (a repointed file, a
 mark outside its grammar, a number between backticks, a deleted report
-accepted by name, a domain regression the validator never read), and the
-scaffold's integration test, which asserts that a fresh cell fails high.
+accepted by name, a domain regression the validator never read), the
+scaffold's integration test, which asserts that a fresh cell fails high,
+and the installer's 14 tests on a temporary home folder.
 
 \section{The freeze policy, restated}\label{the-freeze-policy-restated}
 
 After 0.6.0 the instrument changes only for a failure that changes a
-verdict, or for a new execution. A maintainer who finds a false green
-adds a row to the table of false greens, a regression test and, where it
-is a defect of a document, a perturbation --- and declares the change in
-the changelog with its migration note.
+verdict, or for a new execution; 0.7.0 lifted the freeze once, by the
+owner's decision, for data and comments only. The installer is not part
+of the instrument: it changes no verdict and is not copied into a cell.
+A maintainer who finds a false green adds a row to the table of false
+greens, a regression test and, where it is a defect of a document, a
+perturbation --- and declares the change in the changelog with its
+migration note.
 
 \part{Appendices}
 
@@ -4769,6 +5162,47 @@ target (required) \\
 Run from inside the material, so that it finds the validator, the
 sensitivity script, the perturbation module and the contracts to copy.
 
+\section{\texorpdfstring{\texttt{install.\allowbreak{}py}}{}}\label{install.py}
+
+\texttt{skills/\allowbreak{}cooperatio-\allowbreak{}teamwork/\allowbreak{}scripts/\allowbreak{}install.\allowbreak{}py}
+links the skill into the user-level skills folder of every agent harness
+it detects (chapter 17).
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Option
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Meaning
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{-\allowbreak{}-\allowbreak{}list} & show every known harness,
+\texttt{detected} or \texttt{absent}, the state of the skill there and
+the path of the entry \\
+\texttt{-\allowbreak{}-\allowbreak{}dry-\allowbreak{}run} & say what
+would change, change nothing \\
+\texttt{-\allowbreak{}-\allowbreak{}harness NAME} & only this harness,
+detected or not, repeatable; the names are those of
+\texttt{-\allowbreak{}-\allowbreak{}list} \\
+\texttt{-\allowbreak{}-\allowbreak{}copy} & copy the folder (with the
+marker \texttt{.\allowbreak{}cooperatio-\allowbreak{}install}) instead
+of linking it \\
+\texttt{-\allowbreak{}-\allowbreak{}uninstall} & remove the links and
+marked copies the installer made \\
+\texttt{-\allowbreak{}-\allowbreak{}home FOLDER} & the home folder to
+use instead of the real one \\
+\end{longtable}
+}
+
+Exit codes: 0 done or nothing to do; 1 a conflict or an I/O error; 2
+invalid input or Python below 3.9; 3 no harness detected.
+
 \section{The historical validator of instance
 004}\label{the-historical-validator-of-instance-004}
 
@@ -4889,7 +5323,8 @@ material}\label{appendix-e-file-index-of-the-material}
 \addcontentsline{toc}{chapter}{Appendix E --- File index of the
 material}
 
-The 79 files the material tracks at 0.6.0, grouped.
+The 236 files the material tracks at 0.7.2, grouped: 81 of the material
+proper, 94 of the benchmark and 61 of the manual and the history.
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -4950,25 +5385,37 @@ chained ledgers \\
 \texttt{references/\allowbreak{}templates.\allowbreak{}md},
 \texttt{references/\allowbreak{}review-\allowbreak{}checklist.\allowbreak{}md},
 \texttt{scripts/\allowbreak{}scaffold.\allowbreak{}py},
-\texttt{scripts/\allowbreak{}test\_\allowbreak{}scaffold.\allowbreak{}py}
-& the skill \\
+\texttt{scripts/\allowbreak{}test\_\allowbreak{}scaffold.\allowbreak{}py},
+\texttt{scripts/\allowbreak{}install.\allowbreak{}py},
+\texttt{scripts/\allowbreak{}test\_\allowbreak{}install.\allowbreak{}py}
+& the skill, its scaffold and its installer \\
 \texttt{instances/\allowbreak{}registry.\allowbreak{}json} & the
 instance registry \\
 \texttt{instances/\allowbreak{}004-\allowbreak{}adoption-\allowbreak{}guide/\allowbreak{}}
-& the cell of the second executed instance: brief, sources of truth,
-JSON canon, artifacts, four cards, two contracts, gates, rubric and pin,
-the validator of 0.2.2 with its rules and reports, the engine's README,
-the two wave reports and the round-1 notes, the state ledgers, lessons,
-open notes, priors, layout, the guide
+& the cell of the one executed instance: brief, sources of truth, JSON
+canon, artifacts, four cards, two contracts, gates, rubric and pin, the
+validator of 0.2.2 with its rules and reports, the engine's README, the
+two wave reports and the round-1 notes, the state ledgers, lessons, open
+notes, priors, layout, the guide
 (\texttt{guia-\allowbreak{}de-\allowbreak{}adocao.\allowbreak{}md}), the
 method document
 (\texttt{metodo-\allowbreak{}de-\allowbreak{}producao.\allowbreak{}md})
 and \texttt{ERRATA.\allowbreak{}md} \\
+\texttt{benchmark/\allowbreak{}} & the seeded material of E4:
+\texttt{README.\allowbreak{}md}, \texttt{MANIFEST.\allowbreak{}sha256},
+\texttt{document/\allowbreak{}} (the clean and seeded guides, the defect
+sets and annotated keys, and the inputs each review received),
+\texttt{code/\allowbreak{}} (per program: the anonymized pristine and
+seeded excerpts, the answer key, the upstream license, a notice, the
+anonymization rules and the gates' detection table; the shared gates
+code, rubric, checklist, card and prompts) \\
 \texttt{docs/\allowbreak{}manual/\allowbreak{}} & this manual:
 \texttt{src/\allowbreak{}}, \texttt{diagrams/\allowbreak{}},
 \texttt{filters/\allowbreak{}}, \texttt{Makefile}, the built
 \texttt{manual.\allowbreak{}md}, \texttt{manual.\allowbreak{}pdf} and
 \texttt{build/\allowbreak{}manual.\allowbreak{}tex} \\
+\texttt{docs/\allowbreak{}history/\allowbreak{}} & the curated record of
+the sessions that produced the material \\
 \end{longtable}
 }
 
@@ -4976,18 +5423,21 @@ and \texttt{ERRATA.\allowbreak{}md} \\
 decisions}\label{appendix-f-open-owner-decisions}
 \addcontentsline{toc}{chapter}{Appendix F --- Open owner decisions}
 
-The lines of
+The decisions of
 \texttt{02-\allowbreak{}reflexive-\allowbreak{}application/\allowbreak{}state/\allowbreak{}owner-\allowbreak{}decisions.\allowbreak{}jsonl}
-at 0.6.0, all \texttt{open}; each names what it blocks. Only the owner
-can close one, with a new chained line.
+at 0.7.2, by their last chained line. Only the owner can change one,
+with a new chained line.
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Decision
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+State
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 What it blocks
 \end{minipage} \\
@@ -4995,22 +5445,22 @@ What it blocks
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-sign the tag of the version (create a signing key and sign
-\texttt{v0.\allowbreak{}6.\allowbreak{}0}) & the anchor of integrity
-outside the tree \\
-publish an extract of the first prior, or not & a clone's check of the
-numbers about \texttt{000-\allowbreak{}av-\allowbreak{}production} \\
-accept or adjust the thresholds to promote or withdraw a claim &
-experiment E4 \\
-approve the budget and run E4 & the measure of value of the material \\
-find the third party for E5 & the measure of portability \\
-promote independence across families to a rule & the rule of
+sign the tag of the version (create a signing key and sign it) & open &
+the anchor of integrity outside the tree \\
+find the third party for E5 & open & the measure of portability \\
+promote independence across families to a rule & open & the rule of
 independence \\
 open the next production of the material as a production, with its own
-brief, a rubric of the reviewing side and a stop & a new verdict of the
-canon on the material \\
-replace the cell of 004 as the example (a new cell under 0.6.0 would be
-the third execution) & an executable example of a cell \\
+brief, a rubric of the reviewing side and a stop & open & a new verdict
+of the canon on the material \\
+replace the cell of 004 as the example (a new cell would be the second
+execution) & open & an executable example of a cell \\
+publish an extract of the prior held by the owner, or not & decided at
+0.7.0: nothing to publish; the prior left the material & --- \\
+accept or adjust the thresholds to promote or withdraw a claim & decided
+at 0.7.0: the owner's thresholds of chapter 10 & --- \\
+approve the budget and run E4 & decided at 0.7.0; E4 ran at 0.7.1 &
+--- \\
 \end{longtable}
 }
 

@@ -1,10 +1,10 @@
 # Cooperatio manual
 
 An extensive manual of the method and of its instrument, for method
-version 0.6.0: purpose and scope, the concepts, the architecture of the
+version 0.7.2: purpose and scope, the concepts, the architecture of the
 material and of the validator, the gate catalogue, the sensitivity test,
 the ledgers and the integrity structure, the instances, and the how-to
-chapters (quick start, setting up a cell, running the instrument, running
+chapters (installing the skill and a quick start, setting up a cell, running the instrument, running
 a round, domain gates, maintaining the material), with appendices
 (glossary, contracts, command-line reference, false greens, file index,
 open owner decisions).
