@@ -1,0 +1,16 @@
+{
+ "rules": [
+  [
+   "ninja",
+   "forge"
+  ],
+  [
+   "Ninja",
+   "Forge"
+  ],
+  [
+   "NINJA",
+   "FORGE"
+  ]
+ ]
+}

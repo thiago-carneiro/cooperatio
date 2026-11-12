@@ -1,0 +1,148 @@
+{
+  "target": "Guide to preparing a production cell",
+  "note": "single source of numbers, names, variants and rules; every section has an owner and a version",
+  "version": "v1",
+  "sections": [
+    {
+      "name": "canonical numbers",
+      "owner": "writer",
+      "version": "v1",
+      "state": "pending"
+    },
+    {
+      "name": "accepted variants",
+      "owner": "writer",
+      "version": "v1",
+      "state": "pending"
+    },
+    {
+      "name": "names and terms",
+      "owner": "writer",
+      "version": "v1",
+      "state": "pending"
+    },
+    {
+      "name": "rules",
+      "owner": "writer",
+      "version": "v1",
+      "state": "pending"
+    }
+  ],
+  "canonical numbers": [
+    {
+      "value": null,
+      "unit": null,
+      "spelling": {
+        "table": "",
+        "prose": "",
+        "code": ""
+      },
+      "nature": "fact or hypothesis",
+      "source": ""
+    }
+  ],
+  "accepted variants": [
+    {
+      "variant": "",
+      "holds where": "",
+      "why": ""
+    }
+  ],
+  "names and terms": [
+    {
+      "name": "",
+      "prefer": "",
+      "gloss marker": ""
+    }
+  ],
+  "rules": [],
+  "terms to avoid": [
+    "quality gate",
+    "checkpoint",
+    "pipeline",
+    "feedback",
+    "iteration",
+    "single source of truth",
+    "bible",
+    "ruler",
+    "review board"
+  ],
+  "instantiation table rows": [],
+  "mandatory sections": [],
+  "role card fields": [
+    "Decides",
+    "Does not decide",
+    "Inputs",
+    "Outputs",
+    "Exit gate",
+    "Notes it emits",
+    "Code-conversion degree"
+  ],
+  "origin labels": [
+    "[method]",
+    "[brief]",
+    "[hypothesis]"
+  ],
+  "method components": [],
+  "prior-statement triggers": [
+    "reference case",
+    "reference-case",
+    "prior instance",
+    "of the case",
+    "the executed instance"
+  ],
+  "recorded facts": [
+    {
+      "number": "1054",
+      "context": "words of the adoption guide at the close [prior:004-adoption-guide]",
+      "section": "4.4"
+    },
+    {
+      "number": "900",
+      "context": "lower end of the size range of the guide [prior:004-adoption-guide]",
+      "section": "1"
+    },
+    {
+      "number": "1400",
+      "context": "upper end of the size range of the guide [prior:004-adoption-guide]",
+      "section": "1"
+    },
+    {
+      "number": "4",
+      "context": "the lowest dimension score of its one review [prior:004-adoption-guide]",
+      "section": "4.5"
+    }
+  ],
+  "efficacy triggers": [
+    "pays off",
+    "pays for itself",
+    "the method found",
+    "the method caught",
+    "the method prevented",
+    "would have caught",
+    "would have been caught",
+    "found the blocker",
+    "found the error",
+    "the method prevents",
+    "the method finds",
+    "the method catches",
+    "the gates caught",
+    "the gate caught",
+    "the validator found",
+    "the review found",
+    "err less",
+    "the only way",
+    "observed in practice",
+    "every rule below was born",
+    "none was"
+  ],
+  "documents outside the artifact list": [
+    "01-sources-of-truth.md",
+    "07-rubric.md",
+    "lessons.md",
+    "08-validator/*.md",
+    "04-roles/*.md",
+    "06-gates.md",
+    "00-brief.md"
+  ]
+}
