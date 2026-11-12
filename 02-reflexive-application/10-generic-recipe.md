@@ -15,12 +15,12 @@ canon's sense.
 - "Done when" is always verifiable: a count, an equality, a file that exists
   and validates. If a done criterion calls for judgment, the step says who
   judges.
-- The lines marked `[prior:<id>]` state what happened in an earlier
-  registered instance from which the method came, and every number in them is in that
-  prior's method document (registered in `../instances/registry.json`, cited
-  relative to its own repository root, and kept outside this repository
-  unless its cell is distributed under `../instances/`). They
-  are here to show the size of the error that the step prevents.
+- This recipe carries no recorded case. The illustrations of a step are
+  examples of a domain (a vehicle, a library, a book), not facts of an
+  execution, and the traps are warnings of design with no recorded execution
+  behind them [hypothesis]. A statement about a registered prior, when a cell
+  writes one, carries `[prior:<id>]`, and the numbers in it are checked in
+  that prior's method document (registered in `../instances/registry.json`).
 
 ## The map: this recipe and the principle's recipe
 
@@ -125,9 +125,7 @@ production-cell-TARGET/
 
 ### Step 1. Write the brief
 
-- **Who:** the role that translates the owner's intent (in the prior instance
-  `000-av-production`, the role that wrote the brief, section 2.1 of the
-  case) [prior:000-av-production]; the owner approves.
+- **Who:** the role that translates the owner's intent; the owner approves.
 - **Reads:** the owner's request, the corpus.
 - **Creates:** `00-brief.md`, with fixed sections: target; for whom;
   non-negotiables; owner decisions (a named list, each with a status); available
@@ -159,16 +157,13 @@ production-cell-TARGET/
   2. for each one, picks exactly one source of truth and writes why it errs less
      than the others;
   3. writes what is never a source for that type: the writer is never a source
-     of fact; a generative tool is never a source of exact text; the number never
-     comes from the paragraph that cites it.
+     of fact; a generative tool is not a source of exact text [hypothesis]; the
+     number never comes from the paragraph that cites it.
 - **Done when:** every content type in the brief has exactly one source; no
   line has the writer as a source of fact; each line says what is forbidden.
 - **Trap:** two content types with the same source "because it is easier". A
   type of content inherits the source of another because the second is at
-  hand, and the confusion surfaces only when the target is checked. In the
-  prior instance, exact text composed by a generative tool came out with wrong
-  characters in every probe; hence the rule that all exact text comes from the
-  engine (section 1.8 of the case) [prior:000-av-production]. A vehicle: a
+  hand, and the confusion surfaces only when the target is checked. A vehicle: a
   supplier's marketing sheet is never the source of a tolerance. A library: a
   colleague's memory is never the source of a version number.
 
@@ -218,11 +213,7 @@ production-cell-TARGET/
   except the target, has at least one consumer.
 - **Trap:** the note that has nowhere to go. A finding lands on the nearest
   artifact because the right target is not in the graph, and the fix misses
-  its origin. In the prior instance, several notes of the v2 round went to
-  the nearest artifact because the right target (canon, concept, legal
-  opinion, engine) was not an artifact in the graph; the more the graph
-  covers, the better the notes hit their origin (step 16 of the case)
-  [prior:000-av-production]. A vehicle: a homologation doubt routed to the
+  its origin. A vehicle: a homologation doubt routed to the
   CAD owner because no artifact holds the regulation reading. A book: a
   fact-check note parked on the chapter because the claims register is not an
   artifact.
@@ -261,13 +252,7 @@ production-cell-TARGET/
   role shares an executor with the role it audits.
 - **Trap:** a role compensating for another's defect. When a downstream
   consumer silently works around an upstream defect, the defect stays and the
-  workaround is lost. In the reference case, a parameter declared in the
-  request reached the output attenuated: the engine delivered less than was
-  asked, and the fix was made in the engine, which began applying the
-  intensity to the farthest layer; the pseudocode of the role that requests
-  the effect says that, when the engine lacks the requested component, it
-  must not improvise and must emit a note to the owner of the request
-  (sections 1.10 and 4.14 of the case) [prior:000-av-production]. A vehicle:
+  workaround is lost. A vehicle:
   the test driver who "fixes" a misaligned fixture by holding the part by
   hand. "Does not decide" exists so that the defect returns to whoever has
   it, instead of being compensated downstream.
@@ -292,10 +277,7 @@ production-cell-TARGET/
   in seconds, before any expensive work.
 - **Trap:** the ambiguous position key. The key that fixes where a part lands
   has to be unique at the moment of the assembly, or the assembler picks an
-  occurrence and does not tell which. In the reference case, the trail left
-  15 s early in v3 because new text introduced another occurrence of the key
-  that anchored its position, and nothing rejected the repeated key
-  [prior:000-av-production]. A vehicle: two parts of the wiring harness carry
+  occurrence and does not tell which. A vehicle: two parts of the wiring harness carry
   the same connector code and the line picks one. A library: two public
   functions with the same name in different modules, and the build binds one
   of them. Hence the rule: an ambiguous position key is a contract error,
@@ -328,17 +310,9 @@ production-cell-TARGET/
 - **Done when:** every gate returns a magnitude; every limit has a justification
   with an origin; every code gate rejected its known perturbation; the
   non-measurable criteria are marked "contract + agent", with the agent named.
-- **In the reference case:** the cap is 50 notes per gate and a tool that fails
-  exits with code 3 (facts about that prior, not limits for a new instance)
-  [prior:000-av-production]; the drift gate between two representations of
-  the same content has a limit of p95 ≤ 0.15 s (a fact about that prior, not
-  a limit for a new instance).
 - **Trap:** the gate that measures the instrument. A gate compared against a
   reference that is itself wrong rejects good work and passes bad work, and
-  only a second instrument catches it. In the reference case, the drift came
-  out at p95 of 0.546 s and rejected the target, but the error was in the
-  reference measurement used as the baseline; once the instrument was fixed,
-  v2 passed with 0.10 s [prior:000-av-production]. A vehicle: a correlation
+  only a second instrument catches it. A vehicle: a correlation
   gate judged against a simulation that was itself misaligned. A library: a
   speedup gate measured on a node other than the pinned one.
 
@@ -366,9 +340,7 @@ production-cell-TARGET/
   mechanical verdict rule and a report format; the hash is recorded before the
   first review; the round record names who wrote it (`rubric_author`).
 - **Trap:** a rubric invented anew each round. Without it, there is no saying
-  whether v4 is better than v3. In the reference case, the five reviews of
-  its first pilot used the same rubric (the part of its method document on
-  that pilot, end to end) [prior:000-av-production]; a rubric that holds
+  whether v4 is better than v3. A rubric that holds
   across versions is what lets a round count how many of v1's findings v2
   resolved. A vehicle: two design reviews that score
   different dimensions cannot be compared. A library: a review that invents
@@ -396,10 +368,6 @@ production-cell-TARGET/
 - **Done when:** two runs on the same input give an identical report; every rule
   has both test cases; the validator refuses the canon of a different
   version.
-- **In the reference case:** in the v2 round, the validator gave 38
-  notes, 2 of them high, and both were false [prior:000-av-production]; the two
-  rules were fixed at the root (a digit attached to a letter is not a number; a
-  hypothesis on the sources card does not require a seal).
 - **Trap:** trusting the eye for consistency. Nobody checks by eye, across dozens
   of parts, that a number never changed its spelling.
 
@@ -433,11 +401,7 @@ production-cell-TARGET/
   contract fails before the expensive work; the output carries a version label;
   the router refuses a note with an unknown target.
 - **Trap:** the namesake file. Two files with the same name, one from an old
-  version, and every reader silently picks one of them. In the reference case,
-  three final files with the same name, one from an old version, were the high
-  process finding of the v2 review, and the automatic reviewer probably read
-  the old version's file (inference recorded by the review itself, step 15 of
-  the case) [prior:000-av-production]. A vehicle: two drawings with the same
+  version, and every reader silently picks one of them. A vehicle: two drawings with the same
   part number, one of them superseded. Hence the version label in the name of
   every output.
 
@@ -464,9 +428,6 @@ production-cell-TARGET/
 - **Done when:** every artifact in the graph exists; the target assembled; the
   review report follows the rubric's format; the notes entered the ledger
   without refusal.
-- **In the reference case:** the v1 review gave 3 blocking, 4 high, 12 medium
-  and 12 low [prior:000-av-production], and four of the highs were things that
-  no gate measured; that is what v1 is for.
 - **Trap:** polishing v1. Its goal is to discover what is missing to be
   measured; each day spent polishing is a day without knowing what the review
   will find.
@@ -499,12 +460,6 @@ production-cell-TARGET/
 - **Done when:** every `high` or `blocking` note has a reply; every new gate has
   a test and rejected the version that motivated it; the item-by-item table of
   the previous round is in the report; `lessons.md` has the round's entry.
-- **In the reference case:** the 31 findings of the review of v1 and 18
-  notes of the validator became 73 notes, imported in the v2 round
-  [prior:000-av-production] (the prior gives the three counts and no
-  arithmetic between them); they were answered by role in waves. Its step
-  14 counts 38 notes of the validator in the v2 round and does not
-  reconcile the 38 with the 18.
 - **Trap:** the duration of the round growing without the notes falling. It is a
   sign that the loop fixes symptoms and not origins.
 
@@ -524,9 +479,6 @@ production-cell-TARGET/
 - **Done when:** the criterion is written in terms of rounds or verdict (not
   calendar); `open-notes.json` validates against the contract; no non-negotiable
   is among the open notes.
-- **In the reference case:** v5 was the last version, with the verdict
-  `accepted` (in that prior's own vocabulary, "publishable") and 26 low open
-  notes [prior:000-av-production].
 - **Trap:** rounds without end. Every round finds something; without a declared
   stop, production does not finish.
 
@@ -620,20 +572,29 @@ maintenance of the instruments; measure it in tokens per call (input,
 output, reasoning, cached, and how the generation ended), and give a wall
 time only beside the throughput of the same run, since minutes from two
 sessions are not comparable (the minutes below are indicative); the costs measured so far, those of review
-runs, are recorded with experiments E1 and E3 in `60-experiments.md`. In E1,
-about 58,000 input tokens (most of them the prior's method document the reviewer
-checks against, not the guide of about a thousand words under review),
+runs, are recorded with experiments E1, E3 and E4 in `60-experiments.md`. In E1,
+about 58,000 input tokens (most of them the method document of a prior held by
+the owner, not distributed, which the reviewer checks against, not the guide of about a thousand words under review),
 55,000 to 66,000 output tokens and 8 to 10 minutes for one executor, about 4
 minutes (indicative) for one of another family [experiment:E1].
 In E3, without the rubric and the card, about 56,000 input tokens, 41,000
 to 46,000 output tokens and 10 to 13 minutes for the first executor
-[experiment:E3].
+[experiment:E3]. In E4, the rubric, the reviewer card and the validator's
+report added about 3,200 to 6,300 input tokens to a review run, the
+checklist of the baseline about 1,200 to 2,300 [experiment:E4].
 
 It pays off when erring is expensive [hypothesis]. Stated as a condition,
 still unmeasured: the probability of an error times its cost has to exceed
 the cost per round times the rounds until the stop; and the baseline to
 beat, a strong model with a checklist and continuous integration, is the
 control arm of experiment E2, designed and not run.
+
+For the review step alone, do not adopt the method expecting its apparatus to find more than a
+careful review: in experiment E4, on seeded defects of chosen classes, the
+validator with the frozen rubric let no fewer defects escape than a careful
+review with a checklist, for more input tokens, and the claim that it adds
+to such a review is withdrawn [against:E4]. The rubric of step 8 stays for
+what that step asks of it, comparable rounds.
 
 For a throwaway draft, use only steps 1, 3 and 11 (brief, canon, one version
 and a read from outside); if the draft becomes a real target, resume from

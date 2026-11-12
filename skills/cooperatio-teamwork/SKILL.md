@@ -11,8 +11,8 @@ to each other, how quality is measured, and when to stop.
 
 **Status: a working hypothesis, with a documentary validator; the gates of
 a target's domain enter as results the cell's own code produces and the
-validator checks; two executed instances, one auditable.** The method
-(version 0.6.0) stands on two executed instances, both documentary, and
+validator checks; one executed instance, documentary, by the owner,
+auditable.** The method (version 0.7.1) stands on that one execution and
 three designed sketches, not executed;
 it holds for a target with a declarable brief and stop, a discrete
 assemblable artifact, separable sources of truth per content type, and an
@@ -344,10 +344,15 @@ stable letter) and effort, never by model identifier, and the reviewer's
 relation to the producer (`reviewer_relation`); a reviewer of another family
 is recommended, a hypothesis with the cost of a second provider, and a second
 session of the producing model is recorded as such, never as independent.
-What a pilot showed is the part every cell can adopt: a rubric frozen before
-the review, with a mechanical verdict rule, turned a finding into a verdict
-[experiment:E3]. An alias or a route is not a family: check what each name
-maps to.
+A pilot showed a rubric frozen before the review, with a mechanical verdict
+rule, turning a finding into a verdict [experiment:E3]; the measurement that
+followed withdrew the claim that the review apparatus (the validator and the
+review with the frozen rubric) adds to a careful review without it: on seeded
+defects it let no fewer escape than a careful review with a checklist, for
+more input tokens, and its verdict did not tell a clean copy from a seeded one
+[against:E4]. Freeze the rubric so that rounds compare, and do not promise
+the people you set up that it finds more. An alias or a route is not a family:
+check what each name maps to.
 
 ## Quality check before handing over
 

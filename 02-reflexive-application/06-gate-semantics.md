@@ -61,8 +61,9 @@ measured, or its pending was accepted by name with `--allow-pending`, which
 the report prints; a pending the caller did not accept exits 4, distinct
 from 1 (a high or blocking note) and 2 (a tool failure). Since v0.6.0 the
 list of gates a caller may accept is closed: `p-anonymity`, `p-prior` and
-`p-prior-pin`, the halves that need an input the material does not
-distribute (the forbidden list, the owner-held prior document), and, since
+`p-prior-pin`, the halves that need an input a cell may not
+distribute (the forbidden list, the document of a prior held outside its
+material), and, since
 the rework of v0.6.0, `p-sensitivity-synthetic`, the row of a sensitivity
 report made with a synthetic prior, which a caller accepts only by naming
 it. Any other gate named there is a tool failure, `p-sensitivity` included, and a missing
@@ -78,8 +79,9 @@ measured here" instead of "pending accepted": the rows keep the status
 "pending accepted" and carry the notice inside the magnitude. A pending row
 is the one status that cannot be read as a pass, and the exit code and the
 list of accepted gates are computed from it; replacing it by a notice would
-add a fourth status for the same fact. The notice is on every row of the
-first prior, so the reader sees whose gap it is.
+add a fourth status for the same fact. The notice is on every row of a
+prior held outside the material, so the reader sees whose gap it is; this
+material registers no such prior, so its report prints none.
 
 ## The hash policy
 
@@ -88,9 +90,8 @@ the rubric, the gate section, the canon, the resolved map, the validator
 itself, the inputs of a domain result and the lines of a chained ledger) is
 the sha256 of the text as the validator reads it: UTF-8, a byte-order mark
 dropped, every line break read as LF (since v0.6.0). The validator was
-hashed as bytes until then, so a checkout converted to CRLF stayed red with
-no way back, since the report can only be regenerated with the owner's
-document. A file that is not UTF-8 text (a domain input only) is hashed as
+hashed as bytes until then, so a checkout converted to CRLF stayed red until
+the report was regenerated. A file that is not UTF-8 text (a domain input only) is hashed as
 its bytes. The material carries a `.gitattributes` that checks every text
 file out with LF, and the scripts write UTF-8 to the console whatever its
 code page; they require Python 3.9 or later and exit 2 below it (an
@@ -149,7 +150,7 @@ distributed material, since the list contains what it forbids. This corpus
 runs the gate with no list: the identifier half is pending by design, not
 forgotten, the published report is made without `--forbidden`, and the run
 accepts that pending by name (`--allow-pending p-anonymity`). The cell of
-the second executed instance, distributed under `../instances/` since
+the one executed instance, distributed under `../instances/` since
 v0.5.0, kept its list in its state folder; that file stayed with the owner,
 outside the material. An empty list measures nothing either: it leaves the
 half pending, as no list does. Model identifiers belong to that list (form
@@ -280,18 +281,20 @@ against another prior's document.
   context carrying the mark, and the section.
 - **Presence, not the claim.** The check verifies the presence of the
   number's tokens in the cited sections, not the equality of the claim
-  around it: the sentence "49 artifacts" passes if 49 appears there,
+  around it: the sentence "1054 words" passes if 1054 appears there,
   whatever it counts. The "Recorded facts" section of the canon is exempt by
   name, being the definition of the facts (since v0.6.0; it used to be
   exempt only because its marks sit in code spans).
 - **Section commitments.** The canon commits to the sha256 of each cited
-  section of the owner-held document of `000-av-production`, as the reader
+  section of a prior's document, as the reader
   of this gate delimits a section (the lines under a numbered heading, up to
   the next numbered heading, joined by LF). With `--case`, `p-prior` on the
   canon compares them, so a rewrite of a cited section after the fact is
-  detectable; without the document, the row says "owner-held evidence, not
-  measured here". The commitments reveal nothing of the text and do not let
-  a clone verify the numbers: they let nobody swap the document unseen.
+  detectable and named. For a prior held outside its material, a run
+  without the document says "owner-held evidence, not measured here", and
+  the commitments reveal nothing of the text: they let nobody swap the
+  document unseen. This material commits to the cited sections of
+  `004-adoption-guide`, distributed and pinned whole.
 - **Number format.** Each token of a prior's document has one reading, in
   the `number_format` its registry entry declares, or its literal spelling
   only when it does not parse in that format. A token of these documents is
@@ -319,8 +322,8 @@ For `p-prior-pin`, `--case` is **repeatable**: one document per executed
 prior, each identified by its sha256 against the registry. Since the rework
 of v0.6.0 the gate is measured prior by prior. A cited owner-held prior
 whose document was not passed is pending by name ("1 of 2 executed priors
-pinned; 000-av-production not measured"), so a clone measures the pin of the
-prior it has; a cited distributed prior whose registered sha256 matches none
+pinned; the id of that prior not measured"), so a clone measures the pin of
+the prior it has; a cited distributed prior whose registered sha256 matches none
 of the documents passed is blocking, and so is a document passed that is
 the pin of no executed instance (a note on the registry, not a tool
 failure; with such a document even the owner-held prior is blocking, since
@@ -391,18 +394,16 @@ of q pairs (r %), 0 missed of m, 0 noisy". An assigned gate without a
 perturbation, or fewer than 25 % of the pairs perturbed, leaves this gate
 pending with the reason, never a pass. The floor is a hypothesis: the panel
 measured 18 %, a quarter is the first floor this version commits to, and it
-is raised, never lowered; this corpus covers 50 of 182 pairs. The three
+is raised, never lowered; this corpus covers 54 of 182 pairs. The three
 generic perturbations of a new cell cover the three gates and three pairs
 of the smallest filled cell; each gate a cell adds needs one of its own.
 
 **Provenance.** A row whose gate needs an input not passed (`--case`,
 `--rubric-hash`, `--notes`, a registry for a perturbation that edits it, or
 the document of the very prior it names) is not measured, and a report that
-measured fewer rows than the set fails here; with only the document of
-`004-adoption-guide`, the rows of the first prior are not measured, never
-missed (since the rework of v0.6.0 the baseline of that run no longer fails
-`p-prior-pin` for the first prior, which is pending by name, so the
-perturbation of the pin of `004-adoption-guide` is caught). The report carries its provenance: the sha256 of the validator that
+measured fewer rows than the set fails here; a row whose prior's document was
+not passed is not measured, never missed, prior by prior (since the rework of
+v0.6.0). The report carries its provenance: the sha256 of the validator that
 produced it, the sha256 of the gate section of the gates file (its "Gates"
 section; a cell's whole gates file), of the canon and of the resolved gate
 map, the ids and count of the perturbation set, and, since the rework of
@@ -426,16 +427,17 @@ does. The set is written by whoever wrote the gates: it measures the defects
 its author imagined, and the panel's probes were defects that authorship
 had not; since v0.6.0 part of the set comes from those probes.
 
-**A synthetic prior, for a clone.** Five rows need the method document of the
-first prior, which the owner keeps. `sensitivity.py --synthetic-prior
-000-av-production` generates a document from the canon's recorded facts (one
+**A synthetic prior, for a clone of a cell whose prior is held elsewhere.**
+This material registers no such prior and does not use it; the mechanism
+stays for a cell that does. `sensitivity.py --synthetic-prior PRIOR_ID`
+generates a document from the canon's recorded facts (one
 numbered section per label the facts cite or the marked units reference,
 holding the facts' numbers in the prior's number format), passes it as
 `--case`, and patches its sha256 and its section digests into the registry
 and the canon of every copy, never of the material. Since the rework of
 v0.6.0 its headings follow the `heading_style` the registry declares for the
-real document (a section `## 6.`, a subsection `### 1.1`, a step
-`### Passo 15.`; a label the canon cites as a step is written as a step), so
+real document (a pattern each for a section, a subsection and a step; a
+label the canon cites as a step is written as a step), so
 a reader of `p-prior` that stops reading the real style fails on the
 synthetic too; without `heading_style` the headings are plain and test no
 format. The synthetic does not test the reading of the real document's
@@ -452,16 +454,16 @@ in a run without that prior's document its row is `p-sensitivity-synthetic`,
 pending, accepted only when the caller names that gate with
 `--allow-pending`; in a run with the document it is refused, since the
 published report is made with it. What it covers: that each gate fails its
-known defect, so a maintainer who edits the instrument without the owner
+known defect, so a maintainer who edits the instrument without the document
 can see the gates react. What it does not cover: that the real document
 holds those facts, and that the validator reads its format; both stay with
-the owner, who regenerates the report with the real document.
+whoever holds the document, who regenerates the report with it.
 
 **The attestation, and what it leaves.** The pin of the registry is
 public, so a `case sha256` line can be written by hand with the real pin
 over a report made with the synthetic document. Until the closing pass of
-v0.6.0 that line passed the clone run and the owner's run, and the owner's
-regeneration came out byte-identical to the forged report whenever the real
+v0.6.0 that line passed the run without the document and the run with it,
+and a regeneration with the document came out byte-identical to the forged report whenever the real
 and the synthetic document gave the same rows, which is the common case:
 the detector this section used to name did not detect. Since the closing
 pass the report records, for each document it was made with, a line
@@ -469,11 +471,12 @@ pass the report records, for each document it was made with, a line
 text followed by the validator, gates, canon and map digests of the report,
 one per line, and only whoever holds the text computes it. A run that
 passes the document recomputes it, and a report whose case line holds the
-pin with an attestation that does not match is blocking. That is the
-owner's run for `000`, and every run for `004`. A published attestation
+pin with an attestation that does not match is blocking: for a distributed
+document, every run that passes it. A published attestation
 holds only for the inputs it was made over, so copying it into a tree with
 a re-pinned canon does not match either. What it leaves: a run without the
-document compares nothing, so in a clone the forged line still passes, and
+document compares nothing, so a forged line for a prior held elsewhere still
+passes there, and
 a frozen record re-pinned in the canon shows there only in the diff against
 a signed version (the anchor outside the tree, the owner's).
 
@@ -510,8 +513,12 @@ labels, outside code spans (since v0.5.0, the reading of the other mark
 gates: a label between backticks is notation). It is lexical: a claim that
 the method works written in other words escapes it ("narrow roles make
 fewer mistakes" passes where "err less" fails), and no list closes that
-gap. The mitigation is a review with a frozen rubric, not the gate; the
-maintenance rounds of this material had none, so for them the gap is open
+gap. The mitigation is a careful reading of the prose, not the gate; a
+frozen rubric does not make that reading find more, as far as E4 measured
+(the seeded claim of efficacy passed the gate on three copies, and reviewers
+with the rubric let no fewer seeded defects escape than reviewers with a
+checklist) [against:E4]. The gap stays open for the maintenance rounds of
+this material, read by a review in some rounds and by none in others
 (declared). A claim labeled `[hypothesis]` that states a number or a
 universal quantifier ("every", "always", "none", a percentage) is a low
 note since v0.6.0: the label stays valid, and the row passes. The founding
@@ -724,8 +731,8 @@ gates" above.
 | `p-components` | a method component the principle names and an instance omits | the canon's list of components | not recorded (a gate of round 1) | method component omitted |
 | `p-efficacy-mark` | a claim that the method works, without a label or with a label citing nothing executed | the canon's triggers (lexical: a paraphrase escapes), the provenance table of an experiment, a lessons title that resolves | the panel that reviewed v0.5.0 (an experiment label without provenance) | claim backed by a designed experiment |
 | `p-notes` | a note without a state, a regression closed with a gate that does not exist, a protection undone by a later line | the state ledger, golden rule 4 against the gate table, the highest severity and the union of `affects` over every line | the independent review of v0.6.0 (a closure with an undeclared gate, a severity lowered by a later line) | note without a status line |
-| `p-frozen-rubric` | a rubric or a frozen record rewritten after the fact | the sha256 of the rubric and of each record the canon freezes; a re-pinned canon makes the sensitivity report stale, and a report regenerated with a synthetic prior is never a pass, but a `case` line forged with the real pin passes a clone run: the owner's run refuses it by the attestation, and in a clone a re-pin shows only in the diff against a signed version | the second pass of v0.6.0 (no record of the review was pinned) and the independent review of v0.6.0 (a verdict rewritten with the canon re-pinned) | frozen review report rewritten |
-| `p-sensitivity` | a report the instrument did not produce, a stale one, or one made without the owner's document read as made with it | the provenance header, the case lines against the registry's pins, the attestation of each document a run passes, a synthetic prior never a pass and held to the floor of the pairs (a case line forged with the real pin passes where the document is not passed: a clone run) | the panel that reviewed v0.5.0 (a deleted report accepted) and the independent review of v0.6.0 (a synthetic report with its marking line deleted) | none: the baseline reads the report; its defects are regression tests |
+| `p-frozen-rubric` | a rubric or a frozen record rewritten after the fact | the sha256 of the rubric and of each record the canon freezes; a re-pinned canon makes the sensitivity report stale, and a report regenerated with a synthetic prior is never a pass, and a `case` line forged with the real pin is refused by the attestation in a run that passes the document; a re-pin of the canon shows only in the diff against a signed version | the second pass of v0.6.0 (no record of the review was pinned) and the independent review of v0.6.0 (a verdict rewritten with the canon re-pinned) | frozen review report rewritten |
+| `p-sensitivity` | a report the instrument did not produce, a stale one, or one made without the real prior document read as made with it | the provenance header, the case lines against the registry's pins, the attestation of each document a run passes, a synthetic prior never a pass and held to the floor of the pairs (a case line forged with the real pin passes where the document is not passed, which needs a prior held elsewhere) | the panel that reviewed v0.5.0 (a deleted report accepted) and the independent review of v0.6.0 (a synthetic report with its marking line deleted) | none: the baseline reads the report; its defects are regression tests |
 | `p-declared` | a declared path that matches nothing, a repointed file, a document no artifact declares | each literal path and each glob, the resolved map pinned in the sensitivity's provenance | the panel that reviewed v0.5.0 (a repointed file) | file of an artifact repointed |
 
 ## Gate lifecycle

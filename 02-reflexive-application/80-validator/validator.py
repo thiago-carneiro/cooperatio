@@ -143,7 +143,7 @@ RUBRIC_UNFROZEN = "not-frozen"
 FROZEN_LEDGER_PREFIX = "90-review/"
 # One reading of a prior mark for every gate (v0.6.0): any bracketed
 # '[prior:...]' is a mark, and its id has to follow the grammar of a
-# registered id. Three readings used to coexist, so '[prior:000-AV-x]'
+# registered id. Three readings used to coexist, so '[prior:004-AB-x]'
 # satisfied p-prior-mark while p-prior checked none of the unit's numbers.
 PRIOR_MARK = re.compile(r"\[prior:([^\]]*)\]")
 PRIOR_ID = re.compile(r"[0-9a-z-]+")
@@ -155,10 +155,9 @@ SECTION_TOKEN = re.compile(r"\d+(?:\.\d+)*")
 # its targets are mapped to the renamed artifacts instead of editing history.
 ARTIFACT_ALIASES = {"bible": "canon"}
 # [hypothesis] a gate that rejects more than this is better read from its
-# magnitude than from a flood of notes; the number is the cap of the prior
-# instance 000-av-production (section 1.4 of its method document), cited as
-# support, not inherited as a limit. It only truncates the listing (an
-# "omitted" note follows); it never decides a pass or a fail.
+# magnitude than from a flood of notes; the value has no recorded support.
+# It only truncates the listing (an "omitted" note follows); it never
+# decides a pass or a fail.
 MAX_NOTES_PER_GATE = 50
 # The numeric limits of p-limit and p-recipe are read from their rows of the
 # gate table (v0.5.0): the script used to keep 6 and 12 as constants
@@ -1249,8 +1248,7 @@ HTML_TAG = re.compile(r"<!--|</?[A-Za-z][A-Za-z0-9-]*(?:\s[^<>\n]*)?/?>")
 NUMBER = re.compile(r"\d{1,3}(?:[\u00A0\u202F]\d{3})+(?![\d.,])|\d+(?:[.,]\d+)*")
 # A number written in this production's documents, as the prior-number gate
 # reads it: a digit attached to a letter is a name ('p95', 'v1', 'D6', 'E1'),
-# not a count (the rule the prior instance fixed at the root, step 9 of the
-# recipe). The prior's own document keeps the plain NUMBER reading.
+# not a count. The prior's own document keeps the plain NUMBER reading.
 DOCUMENT_NUMBER = re.compile(rf"(?<![{WORD_CHARS}.,])(?:{NUMBER.pattern})")
 # A reference to a section of the prior's method document ('section 2.1',
 # 'sections 1.10 and 4.14', 'step 16'): checked as a section label that has
@@ -1649,7 +1647,7 @@ def prior_number_findings(text: str, case_index: set[str],
 
     The single-document form (one prior, legacy number reading). Every mark
     (including its id digits) is removed before the numbers are read, so an
-    id such as '000-av-production' is never itself checked; the returned
+    id such as '004-adoption-guide' is never itself checked; the returned
     count of global checks lets the report say which verification ran.
     """
     doc = CaseDocument(frozenset(case_index), sections or {})
@@ -1750,7 +1748,7 @@ def open_code_spans(text: str) -> str:
 
 
 def instance_ids_of(registry: dict) -> frozenset[str]:
-    """The full registered ids ('000-av-production', '004-adoption-guide'):
+    """The full registered ids ('004-adoption-guide'):
     in a marked unit they name an instance, they are not numbers about it.
     Until v0.4.1 the bare numeric prefix ('004') was excluded too, which let
     a count with leading zeros ('003 phases') pass unread."""

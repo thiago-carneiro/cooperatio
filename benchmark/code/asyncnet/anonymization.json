@@ -1,0 +1,24 @@
+{
+ "rules": [
+  [
+   "friendfeed\\.com",
+   "example.com"
+  ],
+  [
+   "tornadoweb",
+   "netlibproject"
+  ],
+  [
+   "tornado",
+   "netlib"
+  ],
+  [
+   "Tornado",
+   "Netlib"
+  ],
+  [
+   "TORNADO",
+   "NETLIB"
+  ]
+ ]
+}

@@ -1,0 +1,73 @@
+[
+ {
+  "class": 1,
+  "old": "The executed instance perturbed its measurement with known defects injected into a copy of its guide, and the measurement rejected each of them [prior:004-adoption-guide].",
+  "new": "The executed instance perturbed its measurement with 12 known defects injected into a copy of its guide, and the measurement rejected each of them [prior:004-adoption-guide].",
+  "shown_by": "The canon's recorded facts list 1054 words, 900, 1400 and 4 as the numbers this guide may state about its prior; the prior's method document records 'o teste de sensibilidade do instrumento injetou dez defeitos conhecidos' (10 defects, not 12).",
+  "note_must_say": "The guide states '12 known defects' for the prior's sensitivity test under its prior mark, but the recorded fact in the prior's method document is ten (10) defects."
+ },
+ {
+  "class": 2,
+  "old": "The hash exists so that only what changed is recompiled; that is the design, and the cell should say plainly what is design and what ran.",
+  "new": "The hash exists so that only what changed is recompiled; that is the design, and the executed instance proved it, rebuilding stale artifacts from the hash of their inputs.",
+  "shown_by": "The principle: 'In the one execution no engine rebuilt a stale artifact from the hash of its inputs; the writer and the orchestrator rebuilt by hand.'",
+  "note_must_say": "The guide now claims the hash-based recompilation ran in the executed instance, contradicting the principle's statement that no engine rebuilt a stale artifact and that the writer and orchestrator rebuilt by hand."
+ },
+ {
+  "class": 3,
+  "old": "The non-negotiables are three, each named: every statement about the method can be checked in the principle, and every statement about a registered prior carries its mark; the terms of the canon are used in the canon's sense; plain Markdown, no HTML, no absolute path, no authoring date, no machine name.",
+  "new": "The non-negotiables are three, each named: every statement about the method can be checked in the principle, and every statement about a registered prior carries its mark; the terms of the canon are used in the canon's sense; plain Markdown, quality gate before every acceptance, no HTML, no absolute path, no authoring date, no machine name.",
+  "shown_by": "The canon's 'terms to avoid' lists 'quality gate', and the brief's `nn-form` non-negotiable contains no such phrase.",
+  "note_must_say": "The brief's form non-negotiable is quoted with 'quality gate' inserted, a term the canon lists under 'terms to avoid'."
+ },
+ {
+  "class": 4,
+  "old": "A running service has no assembled, done moment: a stopping criterion for it would be a fiction, and a service is run, not compiled.",
+  "new": "A running service has no assembled, done moment: a stopping criterion for it would be a fiction, so it qualifies only when its deployment plan is a discrete artifact that can be declared done.",
+  "shown_by": "The principle, section 10: 'A continuous process or an ongoing service has no assembled, done moment: there the stopping criterion would be a fiction, and the method does not apply — a service is run, not compiled.'",
+  "note_must_say": "The guide now lets a running service qualify via a deployment plan, contradicting the principle's statement that the method does not apply to a service at all."
+ },
+ {
+  "class": 5,
+  "old": "Freeze the rubric by hash before the review: the executed instance froze its rubric before production began [prior:004-adoption-guide].",
+  "new": "Freeze the rubric by hash before the review: save it to /home/author/cells/rubric.sha256 before production begins [prior:004-adoption-guide].",
+  "shown_by": "The brief's `nn-form` non-negotiable: 'no absolute path'; the prior wrote its hash to a relative `07-rubric.sha256` inside the cell.",
+  "note_must_say": "An absolute path of a machine (/home/author/cells/rubric.sha256) is written into a durable artifact, violating the brief's form non-negotiable."
+ },
+ {
+  "class": 6,
+  "old": "Canon: [02-canon.json](02-canon.json)",
+  "new": "Canon: [02-canon.json](02-canon.md)",
+  "shown_by": "The cell listing shows `02-canon.json`; `02-canon.md` is not present.",
+  "note_must_say": "The link to the canon near the top points to 02-canon.md, a file that is not in the cell; the canon is 02-canon.json."
+ },
+ {
+  "class": 7,
+  "old": "The canon is the one source of numbers, names, variants and rules for the cell, and each of its sections has an owner and a version.",
+  "new": "The canon is the one source of numbers, names, variants and rules for the cell, and each of its sections has an owner and a version; keeping the canon is what makes the method work in practice.",
+  "shown_by": "The principle's efficacy triggers include the unmarked claim pattern, and section 9 states 'Evidence of efficacy is one-armed' and that 'the claim that the method finds more than its absence is a hypothesis [hypothesis]'.",
+  "note_must_say": "The sentence 'keeping the canon is what makes the method work in practice' asserts the method works with no evidence and no [hypothesis] label."
+ },
+ {
+  "class": 8,
+  "old": "4. Open the canon: canonical numbers with their spelling, accepted variants, names and terms, rules — an owner and a version per section.",
+  "new": "",
+  "shown_by": "The guide's numbered list of steps begins '1. Check the four conditions', then 2. Write the brief, 3. Write the sources of truth, 4. Open the canon, and the following item is now empty with no content while the numbering remains fixed.",
+  "note_must_say": "the numbered list of steps lacks the step that the principle's recipe requires here (4. Open the canon)",
+  "orchestrator_fix": "the seeder shortened the step; made a real omission"
+ },
+ {
+  "class": 9,
+  "old": "| `d-graph-acyclic` | artifact graph | cycles in the dependency graph | 0 | [method] an acyclic graph is one of the four conditions the target must meet before the cell exists |",
+  "new": "| `d-graph-acyclic` | artifact graph | cycles in the dependency graph | 0 | it is good to check |",
+  "shown_by": "The principle's section 7, step 5: 'If it cannot be measured, it is \"contract + agent\", not a gate; say so' and 'the justification of the limit written beside it' — the justification cell must carry the reason, not filler.",
+  "note_must_say": "The `d-graph-acyclic` row's justification is emptied to 'it is good to check', which states nothing; every gate's limit must carry its justification with origin label."
+ },
+ {
+  "class": 10,
+  "old": "The brief answers what and for whom; the sources of truth answer where each kind of content comes from; the canon answers what the words and numbers are; the graph answers who owns what and in what order. Prepared well, those four make the rest — cards, gates, rubric, validator — the principle applied rather than invented.",
+  "new": "The brief answers what and for whom; the sources of truth answer where each kind of content comes from; the canon answers what the words and numbers are; the gates answer who owns what and in what order. Prepared well, those four make the rest — cards, graph, rubric, validator — the principle applied rather than invented.",
+  "shown_by": "The guide itself: 'the artifact graph answers who owns what and in what order'; the role that owns ordering is the artifact graph, not the gates.",
+  "note_must_say": "The close says the gates answer who owns what and in what order; that role belongs to the artifact graph, as the guide states earlier."
+ }
+]

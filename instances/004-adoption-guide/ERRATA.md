@@ -1,6 +1,6 @@
 # Errata of the adoption guide (instance 004)
 
-This cell is the record of the second executed instance of the method,
+This cell is the record of the one executed instance of the method,
 produced under method version 0.2.2. Its guide (`guia-de-adocao.md`) was
 accepted by the one review of that production and is frozen: it is never
 edited to match a later version. This page, written in v0.6.0, lists what
@@ -24,7 +24,7 @@ skill (`skills/cooperatio-teamwork/SKILL.md`) and the root `README.md`.
 | --- | --- | --- |
 | The header paragraph | that every statement of fact about the method in the guide can be checked in the material | the three statements below no longer match the material; the rest was checked by the review of that production |
 | "Rúbrica congelada" (line 27) | the rubric is frozen with its hash recorded before the first production | the rubric is written and frozen before the first review (step 8 of the recipe and the canon's definition of rubric), not before the production |
-| "O que a evidência hoje sustenta" (line 50) | the instance registry holds one completed execution | the registry holds two executed instances: the first one, owner-held, and this one, `004-adoption-guide`, registered when its production closed; the three others are designed sketches, not executed |
+| "O que a evidência hoje sustenta" (line 50) | the instance registry holds one completed execution | the registry holds one executed instance, this one, `004-adoption-guide`, registered when its production closed; the execution the guide's sentence counted is no longer part of this material; the three others are designed sketches, not executed |
 | The distribution paragraph (line 56) | the skill folder works copied alone, with scripts and references of its own | copied alone, the skill still creates a cell, but without the validator, the sensitivity script and the contracts it copies from the material, and it says so; the cell has no validator until they are copied in |
 
 The guide also writes the idea of the method with "toda revisão é

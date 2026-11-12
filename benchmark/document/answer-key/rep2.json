@@ -1,0 +1,72 @@
+[
+ {
+  "class": 1,
+  "old": "In the executed instance no engine rebuilt a stale artifact from the hash of its inputs — the writer and the orchestrator rebuilt by hand [prior:004-adoption-guide] — and the cell recorded the decision not to keep a separate engine at its scale [prior:004-adoption-guide].",
+  "new": "In the executed instance no engine rebuilt a stale artifact from the hash of its inputs — the writer and the orchestrator rebuilt by hand [prior:004-adoption-guide] — and the cell recorded the decision not to keep a separate engine at its scale, after 3 rounds of manual assembly [prior:004-adoption-guide].",
+  "shown_by": "The recorded facts of this canon are the numbers this guide may state about its prior: 1054 words of its guide at the close, the range of 900 to 1400 words its brief set, and 4 as the lowest dimension score of its one review.",
+  "note_must_say": "States that '3 rounds' is a number about the prior that does not appear among the recorded facts of the canon."
+ },
+ {
+  "class": 2,
+  "old": "The executed instance perturbed its measurement with known defects injected into a copy of its guide, and the measurement rejected each of them [prior:004-adoption-guide].",
+  "new": "The executed instance perturbed its measurement with 4 known defects injected into a copy of its guide, and the measurement rejected each of them [prior:004-adoption-guide].",
+  "shown_by": "O teste de sensibilidade do instrumento injetou dez defeitos conhecidos em cópia em memória do guia e a replicação pegou os dez.",
+  "note_must_say": "States that the prior injected ten defects, not 4; 4 is the lowest dimension score of its review, a different context."
+ },
+ {
+  "class": 3,
+  "old": "The canon is the one source of numbers, names, variants and rules for the cell, and each of its sections has an owner and a version.",
+  "new": "The canon is a starting point for numbers and names for the cell: it may be extended by any role during a round, as long as the sections have an owner and a version.",
+  "shown_by": "The canon is the one source of numbers, names, variants and rules for the cell, and each of its sections has an owner and a version.",
+  "note_must_say": "States that the canon is used as a permissive starting point, not as the one source of numbers, names, variants and rules."
+ },
+ {
+  "class": 4,
+  "old": "- Two artifacts state different numbers for the same fact: the canon is not being read, or the validator does not read it.",
+  "new": "- Two artifacts state different numbers for the same fact: that is acceptable, since each artifact has its own owner and version.",
+  "shown_by": "Two artifacts state different numbers for the same fact: the canon is not the single source, or the validator does not read it.",
+  "note_must_say": "States that the sentence contradicts the principle, which treats divergent numbers for the same fact as a failure of the canon and the validator."
+ },
+ {
+  "class": 5,
+  "old": "The one owner decision, the audience, is already decided and blocks the guide.",
+  "new": "The one owner decision, the audience, is already decided and blocks the guide; the brief file is kept at /home/author/cells/guide/00-brief.md.",
+  "shown_by": "nn-form: plain Markdown, no HTML, no absolute path, no authoring date, no machine name.",
+  "note_must_say": "States that an absolute path of a machine was introduced, violating the nn-form non-negotiable."
+ },
+ {
+  "class": 6,
+  "old": "Canon: [02-canon.json](02-canon.json)",
+  "new": "Canon: [02-canon.json](02-canon.md)",
+  "shown_by": "The file listing of the cell is: 00-brief.md, 01-sources-of-truth.md, 02-canon.json, 03-artifacts.json, 04-roles/, 05-contracts/, 06-gates.md, 07-rubric.md, 08-validator/, 09-engine/, guide.md, lessons.md, open-notes.json, priors.json, review/, state/.",
+  "note_must_say": "States that the canon link points to 02-canon.md, a file that is not in the cell listing (the canon is 02-canon.json)."
+ },
+ {
+  "class": 7,
+  "old": "Write the rubric before the first review, or each round will measure something different and no verdict of one round can be compared with another.",
+  "new": "Write the rubric before the first review, or each round will measure something different and no verdict of one round can be compared with another; a rubric written beforehand makes reviewers find substantially more defects than one written after.",
+  "shown_by": "The efficacy triggers of the canon list 'the method finds', and no attached file supports that a rubric written beforehand makes reviewers find substantially more defects; the one pilot (experiment E3) says the rubric is not what made the defects visible.",
+  "note_must_say": "States that an unlabeled efficacy claim about finding more defects was added, and that the principle/corpus carries no evidence for it."
+ },
+ {
+  "class": 8,
+  "old": "8. Draw the dependency graph; if it has a cycle, it is wrong; add the owner decisions as nodes.",
+  "new": "",
+  "shown_by": "The principle's recipe and section 7 fix the steps; step 3 says 'Draw the graph; if it has a cycle, it is wrong' and step 7 of the method makes a human decision a node, so omitting the step breaks the numbered sequence of the preparation.",
+  "note_must_say": "States that step 8 (draw the dependency graph, reject a cycle, add owner decisions as nodes) was silently removed from the numbered list."
+ },
+ {
+  "class": 9,
+  "old": "| `d-hypothesis` | guide | sentences claiming the method works without the hypothesis mark | 0 | [method] the principle states its claims of efficacy as marked hypotheses, and a guide about the method inherits the marking |",
+  "new": "| `d-hypothesis` | guide | sentences claiming the method works without the hypothesis mark | 0 | follows from the rules |",
+  "shown_by": "A gate is declared with what is measured, the limit, and the justification beside it with its origin label: [method] when the principle states it, [brief] when the brief sets it, [hypothesis] when it is a working hypothesis.",
+  "note_must_say": "States that the Justification cell of the d-hypothesis row lost its origin label and now says nothing (no [method]/[brief]/[hypothesis] justification)."
+ },
+ {
+  "class": 10,
+  "old": "In the executed instance no engine rebuilt a stale artifact from the hash of its inputs — the writer and the orchestrator rebuilt by hand [prior:004-adoption-guide] — and the cell recorded the decision not to keep a separate engine at its scale [prior:004-adoption-guide].",
+  "new": "In the executed instance the engine rebuilt a stale artifact from the hash of its inputs, and the cell recorded the decision not to keep a separate engine at its scale [prior:004-adoption-guide].",
+  "shown_by": "In the one execution no engine rebuilt a stale artifact from the hash of its inputs; the writer and the orchestrator rebuilt by hand.",
+  "note_must_say": "States that the sentence contradicts the prior and the principle: in the executed instance no engine rebuilt from the hash; the writer and orchestrator rebuilt by hand."
+ }
+]

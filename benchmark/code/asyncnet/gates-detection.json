@@ -1,0 +1,75 @@
+[
+ {
+  "id": "asyncnet-L1",
+  "class": "logic, boundary",
+  "report_names_its_lines": []
+ },
+ {
+  "id": "asyncnet-L2",
+  "class": "logic, semantic",
+  "report_names_its_lines": [
+   "d-lint"
+  ]
+ },
+ {
+  "id": "asyncnet-S",
+  "class": "suboptimization",
+  "report_names_its_lines": []
+ },
+ {
+  "id": "asyncnet-R",
+  "class": "repetition",
+  "report_names_its_lines": [
+   "d-duplicates",
+   "d-lint"
+  ]
+ },
+ {
+  "id": "asyncnet-C",
+  "class": "clean-code break",
+  "report_names_its_lines": [
+   "d-lint"
+  ]
+ },
+ {
+  "id": "asyncnet-U",
+  "class": "unintelligible code",
+  "report_names_its_lines": [
+   "d-security"
+  ]
+ },
+ {
+  "id": "asyncnet-D",
+  "class": "layering violation",
+  "report_names_its_lines": [
+   "d-lint"
+  ]
+ },
+ {
+  "id": "asyncnet-X",
+  "class": "security",
+  "report_names_its_lines": []
+ },
+ {
+  "id": "asyncnet-K",
+  "class": "concurrency or shared state",
+  "report_names_its_lines": [
+   "d-lint"
+  ]
+ },
+ {
+  "id": "asyncnet-E",
+  "class": "swallowed failure",
+  "report_names_its_lines": []
+ },
+ {
+  "id": "asyncnet-A",
+  "class": "broken contract",
+  "report_names_its_lines": []
+ },
+ {
+  "id": "asyncnet-M",
+  "class": "resource lifecycle",
+  "report_names_its_lines": []
+ }
+]

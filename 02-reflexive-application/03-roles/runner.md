@@ -22,8 +22,8 @@ each gate.
 - the text: it only emits notes.
 
 **Inputs:** all the `.md` files in the folder, `01-canon.md` (tables),
-`04-gates-and-rubric.md` (size limits and the "Rubric" section), the case
-method document (passed as a command-line argument, to check the
+`04-gates-and-rubric.md` (size limits and the "Rubric" section), the method
+document of the prior (passed as a command-line argument, to check the
 `[prior:...]` numbers), the instance registry (`../instances/registry.json`,
 found by default) and a list of forbidden identifiers (passed as an argument,
 kept out of the material so that it does not contain what it forbids; this
@@ -64,12 +64,11 @@ decides the contestations.
 
 ```text
 Run: python3 80-validator/validator.py --folder . \
-        --case PRIOR_000_DOCUMENT_PATH \
         --case ../instances/004-adoption-guide/metodo-de-producao.md \
         --rubric-hash 90-review/rubric.sha256 --notes 90-review/notes.json \
         --allow-pending p-anonymity
 Read the report. Forward each note to the owner of the target artifact.
 An exit 4 names a gate that was not measured: supply its input, or accept
-it by name when it is one of the three the validator accepts; never read it
+it by name when it is one of the four the validator accepts; never read it
 as a pass.
 ```

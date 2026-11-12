@@ -1,0 +1,16 @@
+00-brief.md
+01-sources-of-truth.md
+02-canon.json
+03-artifacts.json
+04-roles/
+05-contracts/
+06-gates.md
+07-rubric.md
+08-validator/
+09-engine/
+guide.md
+lessons.md
+open-notes.json
+priors.json
+review/
+state/

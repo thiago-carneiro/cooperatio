@@ -2,6 +2,137 @@
 
 One entry per version of the method. Version is state; dates are not.
 
+## 0.7.1
+
+A maintenance round, not a production under the method: the record of
+experiment E4, which the owner had approved and ran, and the benchmark it
+leaves, executed by an orchestrator and a coder of family B, with no review.
+
+- **Experiment E4, executed.** 39 single-shot reviews in two parts: the
+  document part of the design (one guide, three seeded copies of ten
+  defects each) and a code part the owner added before any seeded copy
+  existed (three anonymized open-source programs, in Python, C and C++,
+  twelve seeded classes each, the programs' own tests removed and the
+  programs anonymized at the owner's request). 28 runs were valid and 11 were
+  tool failures, all of family A, the producer's family, whose generation hit
+  its output limit. By the owner's criteria, fixed before the runs: P1a and
+  P1b refuted, P1c holds in both readings (with the failed runs counted as
+  all escaped, 79 escapes against 67, -18 %, for +136 % added input tokens;
+  with family D alone, 21 against 21, 0 %, for +135 %). P2 is not decidable
+  (family A could not be measured); P3 was not computed (the confirmation
+  about class 10 is not recorded). The record gains its executors, the
+  execution, the results (per repetition, per part, the noise floor, the
+  clean copies, the auxiliary arm, the instrument alone, the table by class,
+  the agreement of the adjudicators), what it shows and does not show, the
+  deviations, the cost and a provenance table of 16 files; the rest stays in
+  the owner's working record. The question, the protocol and the predictions
+  were not edited.
+- **The claim withdrawn.** The principle's table "What would promote or
+  withdraw a claim" gains a column "State after the data": the row of the
+  review apparatus is withdrawn by E4, with both readings, the family row is
+  open (not decidable), the portability row is open (E5 not run); a
+  paragraph after the table bounds the withdrawal to what was measured. The
+  living statements that presented the claim as open or likely now say it is
+  withdrawn, with `[against:E4]`: the principle (sections 2, 7 in step 6,
+  and 9: the costs, the baseline, the one-armed evidence, the reviews across
+  families), the root README (the summary, the freeze policy, the status),
+  the generic recipe ("When not to use"), the skill ("Several models") and
+  the gate semantics (the mitigation of the lexical efficacy gate). The
+  manual under `docs/` describes version 0.6.0, says the material wins, and
+  was not edited.
+- **The benchmark.** New folder `benchmark/` at the root: the clean guide,
+  the three seeded guides, their defect sets as JSON and as annotated
+  Markdown, the brief, canon, blind principle, blind method document of the
+  prior, rubric, checklist, reviewer card, reports and prompts the reviewers
+  received; for each program the anonymized pristine and seeded excerpts,
+  the anonymized answer key in JSON and Markdown, the upstream license, a
+  notice, the anonymization rules and the gates' detection table; the shared
+  gates code (its absolute paths of the run read from the environment in the
+  copy), the code rubric, checklist, reviewer card, brief and prompts; a
+  README and `MANIFEST.sha256`. Every reviewer input was checked byte for
+  byte against what a run received. It holds the answers and is never given
+  to a reviewer. It is not in the artifact table: `p-declared` covers the
+  documents of the reflexive application's folder, and the seeded copies
+  hold, by design, defects the gates would report.
+- **Size range.** `60-experiments.md` from 8500 to 11500 words, declared
+  before writing (the record grows by experiment; it stood at 7541).
+- **Open notes.** None was due at 0.7.1. This round edited the generic
+  recipe for E4 only; a chained line restates `notes:8` (the recipe) as open,
+  not addressed, due 0.8.0.
+- **The owner's ledger.** Nothing appended: the two decisions about E4, the
+  thresholds and the budget, were decided in 0.7.0 and did not change.
+- **Migration note.** No cell has to change a file. A cell that adopted the
+  review apparatus expecting it to find more than a careful review reads the
+  new row of the principle's table and E4: that claim is withdrawn, for one
+  design at the review stage; the frozen rubric still keeps rounds
+  comparable. A cell that reuses the benchmark follows its README and checks
+  its manifest before any run.
+
+## 0.7.0
+
+A maintenance round, not a production under the method: three decisions of
+the owner, executed by an orchestrator and a coder of family B, with no
+review.
+
+- **One executed instance.** The references to a prior the owner held,
+  not distributed, were removed from the living documents, and its registry
+  entry too. The material now has one executed instance,
+  `004-adoption-guide`, and every statement of the evidence says so: one
+  execution, documentary, by the owner. The principle and the root README
+  keep one neutral sentence of origin. A statement that only reported a fact
+  of that prior was deleted; a rule whose only support was that prior keeps
+  its text with `[hypothesis]` (exact text and a generative tool, the
+  ambiguous position key as a contract error, the traps of the recipe) or
+  says that no recorded execution supports it (the `p-notes` and
+  `m-determinism` justifications, the window of `t-recheck`, the cap of notes
+  per gate in the validator). Experiments E1 and E3 keep their results and
+  provenance tables, in neutral wording ("the method document of a prior
+  held by the owner, not distributed"); no result was altered.
+- **The canon.** The recorded-fact rows of that prior and its section
+  commitments are gone; commitments for the four cited sections of
+  `004-adoption-guide` replace them, so the mechanism and its perturbation
+  stay measured. One trigger left the list (it named only that prior);
+  the other triggers stay, to catch a statement written again, and
+  the frozen rubric still uses them. Sections bumped: Method terms v7, Fixed
+  lists v8, Recorded facts v7.
+- **The instrument, by the owner's decision.** The freeze of the README is
+  lifted for this round for data and comments only: `perturbation_set.py`
+  (seven perturbations that aimed at that prior now aim at
+  `004-adoption-guide`, still 65 in all, every assigned gate covered,
+  54 of 182 pairs, 29 %) and the comments and docstrings of `validator.py` and
+  `sensitivity.py` that named it. No reading of a gate changed; every generic
+  capability stays (the reserved locator, `--synthetic-prior`, the
+  attestation, `heading_style`). The tests that do not depend on the real
+  corpus keep their fixtures.
+- **The runbook.** A clone now verifies every number stated about a prior;
+  the clone run and the owner's run are one command, and `--allow-pending`
+  accepts `p-anonymity` only, for this corpus.
+- **Experiment E4, before any run.** The owner replaced the thresholds of
+  the row of the review apparatus in the principle's table: promoted when,
+  pooled over families, in at least 2 of 3 repetitions, arm A lets at most
+  half as many seeded defects escape as arm B and consumes at most half its
+  additional input tokens; withdrawn when, pooled over families and
+  repetitions, arm A consumes more additional input tokens than arm B and
+  its relative reduction of escapes is smaller than its relative increase in
+  those tokens; between them, inconclusive. The record of E4 has P1a, P1b and
+  P1c in place of P1, with the owner's measure of tokens (the input an arm
+  adds, output and reasoning apart) and the plain declaration that this
+  measure is expected to make P1b fail. A critique of the protocol added the
+  clean copy, the verdict of each run, the rules for the seeder and for the
+  authors of the rubric and of the checklist, two auxiliary comparisons, the
+  degenerate cases, and the new refutations of P2 and P3. E4 stays `designed`.
+- **Open notes.** The 17 open notes whose `due` was 0.7.0 (16 of the frozen
+  ledger, one of a panel) were not addressed in this round; they are
+  rescheduled to 0.8.0 by appended chained lines, so the age rule still
+  counts them.
+- **The owner's ledger.** Three decided lines: the extract of the prior
+  (nothing to publish), the thresholds, and the budget of E4.
+- **Migration note.** A cell that copied the validator and registers a prior
+  held by its owner changes nothing: the mechanism stays. A cell that cited
+  this material's removed prior removes the citation, or registers its own
+  source. The numbers it stated about that prior have no support here any
+  longer. A cell's own recorded facts and section commitments keep working.
+
 ## 0.6.0
 
 A maintenance round, not a production under the method: the corrections of

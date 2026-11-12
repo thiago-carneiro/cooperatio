@@ -326,3 +326,54 @@ asked for. What it taught:
   were closed as fixed with parts undone; the review caught it. A
   closure names what was done, and what was not stays open with its
   version due.
+
+## The v0.7.0 round: removing a source weakens what it supported, and the text has to say so
+
+A maintenance round, not a production: the owner removed a prior from the
+living documents and set the thresholds of E4. What it taught:
+
+- **A removal is a change of evidence, not of wording.** Deleting the facts
+  of a prior is the easy half. The harder half is the rule that stayed
+  behind with a confident sentence and nothing under it; each such rule now
+  carries `[hypothesis]` or says it has no recorded support. The evidence
+  is one execution, and a document that read as if it had more would be the
+  error the gate of marks exists to catch [hypothesis].
+- **A perturbation is bound to the text it edits.** Seven perturbations
+  named sentences that left; the set was rewritten against the recorded
+  facts that remain, and by inserting a statement where a document no longer
+  holds one, so the pairs stay measured. Checking the count of perturbations
+  says little here; what says something is that each one still fails on its
+  own document.
+- **A definition can be written to lose.** The owner's measure of tokens in
+  E4 favors the arm that adds fewer files, by construction. Writing that
+  beside the prediction, before any run, keeps a later reading honest, and
+  leaves the decision to the owner, where it belongs.
+
+## The v0.7.1 round: a claim measured once, and withdrawn where it lived
+
+A maintenance round, not a production: the record of experiment E4, which
+withdrew the claim that the review apparatus adds to a careful review, and
+the benchmark it leaves. What it taught:
+
+- **A withdrawal is written where the claim lived, not only where it was
+  tested.** The row of the principle's table changed in one line; the
+  sentences that leaned on it were in five documents, and a search for the
+  experiment's id finds the ones that cite it, not the ones that assume it.
+  Each was read for what it promised, and now says the claim is withdrawn,
+  with the label of the result against it [against:E4].
+- **A comparison of families needs runs of both families that end.** Most
+  runs of the producer's family hit their output limit; the rule that counts
+  a failed run as all escaped would then have made the other family win by
+  default. A rule for failures keeps a count honest, and a reading that
+  leaves the failures out, beside it, keeps the conclusion honest
+  [experiment:E4].
+- **Blindness is decided per role, before the first session.** The reviewers
+  received blind copies, after a first batch was stopped for seeing the
+  test; the authors of the rubric and the seeder received the principle that
+  names it. Who must not know what is a column of the plan, written before
+  anyone is dispatched.
+- **Keep the questions and the answers apart, and keep both.** A benchmark
+  that is not kept cannot be rerun, and one kept beside its inputs can be
+  handed to a reviewer by mistake. The benchmark keeps the answers in one
+  folder that says so, with a manifest, and every reviewer input checked
+  against what a run received.

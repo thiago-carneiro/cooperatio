@@ -34,7 +34,7 @@ There are two layers:
 ## For whom
 
 First, whoever is going to instantiate the method on a new target and did
-not follow the reference case [prior:000-av-production]. Then, an orchestrator agent that receives the
+not take part in the earlier work it came from. Then, an orchestrator agent that receives the
 recipe as an instruction. Both need to execute without asking what a term
 means.
 
@@ -47,11 +47,11 @@ decision of the owner in `state/owner-decisions.jsonl` covers it.
 - `nn-method`: this production itself follows the method: brief, canon, artifacts, cards,
   gates, validator, one independent review with a fixed rubric,
   routed notes and a stopping criterion.
-- `nn-prior-facts`: nothing is stated about the prior instance that is not in its method
-  document (registered in `../instances/registry.json`, pinned by sha256,
-  kept outside this repository and cited relative to its own repository
-  root). That document and `../01-principle.md` form the **corpus**; the
-  production does not edit them.
+- `nn-prior-facts`: nothing is stated about a registered prior that is not in its method
+  document (registered in `../instances/registry.json` and pinned by sha256;
+  since v0.7.0 the one executed prior is `004-adoption-guide`, whose document
+  the material distributes). That document and `../01-principle.md` form the
+  **corpus**; the production does not edit them.
 - `nn-hypothesis`: an assumption about a domain (car, text, HPC) comes marked
   `[hypothesis]`.
 - `nn-form`: American English, plain Markdown, simple tables, pseudocode in `text`
@@ -73,7 +73,7 @@ validator reads):
 | Choice of the three example targets | made in the request |
 | Stopping criterion | made in the request: one review round |
 | Whether the `[hypothesis]` limits of the instances hold for a real case | open: each real instance decides its own |
-| Correcting the divergences found between `../01-principle.md` and the prior instance's document | made in the v0.2 round, from the review of round 1 (see `../CHANGELOG.md`) |
+| Correcting the divergences found between `../01-principle.md` and its source | made in the v0.2 round, from the review of round 1 (see `../CHANGELOG.md`) |
 
 ## Budget and stopping criterion
 

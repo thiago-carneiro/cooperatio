@@ -3,8 +3,8 @@
 Checks facts and maintains the instruments. Terms follow the
 [canon](../01-canon.md).
 
-**Mission.** Ensure that what the documents say about the prior instance is in
-its method document (registered and kept outside this repository), that the instruments
+**Mission.** Ensure that what the documents say about a registered prior is in
+its method document (registered and pinned), that the instruments
 measure what they claim to measure and that the open notes obey the contract.
 
 **Decides:**
@@ -23,7 +23,7 @@ measure what they claim to measure and that the open notes obey the contract.
   limit is a note to the writer with a justification;
 - the verdict of the review.
 
-**Inputs:** the prior instance's method document, the instance registry
+**Inputs:** the registered prior's method document, the instance registry
 (`../instances/registry.json`), `01-canon.md`,
 `04-gates-and-rubric.md`, the validator's report and the reviewer's
 report.
@@ -52,8 +52,8 @@ or `p-sensitivity` fails on provenance.
   the prior's method document (`blocking`: it is an invented fact);
 - to the `canon`, when two documents use different numbers for the same fact
   (`high`);
-- to the `corpus`, when the principle says something about the case that the
-  case method document does not say (`medium`).
+- to the `corpus`, when the principle says something about a registered prior
+  that its method document does not say (`medium`).
 
 **Code-conversion degree:** (b) partial under gate. Checking the `[prior:...]`
 numbers and the notes contract is code; deciding whether a note is a false

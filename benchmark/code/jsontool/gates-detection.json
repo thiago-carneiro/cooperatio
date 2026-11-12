@@ -1,0 +1,62 @@
+[
+ {
+  "id": "jsontool-L1",
+  "class": "logic, boundary",
+  "report_names_its_lines": []
+ },
+ {
+  "id": "jsontool-L2",
+  "class": "logic, semantic",
+  "report_names_its_lines": []
+ },
+ {
+  "id": "jsontool-S",
+  "class": "suboptimization",
+  "report_names_its_lines": []
+ },
+ {
+  "id": "jsontool-R",
+  "class": "repetition",
+  "report_names_its_lines": []
+ },
+ {
+  "id": "jsontool-C",
+  "class": "clean-code break",
+  "report_names_its_lines": []
+ },
+ {
+  "id": "jsontool-U",
+  "class": "unintelligible code",
+  "report_names_its_lines": []
+ },
+ {
+  "id": "jsontool-D",
+  "class": "layering violation",
+  "report_names_its_lines": []
+ },
+ {
+  "id": "jsontool-X",
+  "class": "security",
+  "report_names_its_lines": []
+ },
+ {
+  "id": "jsontool-K",
+  "class": "concurrency or shared state",
+  "report_names_its_lines": []
+ },
+ {
+  "id": "jsontool-E",
+  "class": "swallowed failure",
+  "report_names_its_lines": []
+ },
+ {
+  "id": "jsontool-A",
+  "class": "broken contract",
+  "report_names_its_lines": []
+ },
+ {
+  "id": "jsontool-M",
+  "class": "resource lifecycle",
+  "report_names_its_lines": []
+ }
+]

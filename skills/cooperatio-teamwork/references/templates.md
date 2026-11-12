@@ -100,7 +100,7 @@ plain strings; an origin label keeps its brackets):
   "documents outside the artifact list": ["01-sources-of-truth.md", "07-rubric.md",
                                           "lessons.md", "08-validator/*.md"],
   "recorded facts": [
-    { "number": "18", "context": "roles with a card [prior:000-example]",
+    { "number": "4", "context": "doors on the prototype [prior:000-example]",
       "section": "1.1" }
   ]
 }
