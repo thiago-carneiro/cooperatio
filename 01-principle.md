@@ -1,6 +1,6 @@
 # The principle behind the method, generalized
 
-Method version 0.7.1 (see `VERSION`; the history of the changes, in
+Method version 0.7.2 (see `VERSION`; the history of the changes, in
 `CHANGELOG.md`).
 
 **Status: a working hypothesis, with a documentary validator; the gates

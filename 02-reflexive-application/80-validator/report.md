@@ -183,7 +183,7 @@ measured, because its input was not provided; it is neither a pass nor a fail.
 | `README.md` | `p-canon-link` | 1 resolved, 0 unresolved | ≥ 1 resolved, 0 unresolved | pass |
 | `README.md` | `p-efficacy-mark` | 0 | 0 | pass |
 | `README.md` | `p-form` | 0 | 0 | pass |
-| `README.md` | `p-size` | 1826 | 150 to 3200 | pass |
+| `README.md` | `p-size` | 1828 | 150 to 3200 | pass |
 | `README.md` | `p-terms` | 0 | 0 | pass |
 | `state/notes-status.jsonl` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
 | `state/notes-status.jsonl` | `p-contract-shape` | 175 lines, 0 violations | 0 | pass |

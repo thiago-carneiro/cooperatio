@@ -5,7 +5,7 @@ a target's domain enter as results the cell's own code produces and the
 validator checks; one executed instance, documentary, by the owner,
 auditable from this material.** See "Status" below for what that covers and what it does not.
 
-Method version 0.7.1 (see `VERSION`; the history of the changes, in
+Method version 0.7.2 (see `VERSION`; the history of the changes, in
 `CHANGELOG.md`). The terms follow the
 [canon](02-reflexive-application/01-canon.md) of the reflexive application.
 
@@ -79,9 +79,26 @@ changelog is the research.
 
 ## Using the skill
 
-Copy or link the `skills/cooperatio-teamwork/` folder into your agent's
-skills directory, and ask for the teamwork files for a
-target. The skill also ships a small scaffolding script that creates the empty
+Install the skill into every agent harness found on the machine with its
+installer, run from inside the material:
+
+```text
+python3 skills/cooperatio-teamwork/scripts/install.py --list   # what it knows and finds
+python3 skills/cooperatio-teamwork/scripts/install.py          # link the skill
+```
+
+It detects a harness by its configuration folder in the home directory
+(Claude Code, GitHub Copilot, pi, OpenCode, Codex, Gemini CLI, Cursor,
+Windsurf and about twenty more; `--list` shows the table) and puts a
+symbolic link to this folder in that harness's user-level skills folder, so
+the scaffold still reaches the validator and a `git pull` updates every
+harness. It never replaces an entry it did not make; `--copy` copies instead
+of linking, `--harness NAME` picks harnesses, `--dry-run` changes nothing and
+`--uninstall` removes what it installed. A harness that also reads another's
+folder (OpenCode and Cursor read the skills folder of Claude Code) may list the skill twice.
+Copying or linking the folder by hand works as well.
+
+Then ask your agent for the teamwork files for a target. The skill also ships a small scaffolding script that creates the empty
 folder structure without overwriting anything. The scaffold copies the
 validator, the sensitivity test and four contracts from this material into
 the new cell, so run it from inside the material (or keep the skill folder
