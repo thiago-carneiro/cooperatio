@@ -27,7 +27,7 @@ stopping criterion"). The terms follow the [canon](01-canon.md).
 | File or folder | What it is |
 | --- | --- |
 | `00-brief.md` | the brief of this production: target, non-negotiables, owner decisions, budget and stopping criterion (one review round), and the maintenance rounds after it |
-| `01-canon.md` | method terms with canonical definition, terms to avoid, fixed lists the validator reads, form rules, recorded facts of the prior instance [prior:000-av-production] |
+| `01-canon.md` | method terms with canonical definition, terms to avoid, fixed lists the validator reads, form rules, the recorded facts of the one executed prior |
 | `02-artifacts.md` | the list and the graph of the artifacts of this folder, with owner, dependencies, schema and gates |
 | `03-roles/` | the cards of the four roles: writer, verifier, runner (who runs the validator), reviewer |
 | `04-gates-and-rubric.md` | the gates with magnitude, limit and justification; the size ranges; the instrument measurements; the review rubric, frozen by hash |
@@ -47,7 +47,7 @@ stopping criterion"). The terms follow the [canon](01-canon.md).
 At the root of the material: `../VERSION` and `../CHANGELOG.md` (the version
 of the method and its history), `../instances/registry.json` (the
 registered instances; each executed prior is pinned by sha256) and
-`../instances/004-adoption-guide/`, the cell of the second executed
+`../instances/004-adoption-guide/`, the cell of the one executed
 instance, distributed with the material since v0.5.0. That cell ran under
 method version 0.2.2 and is a record, not an example: it does not run under
 the current validator without a migration (the migration note of the
@@ -62,14 +62,15 @@ a second review, per the stopping criterion of the brief. The 22 remaining
 notes are kept, frozen, in `90-review/notes.json`; their state is in
 `state/notes-status.jsonl`, which `p-notes` reads: of those 22 notes, 6
 were fixed by later rounds and 16 are open, each scheduled since v0.6.0 for
-the round that next edits its document (the counts of the report's
+the round that next edits its document and rescheduled in v0.7.0, whose scope
+was the owner's decisions (the counts of the report's
 `p-notes` row are of every tracked line, the panels' findings included, not
 of these 22). The same ledger records the findings of the panels
 that reviewed v0.4.2 and v0.5.0, with the state of each (since v0.6.0 a new
 line restates a finding whose state changed). The v0.2 round renamed the
-vocabulary, corrected the corpus and registered the prior instance
-[prior:000-av-production]; see
-`../CHANGELOG.md`.
+vocabulary and corrected the corpus; since v0.7.0 the one executed instance
+behind this material is `004-adoption-guide` (one execution, documentary, by
+the owner); see `../CHANGELOG.md`.
 
 ## How to run the validator
 
@@ -77,12 +78,10 @@ vocabulary, corrected the corpus and registered the prior instance
 # only for a new rubric; this corpus is already frozen (the command refuses)
 python3 80-validator/validator.py --folder . --freeze-rubric 90-review/rubric.sha256
 python3 80-validator/sensitivity.py --folder . \
-    --case PRIOR_000_DOCUMENT_PATH \
     --case ../instances/004-adoption-guide/metodo-de-producao.md \
     --rubric-hash 90-review/rubric.sha256 --notes 90-review/notes.json \
     --work SCRATCH_FOLDER --output 80-validator/sensitivity.md
 python3 80-validator/validator.py --folder . \
-    --case PRIOR_000_DOCUMENT_PATH \
     --case ../instances/004-adoption-guide/metodo-de-producao.md \
     --rubric-hash 90-review/rubric.sha256 --notes 90-review/notes.json \
     --allow-pending p-anonymity --determinism --output 80-validator/report.md
@@ -126,81 +125,56 @@ UTF-8, a truncated table row, a gate it does not implement, a gate with two
 rows, a gate named by `--allow-pending` outside its closed list, a domain
 result that breaks its contract); 4 when a gate is pending and
 `--allow-pending` does not name it. `--allow-pending` accepts only
-`p-anonymity`, `p-prior` and `p-prior-pin`, and `p-sensitivity-synthetic`
-(a report made with a synthetic prior, never a pass); a missing sensitivity
-report is blocking, never a pending.
+`p-anonymity`, `p-prior`, `p-prior-pin` and `p-sensitivity-synthetic`, a
+closed list that exists for what a cell may not distribute (the second and
+third for a prior held outside its material, the last for a report made with
+a synthetic prior, never a pass); this corpus needs only `p-anonymity`. A
+missing sensitivity report is blocking, never a pending.
 
 The list of forbidden identifiers stays out of the material, so that it does
 not contain what it forbids; this corpus has none, so the identifier part of
 `p-anonymity` is pending in every document, and the run above accepts that
 pending by name, which the report prints. The published report is made
-with exactly that command. The instance registry (`../instances/registry.json`)
-is found by default; each prior method document is passed with its own
-`--case` (each is identified by its sha256 in the registry). Without
+with exactly that command, and a clone that runs it measures every number
+stated about a prior, since the one executed prior is distributed. The
+instance registry (`../instances/registry.json`)
+is found by default; the prior method document is passed with `--case`
+(identified by its sha256 in the registry). Without
 `--case`, the number check of the `p-prior` gate, the section commitments
-of the canon and the sha256 pin of the `p-prior-pin` gate are pending, and a
-cited prior whose document was not passed is pending by name; without
+of the canon and the sha256 pin of the `p-prior-pin` gate are pending; without
 `--notes`, so is the note ledger gate `p-notes`, with the state ledger of
 the notes, and that pending cannot be accepted. A pending gate is neither a
 pass nor a fail, and it exits 4 unless accepted. The sensitivity test takes
 the same inputs: without `--case`, `--rubric-hash` or `--notes`, the rows
 that need them are not measured, and `p-sensitivity` refuses the report.
 
-### Without the owner-held document of 000
+### What a clone runs, and the mechanism for a prior held elsewhere
 
-The method document of the prior instance 000 stays with the owner (the
-registry says "owner-held, not distributable"), so a clone of this material
-does not have it. The clone run passes the document of 004, which the
-material distributes, and accepts by name the gates that need the owner's:
+A clone of this material runs the commands above as they are: the document
+of `004-adoption-guide` is distributed, so its pin, its numbers and the
+sections the canon commits to are measured (its edited document, or an
+invented number about it, is a blocking note, exit 1), and the sensitivity
+report can be regenerated by anyone who edits the instrument. Its header
+records the sha256 of the prior document it was made with (`case sha256:`
+line) and an attestation of it (`case attestation:`, over the document's text
+and the provenance), and a run with the document recomputes both. Without
+any `--case`, the five rows of the set that need the prior are not measured,
+and `p-sensitivity` refuses the report for the rows it did not measure; the
+report stays valid only while the validator, the canon, the "Gates" section
+of `04-gates-and-rubric.md` and the gate map stay as they are, and deleting
+it does not help, since a missing report is blocking.
 
-```text
-python3 80-validator/validator.py --folder . \
-    --case ../instances/004-adoption-guide/metodo-de-producao.md \
-    --rubric-hash 90-review/rubric.sha256 --notes 90-review/notes.json \
-    --allow-pending p-anonymity,p-prior,p-prior-pin --determinism
-```
-
-Expected: exit 0, no notes, the report on the standard output, the three
-gates listed as pending accepted by the caller, the pin and the numbers of
-004 measured (its edited document, or an invented number about it, is a
-blocking note, exit 1), and the rows of 000 saying "owner-held evidence,
-not measured here". Since the rework of v0.6.0 the pin is measured prior by
-prior: an owner-held prior with no document is pending by name, while a
-distributed one with no document, or a document that is the pin of no
-instance, is blocking. Without any `--case` the same run still exits 0,
-but measures neither pin.
-
-The published sensitivity report is regenerated with the owner's document,
-and its header records the sha256 of each prior document it was made with
-(`case sha256:` lines) and an attestation of each (`case attestation:`, over
-the document's text and the provenance, which a run with the document
-recomputes). A maintainer who edits the instrument without it
-regenerates a full report with a synthetic prior, generated from the
-canon's recorded facts in the heading style the registry declares for the
-real document, and pinned in the copies only:
-
-```text
-python3 80-validator/sensitivity.py --folder . \
-    --case ../instances/004-adoption-guide/metodo-de-producao.md \
-    --synthetic-prior 000-av-production \
-    --rubric-hash 90-review/rubric.sha256 --notes 90-review/notes.json \
-    --work SCRATCH_FOLDER --output 80-validator/sensitivity.md
-```
-
-The validator tells that report by its `case sha256` of 000, which is not
-the registry's pin, and never reads it as a pass: without the owner's
-document its row is `p-sensitivity-synthetic`, pending, which the clone run
-accepts only by adding that gate to `--allow-pending`; with the owner's
-document it is refused. It shows that every gate fails its known defect. It
-does not show that the owner's document holds the facts, nor that the
-validator reads that document's format: the synthetic follows the heading
-style the registry declares, and a format the registry does not describe is
-not tested. It stays pending until the owner regenerates the report with
-the document. Without any `--case`, the six rows that need a prior are not
-measured, the report reads "Caught 59 of 59. Not measured: 6.", and
-`p-sensitivity` refuses it as measuring 59 of 65; with only the document of
-004, the five rows of the first prior are not measured, never missed, and
-the report reads "Caught 60 of 60. Not measured: 5.". The published report
-stays valid only while the validator, the canon, the "Gates" section of
-`04-gates-and-rubric.md` and the gate map stay as they are; deleting the
-report does not help, since a missing report is blocking.
+The instrument keeps a generic mechanism for a cell whose prior is held
+outside its material, which this material does not use. Its registry entry
+carries the reserved locator `owner-held, not distributable`; the run without
+that document leaves the rows of that prior pending by name, with the notice
+"owner-held evidence, not measured here", accepted only with
+`--allow-pending p-prior,p-prior-pin`. A maintainer without the document
+regenerates the sensitivity report with `sensitivity.py --synthetic-prior
+PRIOR_ID`, which generates a document from the canon's recorded facts in the
+heading style the registry declares and pins it in the copies only; the
+validator tells that report by its `case sha256` differing from the pin and
+never reads it as a pass (`p-sensitivity-synthetic`, pending, accepted only
+by name, and refused in a run that passes the real document). What that
+report does not show is that the real document holds the facts, nor that the
+validator reads the real format. `06-gate-semantics.md` has the detail.

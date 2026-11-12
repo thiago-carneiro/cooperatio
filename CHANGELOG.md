@@ -2,6 +2,71 @@
 
 One entry per version of the method. Version is state; dates are not.
 
+## 0.7.0
+
+A maintenance round, not a production under the method: three decisions of
+the owner, executed by an orchestrator and a coder of family B, with no
+review.
+
+- **One executed instance.** The references to a prior the owner held,
+  not distributed, were removed from the living documents, and its registry
+  entry too. The material now has one executed instance,
+  `004-adoption-guide`, and every statement of the evidence says so: one
+  execution, documentary, by the owner. The principle and the root README
+  keep one neutral sentence of origin. A statement that only reported a fact
+  of that prior was deleted; a rule whose only support was that prior keeps
+  its text with `[hypothesis]` (exact text and a generative tool, the
+  ambiguous position key as a contract error, the traps of the recipe) or
+  says that no recorded execution supports it (the `p-notes` and
+  `m-determinism` justifications, the window of `t-recheck`, the cap of notes
+  per gate in the validator). Experiments E1 and E3 keep their results and
+  provenance tables, in neutral wording ("the method document of a prior
+  held by the owner, not distributed"); no result was altered.
+- **The canon.** The recorded-fact rows of that prior and its section
+  commitments are gone; commitments for the four cited sections of
+  `004-adoption-guide` replace them, so the mechanism and its perturbation
+  stay measured. One trigger left the list (it named only that prior);
+  the other triggers stay, to catch a statement written again, and
+  the frozen rubric still uses them. Sections bumped: Method terms v7, Fixed
+  lists v8, Recorded facts v7.
+- **The instrument, by the owner's decision.** The freeze of the README is
+  lifted for this round for data and comments only: `perturbation_set.py`
+  (seven perturbations that aimed at that prior now aim at
+  `004-adoption-guide`, still 65 in all, every assigned gate covered,
+  54 of 182 pairs, 29 %) and the comments and docstrings of `validator.py` and
+  `sensitivity.py` that named it. No reading of a gate changed; every generic
+  capability stays (the reserved locator, `--synthetic-prior`, the
+  attestation, `heading_style`). The tests that do not depend on the real
+  corpus keep their fixtures.
+- **The runbook.** A clone now verifies every number stated about a prior;
+  the clone run and the owner's run are one command, and `--allow-pending`
+  accepts `p-anonymity` only, for this corpus.
+- **Experiment E4, before any run.** The owner replaced the thresholds of
+  the row of the review apparatus in the principle's table: promoted when,
+  pooled over families, in at least 2 of 3 repetitions, arm A lets at most
+  half as many seeded defects escape as arm B and consumes at most half its
+  additional input tokens; withdrawn when, pooled over families and
+  repetitions, arm A consumes more additional input tokens than arm B and
+  its relative reduction of escapes is smaller than its relative increase in
+  those tokens; between them, inconclusive. The record of E4 has P1a, P1b and
+  P1c in place of P1, with the owner's measure of tokens (the input an arm
+  adds, output and reasoning apart) and the plain declaration that this
+  measure is expected to make P1b fail. A critique of the protocol added the
+  clean copy, the verdict of each run, the rules for the seeder and for the
+  authors of the rubric and of the checklist, two auxiliary comparisons, the
+  degenerate cases, and the new refutations of P2 and P3. E4 stays `designed`.
+- **Open notes.** The 17 open notes whose `due` was 0.7.0 (16 of the frozen
+  ledger, one of a panel) were not addressed in this round; they are
+  rescheduled to 0.8.0 by appended chained lines, so the age rule still
+  counts them.
+- **The owner's ledger.** Three decided lines: the extract of the prior
+  (nothing to publish), the thresholds, and the budget of E4.
+- **Migration note.** A cell that copied the validator and registers a prior
+  held by its owner changes nothing: the mechanism stays. A cell that cited
+  this material's removed prior removes the citation, or registers its own
+  source. The numbers it stated about that prior have no support here any
+  longer. A cell's own recorded facts and section commitments keep working.
+
 ## 0.6.0
 
 A maintenance round, not a production under the method: the corrections of

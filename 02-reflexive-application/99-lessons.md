@@ -326,3 +326,25 @@ asked for. What it taught:
   were closed as fixed with parts undone; the review caught it. A
   closure names what was done, and what was not stays open with its
   version due.
+
+## The v0.7.0 round: removing a source weakens what it supported, and the text has to say so
+
+A maintenance round, not a production: the owner removed a prior from the
+living documents and set the thresholds of E4. What it taught:
+
+- **A removal is a change of evidence, not of wording.** Deleting the facts
+  of a prior is the easy half. The harder half is the rule that stayed
+  behind with a confident sentence and nothing under it; each such rule now
+  carries `[hypothesis]` or says it has no recorded support. The evidence
+  is one execution, and a document that read as if it had more would be the
+  error the gate of marks exists to catch [hypothesis].
+- **A perturbation is bound to the text it edits.** Seven perturbations
+  named sentences that left; the set was rewritten against the recorded
+  facts that remain, and by inserting a statement where a document no longer
+  holds one, so the pairs stay measured. Checking the count of perturbations
+  says little here; what says something is that each one still fails on its
+  own document.
+- **A definition can be written to lose.** The owner's measure of tokens in
+  E4 favors the arm that adds fewer files, by construction. Writing that
+  beside the prediction, before any run, keeps a later reading honest, and
+  leaves the decision to the owner, where it belongs.

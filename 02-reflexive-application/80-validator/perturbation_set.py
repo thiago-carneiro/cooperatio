@@ -81,9 +81,12 @@ AVOID_TABLE_ROWS = (
     "| ruler | rubric | canonical term |\n"
     "| review board | independent review | canonical term; the review is done by whoever did "
     "not produce |\n")
-PRIOR_000 = "000-av-production"
+PRIOR_004 = "004-adoption-guide"
 NAMED_DATE_SAMPLE = " ".join(("29", "October", "2026"))
 LESSONS_V050_HEADING = "## The v0.5.0 round: exit 0 is not green"
+# Headings of the recipe a perturbation of the prior gates writes after.
+STEP_13_HEADING = "### Step 13. Declare the stop and record the open notes"
+STEP_14_HEADING = "### Step 14. Write the case method document and register the instance"
 
 PERTURBATIONS = (
     Perturbation("avoid-word inserted", "10-generic-recipe.md",
@@ -96,9 +99,9 @@ PERTURBATIONS = (
                   "| Stopping criterion | release", "| Stopping criteria | release", "p-table"),
     Perturbation("owner that is not a role", "20-instance-car.md",
                   "| `bom` | cost engineer |", "| `bom` | ghost engineer |", "p-references"),
-    Perturbation("prior number altered", "10-generic-recipe.md",
-                 "the validator gave 38", "the validator gave 39", "p-prior", needs_case=True,
-                 prior=PRIOR_000),
+    Perturbation("prior number altered", "../01-principle.md",
+                 "produced a guide of 1054 words", "produced a guide of 1055 words", "p-prior",
+                 needs_case=True, prior=PRIOR_004),
     Perturbation("step field deleted", "10-generic-recipe.md",
                   "- **Done when:** the tree exists;", "- the tree exists;", "p-recipe"),
     Perturbation("gate justification deleted", "22-instance-hpc.md",
@@ -115,8 +118,8 @@ PERTURBATIONS = (
     Perturbation("card field deleted", "03-roles/reviewer.md",
                  "**Does not decide:**", "**Also:**", "p-card"),
     Perturbation("statement about the prior without the mark", "10-generic-recipe.md",
-                 "(sections 1.10 and 4.14 of the case) [prior:000-av-production]",
-                 "(sections 1.10 and 4.14 of the case)",
+                 STEP_14_HEADING,
+                 STEP_14_HEADING + "\n\nIn the reference case, the review accepted the guide.",
                  "p-prior-mark"),
     Perturbation("method component omitted", "22-instance-hpc.md",
                   "The artifact graph:", "The design:", "p-components"),
@@ -146,13 +149,13 @@ PERTURBATIONS = (
     Perturbation("claim of efficacy without a label", "10-generic-recipe.md",
                  "It pays off when erring is expensive [hypothesis].",
                  "It pays off when erring is expensive.", "p-efficacy-mark"),
-    # Found by the review of v0.4.0: '21' occurs once in the prior's document, in
-    # an unrelated sentence, so presence in the whole document passed it.
-    Perturbation("prior number without a recorded fact", "10-generic-recipe.md",
-                 "and 26 low open\n  notes [prior:000-av-production]",
-                 "and 26 low open\n  notes, kept by 21 roles [prior:000-av-production]",
-                 "p-prior", needs_case=True,
-                 prior=PRIOR_000),
+    # Found by the review of v0.4.0: a number that occurs in the prior's
+    # document, in an unrelated sentence, passed by presence in the whole
+    # document; a number needs its row in "Recorded facts".
+    Perturbation("prior number without a recorded fact", "60-experiments.md",
+                 "and no dimension below 4 [prior:004-adoption-guide].",
+                 "and no dimension below 4, over 77 notes [prior:004-adoption-guide].",
+                 "p-prior", needs_case=True, prior=PRIOR_004),
     # v0.4.1: the contract of a registry entry by status, and a claim
     # backed by an experiment that has not run.
     Perturbation("executed registry entry without a locator", "../instances/registry.json",
@@ -170,12 +173,12 @@ PERTURBATIONS = (
     # v0.4.2 demonstrated, so each correction stays measured.
     Perturbation("gate row deleted", "04-gates-and-rubric.md",
                  RECIPE_GATE_ROW, "", "p-references", also="p-recipe"),
-    Perturbation("prior mark inside a code span", "10-generic-recipe.md",
-                 "the validator gave 38\n  notes, 2 of them high, and both were false "
-                 "[prior:000-av-production]",
-                 "the validator gave 39\n  notes, 2 of them high, and both were false "
-                 "`[prior:000-av-production]`", "p-prior-mark", needs_case=True,
-                 prior=PRIOR_000),
+    Perturbation("prior mark inside a code span", "60-experiments.md",
+                 "The product of the executed adoption-guide instance: its guide, of 1054\n"
+                 "words, which its one review accepted [prior:004-adoption-guide].",
+                 "The product of the executed instance: its guide, of 1054\n"
+                 "words, which its one review accepted `[prior:004-adoption-guide]`.",
+                 "p-prior-mark"),
     Perturbation("placeholder in a card field", "03-roles/writer.md",
                  "**Decides:**", "**Decides:** <fill in>", "p-card", also="p-form"),
     Perturbation("canon list emptied", "01-canon.md",
@@ -204,12 +207,13 @@ PERTURBATIONS = (
                  "", "", "p-declared", delete=True),
     Perturbation("sensitivity report deleted", "80-validator/sensitivity.md",
                  "", "", "p-declared", delete=True),
-    Perturbation("prior mark with an uppercase id", "01-canon.md",
-                 "document) [prior:000-av-production]. |", "document) [prior:000-AV-production]. |",
+    Perturbation("prior mark with an uppercase id", "20-instance-car.md",
+                 "## 7. Validator", "## 7. Validator\n\nSee [prior:004-ADOPTION-guide].",
                  "p-prior"),
     Perturbation("prior number in a code span", "10-generic-recipe.md",
-                 "out at p95 of 0.546 s", "out at p95 of `0.746` s", "p-prior", needs_case=True,
-                 prior=PRIOR_000),
+                 STEP_13_HEADING,
+                 STEP_13_HEADING + "\n\nThe guide has `1056` words [prior:004-adoption-guide].",
+                 "p-prior", needs_case=True, prior=PRIOR_004),
     Perturbation("placeholder in an instance artifact table", "22-instance-hpc.md",
                  "| `specification` | public headers |", "| `specification` | TBD |", "p-references"),
     Perturbation("tilde fence without the text mark", "00-brief.md",
@@ -236,9 +240,8 @@ PERTURBATIONS = (
                  "[lessons:The v0.5.0 round: exit 0 is not green]",
                  "[lessons:The v0.5.0 round: a round that never was]", "p-efficacy-mark"),
     Perturbation("section commitment altered", "01-canon.md",
-                 "| `[prior:000-av-production]` | 1.1 | `", "| `[prior:000-av-production]` | 2.1 | `",
-                 "p-prior", needs_case=True,
-                 prior=PRIOR_000),
+                 "| `[prior:004-adoption-guide]` | 4.4 | `", "| `[prior:004-adoption-guide]` | 5 | `",
+                 "p-prior", needs_case=True, prior=PRIOR_004),
     # Coverage by (document, gate) pair (v0.6.0): one known defect on
     # documents and gates no earlier perturbation reached.
     Perturbation("absolute path in the root README", "../README.md",

@@ -9,11 +9,11 @@ section that changes bumps its version.
 | Section | Owner | Version | State |
 | --- | --- | --- | --- |
 | Canon schema | verifier | v1 | ready |
-| Method terms | writer | v6 | ready |
+| Method terms | writer | v7 | ready |
 | Terms to avoid | writer | v2 | ready |
-| Fixed lists | writer | v7 | ready |
+| Fixed lists | writer | v8 | ready |
 | Form rules | writer | v6 | ready |
-| Recorded facts | verifier | v6 | ready |
+| Recorded facts | verifier | v7 | ready |
 
 ## Method terms
 
@@ -28,7 +28,7 @@ its own before it enters this table.
 | brief | The owner's document: what the target is, for whom, what is non-negotiable, what is an owner decision, the round budget. Without a brief there is no canon. |
 | corpus | The facts, materials, standards and references available before the production. The production reads the corpus and does not edit it; an error found in it becomes a note to the target `corpus`. |
 | source of truth | For each content type, the only source accepted as origin (a fact comes from the corpus, a number comes from the canon, performance comes from the measurement). The writer is never a source of fact. |
-| production cell | The organization assembled for one target: roles, artifacts, gates, canon, validator, review and assembly engine. The term is domain-neutral manufacture vocabulary, chosen in v0.2 to replace the media term the method was born with. |
+| production cell | The organization assembled for one target: roles, artifacts, gates, canon, validator, review and assembly engine. The term is domain-neutral manufacture vocabulary, chosen in v0.2 to replace an earlier, domain-bound term. |
 | artifact | An intermediate or final output, typed, with a name, a single owner, paths, a schema, dependencies, gates and content identified by hash. An owner decision is also an artifact. |
 | artifact graph | The set of artifacts with the dependencies between them; it has to be acyclic. The engine rebuilds only what became stale. |
 | stale | State of an artifact whose input changed (different hash) since it passed its gates. |
@@ -56,7 +56,7 @@ its own before it enters this table.
 | rubric | The fixed grid of dimensions, anchors and verdict rule that every independent review uses in every round; written before the first review. |
 | rubric anchor | The written description of what a score of 1, 3 or 5 means in one rubric dimension, so that two reviewers read the same anchor the same way. One of the three senses the word "anchor" had before v0.2 disambiguated them. |
 | position key | The value that fixes where a part of the target lands during assembly (a word of the script, a heading of a chapter). An ambiguous position key is a contract error, found before the expensive work. One of the three senses the word "anchor" had before v0.2 disambiguated them. |
-| verdict | Result of the independent review, with three values: `rejected`, `accepted with conditions`, `accepted`. In the prior instance `000-av-production`, the values were "rejected", "publishable with minor corrections" and "publishable" (step 17 and the version table of the prior's method document) [prior:000-av-production]. |
+| verdict | Result of the independent review, with three values: `rejected`, `accepted with conditions`, `accepted`. |
 | hand-off sheet | The artifact one role writes for another role to consume (a cue sheet, a section spec, a work order). Kept as a term in v0.2: it is generic production vocabulary, and the position key it carries is where ambiguity between roles is caught. |
 | prior instance | An instance of the method that ran before the current one and is registered in the instance registry. A statement about a prior carries `[prior:<id>]`; a number inside the mark is checked against that prior's method document. Numbers of a prior are facts about that prior, citable with the mark; a limit of a new instance never inherits from them without its own domain justification (a `[hypothesis]` label may cite a prior fact as support, never as the limit itself). |
 | instance registry | The record of the known instances (`instances/registry.json`, at the root of this material): each one with an id, a status (`executed` or `designed`), the path of its method document relative to that document's own repository root, and the sha256 that pins it. Cited ids have to be registered. |
@@ -188,7 +188,6 @@ mark inside a code span is notation too, not a mark (since v0.5.0).
 | `prior instance` |
 | `of the case` |
 | `the executed instance` |
-| `instance 0` |
 
 ### Efficacy triggers
 
@@ -351,72 +350,45 @@ declares none.
 
 ## Recorded facts
 
-The numbers this production states about the registered priors
-`000-av-production` and `004-adoption-guide`, each one checked in the method
-document of the prior its row marks (registered in `instances/registry.json`,
-pinned by sha256); the sections a row cites are sections of that document. A
-number about a prior that is not here does not enter the documents before it
-is checked and added. These are facts about that prior, not limits for a new
-instance.
+The numbers this production states about the registered prior
+`004-adoption-guide`, each one checked in its method document (registered in
+`instances/registry.json`, pinned by sha256); the sections a row cites are
+sections of that document. A number about a prior that is not here does not
+enter the documents before it is checked and added. These are facts about
+that prior, not limits for a new instance.
 
 | Number | In what context | Where in the prior's method document |
 | --- | --- | --- |
-| 18 | roles with a card `[prior:000-av-production]` | sections 1.1 and 2.1 |
-| 49 | artifacts in the graph of its first pilot `[prior:000-av-production]` | section 2.1 |
-| 2 | maximum rounds per artifact `[prior:000-av-production]` | section 1.4 |
-| 3, 4, 12, 12 | blocking, high, medium and low notes from the review of v1 `[prior:000-av-production]` | step 15 |
-| 26 | low notes open at v5 `[prior:000-av-production]` | step 17 |
-| 0.546 s and 0.10 s | p95 of the drift between two representations of the same content at v1 (wrong instrument) and at v2 (fixed) `[prior:000-av-production]` | section 1.10 |
-| 15 s | the trail that left early at v3 because of an ambiguous position key `[prior:000-av-production]` | section 1.10 |
-| 38 and 2 | validator notes at v2, two of them high and false `[prior:000-av-production]` | step 14 |
-| 12 and 10 | notes from an automatic reviewer, ten of them false `[prior:000-av-production]` | step 15 |
-| 31, 18 and 73 | review findings, validator notes and notes imported in the v2 round, three separate counts and not a sum `[prior:000-av-production]` | step 16 |
-| 50 | ceiling of notes per gate `[prior:000-av-production]` | section 1.4 |
-| 3 | exit code of a tool that failed `[prior:000-av-production]` | section 1.4 |
-| 0.15 s | p95 limit of the drift gate between two representations of the same content `[prior:000-av-production]` | sections 1.10 and step 13 |
-| 24 h | window for rechecking volatile claims before delivery `[prior:000-av-production]` | sections 2.4, step 6 and 4.5 |
 | 1054 | words of the adoption guide at the close `[prior:004-adoption-guide]` | sections 4.4 and 5 |
 | 900 and 1400 | the size range of the guide in words, set in its brief `[prior:004-adoption-guide]` | sections 1, 4.4 and 5 |
 | 4 | the lowest dimension score of its one review, which accepted it `[prior:004-adoption-guide]` | section 4.5 |
 
 ### Section commitments
 
-The sha256 of the text of each section of the owner-held method document of
-`000-av-production` that a row above cites (the lines under its numbered
+The sha256 of the text of each section of the method document of
+`004-adoption-guide` that a row above cites (the lines under its numbered
 heading, up to the next numbered heading, joined by LF; the reader of
-`p-prior`), since v0.6.0. They reveal nothing of the text and make a later
-rewrite of a cited section detectable: with `--case`, `p-prior` compares
-them on the row of this canon; without it, the row says "owner-held
-evidence, not measured here". The document of `004-adoption-guide` is distributed and pinned whole.
+`p-prior`), since v0.7.0 for this document. The document is distributed and
+pinned whole, so the commitments add where a change landed: with `--case`,
+`p-prior` compares them on the row of this canon, and a rewrite of a cited
+section names that section. The mechanism is the same for a prior held
+outside its material, whose text the commitments do not reveal.
 
 | Prior | Section | sha256 |
 | --- | --- | --- |
-| `[prior:000-av-production]` | 1.1 | `1f608646a782bf537e5292907ee540736ec29a428dc559b37d2e7b8d6d623e96` |
-| `[prior:000-av-production]` | 1.4 | `8fb80bb5d892b26c5ee1c646664ba073e50d255c848455b6a90204fc0f33b4eb` |
-| `[prior:000-av-production]` | 1.10 | `b0302c18530e834602923dd64ed15f306728efe29112512f82a79ef95f92e46f` |
-| `[prior:000-av-production]` | 2.1 | `65ec3d92ecd2302759cc4fbc21e2e391082d394a1deec71dc86b7ae207aa869b` |
-| `[prior:000-av-production]` | 2.4 | `c6cb59af5c56d7a451c589d9f70c47919fd9b2f55210f54254530f3adecbbf16` |
-| `[prior:000-av-production]` | 4.5 | `7e9727b6f47a35cb461f17264675fd5075979f1b6a1618100bda3d1c3b1b42b1` |
-| `[prior:000-av-production]` | 6 | `d469baff73d6d589e04291bb807b99bc4aa50767f54a277662f5828165410f1b` |
-| `[prior:000-av-production]` | 13 | `f1d37761ec7c993c0bb9aac2f5822d9196b81b7d7cc87b48d1d1a375be7a8c57` |
-| `[prior:000-av-production]` | 14 | `ff54424959483dea6aa2437be13a20d7fbf38ebcdc739bc3eb6fba4277026263` |
-| `[prior:000-av-production]` | 15 | `9b50a7dc272ae44f3b5b024431959e8d1b83bdf345f7bee843fa5c0b6e2a1e3d` |
-| `[prior:000-av-production]` | 16 | `368b9dfd80b34b2ed3b8a8360a8bb12f10512cf397871b3ffd18ca1d429d7ecb` |
-| `[prior:000-av-production]` | 17 | `90e791ff6ab2ea3321cce9a50bdb6001a02f19012d4b0eeaf2315153653ce60d` |
+| `[prior:004-adoption-guide]` | 1 | `08b2b4188a61719fa605ef641ef0e7c40c8221ee7e1b57a4e47bbaf7dae984f6` |
+| `[prior:004-adoption-guide]` | 4.4 | `578bb40afd15a07c1a7cdb598b403c94726e6ec825697d81612d6bb922331d7e` |
+| `[prior:004-adoption-guide]` | 4.5 | `123a0c4a377f2a1161e0ab9aff9feb44f5c94720244350878f7d220cff122c92` |
+| `[prior:004-adoption-guide]` | 5 | `accadba699ad1361655feffd9a43d33aee5d92e1bbbdfa116710a70755cdf201` |
 
-## Historical vocabulary of the prior instance
+## Historical vocabulary
 
 Recorded so the older documents (the frozen review of round 1, above all) can
 be read without confusion; none of these words is live vocabulary of this
 production.
 
-- The prior instance called its validator the "continuity checker" (also
-  "continuity editor"); in this production the instrument is the validator.
-- The review verdicts of the prior were "publishable", "publishable with
-  minor corrections" and "rejected"; this production uses `accepted`,
-  `accepted with conditions` and `rejected`.
-- The organization assembled for one target carried a media term until v0.2;
-  the production cell is the canonical name since then, and the gate that
+- The organization assembled for one target carried a domain-bound term
+  until v0.2; the production cell is the canonical name since then, and the gate that
   counts links to this page is `p-canon-link`.
 - The quarantine mark that a bracketed word carried until v0.2 became
   `[prior:<id>]`; the ledgers of round 1 keep the old marks and are never

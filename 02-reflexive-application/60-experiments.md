@@ -14,7 +14,7 @@ executors are named by family (a letter stable across the material) and
 effort, never by model identifier, here and in the round record
 (`state/round-record.jsonl`); the map from letter to identifier stays with
 the owner, outside the material. Family A is that of the model that produced
-the guide of the second executed instance. The status of an
+the guide of the one executed instance. The status of an
 experiment is `executed`, `pending` (protocol and predictions fixed, results
 not yet recorded) or `designed`, declared in the "Status" row of its field
 table; only an executed experiment backs a claim, and a designed one
@@ -49,13 +49,13 @@ are. Every run works on copies; the historical cell is never touched.
 
 - **A, the control.** The guide untouched.
 - **B, the perturbed product.** The guide with two injected defects:
-  - an invented number about the first prior: the guide's count of roles,
-    `18 papéis`, becomes `21 papéis`; the frozen rubric classes a false
-    claim about the corpus as `blocking`;
-    - the fact it falsifies: the first prior has 18 roles with a card
-      [prior:000-av-production] (*reworded in v0.6.0, content unchanged:
-      the gate now reads the numbers inside code spans of a marked unit,
-      and the injected number is no fact about the prior*);
+  - an invented number about a prior held by the owner, not distributed:
+    the guide's count of that prior's roles is replaced by a larger,
+    invented count; the frozen rubric classes a false claim about the corpus
+    as `blocking` (*reworded in v0.7.0, by the owner's decision: this item
+    named that prior and its count; the injected defect and the results are
+    unchanged, and the two copies of the guide are pinned by sha256 in the
+    provenance table*);
   - a method term with its sense swapped, which also contradicts the
     principle: the guide's sentence saying that several models do not
     create independence by themselves (models of one family share blind
@@ -77,7 +77,7 @@ are. Every run works on copies; the historical cell is never touched.
 
 One dispatch per run. Each run receives the guide (A or B), the cell's gates
 file with its rubric, the cell's reviewer card and its base prompt,
-`../01-principle.md` and the method document of the first prior, to check
+`../01-principle.md` and the method document of a prior held by the owner, not distributed, to check
 the guide's counts of roles and artifacts against it. No run sees the
 producer's reasoning or the output of another run. *Corrected after the
 runs: the cell's card has no base prompt; the prompt was written from the
@@ -190,7 +190,7 @@ What it does not show, declared before the runs and still true after them:
   classes the frozen rubric names, so the experiment tests the review
   against the defects its rubric was written for;
 - independence from the corpus: the principle and the method document of
-  the first prior are inputs of every run, as the conductor's prompt
+  that prior are inputs of every run, as the conductor's prompt
   prescribed (the card names the inputs, and the prompt was written from
   it).
 
@@ -254,8 +254,8 @@ Side findings:
   Both runs are recorded, and the truncated report still counts as a
   contract violation of the run it belongs to.
 - Inputs: five files per run (the guide, the cell's gates file with the
-  rubric, the reviewer card, the principle, the method document of the
-  first prior), not the whole corpus nor the rubric's pin the cell's card
+  rubric, the reviewer card, the principle, the method document of that
+  prior), not the whole corpus nor the rubric's pin the cell's card
   and the real round had; the prompt was written from the card by whoever
   conducted the experiment, since the card has no base prompt.
 - The two runs of Y ran in parallel with each other; the three of X ran in
@@ -268,7 +268,7 @@ run:
 
 | Executor | Input tokens | Output tokens | Wall time |
 | --- | --- | --- | --- |
-| X (three runs, from the client's log of the usage the endpoint returned) | about 58,000, most of them the method document of the first prior (the guide has about a thousand words) | 55,511 to 65,536, 90 to 98 % of them reasoning (*corrected in v0.5.0 from "about 90 %"*) | 473 to 600 s, 8 to 10 minutes |
+| X (three runs, from the client's log of the usage the endpoint returned) | about 58,000, most of them the method document of a prior held by the owner, not distributed (the guide has about a thousand words) | 55,511 to 65,536, 90 to 98 % of them reasoning (*corrected in v0.5.0 from "about 90 %"*) | 473 to 600 s, 8 to 10 minutes |
 | Y (two runs, indicative only) | not separable per call: no raw record; the dispatch reported agent totals, reading the inputs included, of about 173,000 and 154,000 | not separable | the dispatch reported 204 and 226 s; the files were written 224 and 247 s after the start; about 4 minutes |
 
 The numbers of Y were not measured by the same instrument as those of X.
@@ -311,7 +311,7 @@ them (declared). The model behind each family letter stays with the owner.
 | principle copy (v0.3.1) | input | `7bf6e8a242fdd17c3f575b80f352538360e7228674adeebd476f025d8d405267` |
 | guide, arm A | input | `d6c149b0a35cbcacbf159c6e85be88e946e2ef7ac802e3e9af75957181b51fff` |
 | guide, arm B | input | `694a188d2c8f304a1dc0b8f2324a209cb9416afc5103417e5193b7ad442ae75a` |
-| method document of the first prior | input | `02f61349c00de94d93c64abcbbdf401f64216a555071bdb86e7d4bea643d25a0` |
+| method document of a prior held by the owner, not distributed | input | `02f61349c00de94d93c64abcbbdf401f64216a555071bdb86e7d4bea643d25a0` |
 | dispatch script of X | input | `27c144559a2f1777941663dfbac48e75c9c86dd35f9f2e5f656333539823eb99` |
 | dispatch script of X, repetition | input | `2e6f20aaa4f8d1139cb29f79c33862537a4867e61d493c716a1d43e184a4554c` |
 | report A-X | output | `ed62aa279b473104563c868e68def190c06688a7fc3ad4c939fc6dea38b63a21` |
@@ -395,8 +395,8 @@ never touched.
 ### Conditions
 
 - **Inputs.** The inputs of E1 without the rubric: the reviewer receives
-  the guide (A or B), `../01-principle.md` and the method document of the
-  first prior. No reviewer card, no dimension, no anchor, no severity table,
+  the guide (A or B), `../01-principle.md` and the method document of that
+  prior. No reviewer card, no dimension, no anchor, no severity table,
   no verdict rule.
 - **Output contract, kept.** The report keeps the format of E1 (the seven
   sections, the notes in JSON with the six fields), so that the counts
@@ -571,7 +571,7 @@ them (declared). The model behind each family letter stays with the owner.
 | principle copy (v0.3.1) | input | `7bf6e8a242fdd17c3f575b80f352538360e7228674adeebd476f025d8d405267` |
 | guide, arm A | input | `d6c149b0a35cbcacbf159c6e85be88e946e2ef7ac802e3e9af75957181b51fff` |
 | guide, arm B | input | `694a188d2c8f304a1dc0b8f2324a209cb9416afc5103417e5193b7ad442ae75a` |
-| method document of the first prior | input | `02f61349c00de94d93c64abcbbdf401f64216a555071bdb86e7d4bea643d25a0` |
+| method document of a prior held by the owner, not distributed | input | `02f61349c00de94d93c64abcbbdf401f64216a555071bdb86e7d4bea643d25a0` |
 | dispatch script of X | input | `759f5d870c65a434d6efff2264f046ead80d37155a372ab0b6acf8ad17508f33` |
 | report A-X | output | `28bc9693f72dfecf18f66a46cb023dd8e36db6c15ff10b926c4eb8a1ddfe8186` |
 | raw response A-X | output | `76bcca32522682aec81d65dff9e43d361bc11a05a23513cc6c18c65e2a52c28f` |
@@ -589,7 +589,7 @@ them (declared). The model behind each family letter stays with the owner.
 | Field | Value |
 | --- | --- |
 | Id | E4 |
-| Status | `designed` (v0.6.0); protocol and predictions written before any run, for the owner to approve, budget and run |
+| Status | `designed` (v0.6.0); protocol and predictions written before any run, for the owner to approve, budget and run; in v0.7.0, before any run, the owner changed the thresholds of the first prediction and set the measure of its tokens, and a critique of the protocol added the clean copy, the auxiliary comparisons and the cases below |
 | Origin | the panel of the material's own team on v0.5.0: E2 needs two productions per target, and a seeded-escape design answers the same question, what the apparatus adds to a careful review, at about a tenth of the cost; E1 and E3 had both defects in one arm, a prompt pointing at the classes injected and two harnesses |
 | Owner | verifier |
 
@@ -617,15 +617,28 @@ copied once per run.
   review with the same sources.
 - **Families.** Within each arm, one reviewer of the producer's family and
   one of another family, the same harness and the same dispatch for both.
+- **Clean copy.** Four runs on the clean copy (arm by family), to see false
+  alarms.
+- **Verdict.** Every run also emits a verdict: arm A by the mechanical rule,
+  arm B free.
 - **Seeded defects.** k = 10 per copy, one per class: an invented number
-  about a registered prior, a number that exists in the source but in
+  about a registered prior (`004-adoption-guide`), a number that exists in the source but in
   another context, a term used in a sense the canon does not give, a
   sentence that contradicts the principle, an absolute path, a broken link
   to the canon, a claim of efficacy without a label, an omitted step of the
   recipe, a limit without a justification, and a factual error outside every
-  class the rubric anticipates. The positions and the wording are drawn once
+  class the rubric anticipates (class 10). The positions and the wording are drawn once
   by a third party and sealed (their sha256 recorded in the protocol row of
   the provenance table before the first run).
+- **Who seeds, and who writes the apparatus.** The seeder does not see the
+  validator, the gate table or the perturbation set; every seeded defect
+  must be decidable from the inputs common to both arms. The rubric and the
+  checklist are written by sessions that have not seen the protocol or the
+  class list.
+- **Auxiliary comparisons, outside the decision.** A
+  checklist-plus-validator-report arm on the other family (3 runs), and one
+  defect set repeated on both arms of that family (2 runs), as a floor of
+  noise.
 
 ### Protocol
 
@@ -643,29 +656,66 @@ copied once per run.
    the parameters of sampling, the tokens per call and the reason the
    generation ended; a run that ends for length is a tool failure and is
    re-run once.
+6. Reported beside the pooled result: the validator alone, A versus B on the
+   defects the validator does not report, and B on those it reports.
 
 ### Predictions (written before measuring)
 
-- **P1 (the apparatus).** The escape rate of arm A is lower than that of
-  arm B by at least 20 points, pooled over families, in at least 2 of 3
-  repetitions. Refuted when the difference is under 5 points in at least 2
-  of 3 repetitions.
+The tokens of a run, for P1b and P1c, are the input tokens its arm adds to
+what both arms read (arm A: the rubric, the reviewer card and the validator's
+report; arm B: the checklist), as the endpoint counts them on a call holding
+only those added files. Output and reasoning do not count, by the owner's
+decision, and are reported apart, with the total input.
+
+- **P1a (fewer errors).** The escape rate of arm A is at most half that of
+  arm B, pooled over families, in at least 2 of 3 repetitions. Refuted when
+  it is more than half in at least 2 of 3 repetitions.
+- **P1b (fewer tokens).** The additional input tokens of a review run of arm
+  A are at most half those of arm B, pooled over families, in at least 2 of
+  3 repetitions. Refuted when they are more than half in at least 2 of 3
+  repetitions.
+- **P1c (the owner's failure criterion).** Pooled over families and
+  repetitions, arm A consumes more additional input tokens than arm B and
+  (escapes_B - escapes_A) / escapes_B is smaller than
+  (tokens_A - tokens_B) / tokens_B. The claim is withdrawn when P1c holds.
 - **P2 (the family).** Within arm A, the reviewer of another family finds
   at least 1 more defect of 10 than the reviewer of the producer's family,
-  in at least 2 of 3 repetitions. Refuted when the difference is nil in all
-  3 repetitions.
+  in at least 2 of 3 repetitions. Refuted when the difference (other family
+  minus producer's family) is ≤ 0 in all 3 repetitions.
 - **P3 (outside the rubric).** In both arms, the defect outside every class
-  the rubric anticipates escapes at least as often as the median class.
-  Refuted when it is found in every run.
+  the rubric anticipates (class 10) escapes at least as often as the median
+  class. Computed per arm over the classes the validator does not report.
+  Refuted when class 10 escapes strictly less often than their median; not
+  decidable when both are 0 % or both 100 %.
 
-Each refutation band covers less than half of the space of results its
-prediction ranges over, so each can fail; the thresholds of P1 and P2 are
-the ones the principle's table "What would promote or withdraw a claim"
-uses, for the owner to accept or adjust before the runs.
+A repetition with escapes_B = 0 does not count for P1a. If pooled escapes_B = 0, P1c is undefined and the result is inconclusive.
+
+Since arm A adds more files than arm B by construction, this measure is
+expected to make P1b fail and may make P1c hold whatever the escapes; it is
+the owner's definition, written before any run. It is about the review
+stage only: the cost of building the cell (canon, gates, rubric, validator
+setup) is outside E4.
+
+With three counted repetitions, P1a and P1b are each confirmed or refuted and
+cannot be neither: at most half and more than half are the two sides of one
+line. A repetition that does not count can leave P1a undecided. P1c is a
+criterion of withdrawal, not a band: the claim is promoted when P1a and P1b
+are both confirmed, withdrawn when P1c holds, and inconclusive otherwise, as
+the principle's table "What would promote or withdraw a claim" says. The
+band of P2 is the case of a difference at or below zero in all 3 repetitions,
+and a mixed record neither confirms nor refutes it; P3 can be not decidable,
+as declared. The owner changed the thresholds of the first prediction before
+any run (they were a difference of at least 20 points, refuted under 5
+points), and accepted them in the principle's table. The family and
+portability rows of that table keep the proposed thresholds; the refutation
+of P2 above, a difference at or below zero, is wider than the family row's
+withdrawal, a nil difference, and was written from the critique, not by the
+owner's change of the table.
 
 ### Cost, estimated
 
-Twelve review runs plus the validator runs, and the adjudication of the two
+Twelve review runs on the defect sets, four on the clean copy and five
+auxiliary, plus the validator runs, and the adjudication of the two
 readers: by the costs of E1, an order of magnitude below the two
 productions per target of E2 [hypothesis].
 
@@ -675,6 +725,12 @@ It would measure escape rates on one kind of product, with seeded defects
 whose classes the designer chose, and nothing about defects nobody thought
 to seed. It would not measure a whole production, nor the cost of the
 instruments over a production.
+
+**What this does not settle.** The defects are a third party's, so they do
+not exercise blind spots shared with the producer. There are three
+repetitions. A validator-clean copy overstates precision. The baseline had no
+tools. There is one object, one writer, and classes chosen by the designer.
+The cost of building the cell is outside.
 
 ### Smaller designs that can run before it
 

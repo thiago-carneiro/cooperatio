@@ -57,7 +57,7 @@ import validator  # noqa: E402
 import perturbation_set as perturbation_set_module  # noqa: E402
 from perturbation_set import (  # noqa: E402,F401
     AVOID_TABLE_ROWS, EXPECTED_RESULTS, LESSONS_V050_HEADING, NAMED_DATE_SAMPLE,
-    PERTURBATION_FIELDS, PERTURBATIONS, PRIOR_000, RECIPE_GATE_ROW, REQUIRED_FIELDS,
+    PERTURBATION_FIELDS, PERTURBATIONS, PRIOR_004, RECIPE_GATE_ROW, REQUIRED_FIELDS,
     SIZE_PADDING, SIZE_PADDING_WORDS, Perturbation, PerturbationDataError,
     load_perturbations, perturbation_from,
 )
@@ -363,8 +363,8 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
                    help="where the report is written (default: the layout key "
                         "artifacts.sensitivity relative to the folder)")
     p.add_argument("--synthetic-prior", action="append", default=[],
-                   help="an executed prior whose method document you do not have (e.g. "
-                        "000-av-production): a synthetic document is generated from the "
+                   help="an executed prior whose method document you do not have: "
+                        "a synthetic document is generated from the "
                         "canon's recorded facts and pinned in the copies only, so the rows "
                         "that need it are measured; the report says so (v0.6.0)")
     p.add_argument("--layout", type=Path,

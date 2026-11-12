@@ -365,9 +365,7 @@ loop does here:
   compare "almost equal" nor to ignore the whole header; it is to take the
   time out of the format (or to declare in the specification the canonical
   form that excludes only that field), with a test, and to redo the previous
-  round. The reference case did the same when it took the timestamp field of
-  its JSON files out of the hash (section 1.2 of the reference-case method
-  document) [prior:000-av-production].
+  round.
 - **Regression that escaped:** the measurements with 8 and 16 threads give the
   same time. The cause is a nested parallel region that runs with one thread,
   and every result gate passes, because the serial work is correct. Before

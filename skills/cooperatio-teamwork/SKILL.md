@@ -11,8 +11,8 @@ to each other, how quality is measured, and when to stop.
 
 **Status: a working hypothesis, with a documentary validator; the gates of
 a target's domain enter as results the cell's own code produces and the
-validator checks; two executed instances, one auditable.** The method
-(version 0.6.0) stands on two executed instances, both documentary, and
+validator checks; one executed instance, documentary, by the owner,
+auditable.** The method (version 0.7.0) stands on that one execution and
 three designed sketches, not executed;
 it holds for a target with a declarable brief and stop, a discrete
 assemblable artifact, separable sources of truth per content type, and an

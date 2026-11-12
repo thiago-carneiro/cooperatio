@@ -199,7 +199,7 @@ RECORDED_FACTS_SCHEMA = {
             "number": {"type": "string", "description": "the number as written, e.g. '18'"},
             "context": {"type": "string",
                         "description": "what it counts, with the mark, e.g. "
-                                       "'roles with a card [prior:000-example]'"},
+                                       "'doors on the prototype [prior:000-example]'"},
             "section": {"type": "string",
                         "description": "section label(s) of the prior's method document, e.g. '1.1'"},
         },

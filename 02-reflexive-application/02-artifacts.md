@@ -14,7 +14,7 @@ in the graph.
 
 | Artifact | File | Owner | Depends on | Schema | Gates |
 | --- | --- | --- | --- | --- | --- |
-| `corpus` | `../01-principle.md` and the prior instance's method document | owner | — | free text, read only | `p-prior`, `p-prior-mark`, `p-efficacy-mark`, `p-anonymity` (measured, not produced here) |
+| `corpus` | `../01-principle.md` and the method document of the registered prior | owner | — | free text, read only | `p-prior`, `p-prior-mark`, `p-efficacy-mark`, `p-anonymity` (measured, not produced here) |
 | `brief` | `00-brief.md` | writer | `corpus` | fixed sections: target, for whom, non-negotiables, owner decisions, budget and stopping, maintenance rounds, what is not a goal, assumptions | `p-anonymity`, `p-form`, `p-size`, `p-terms`, `p-canon-link`, `p-efficacy-mark` |
 | `canon` | `01-canon.md` | writer | `brief`, `corpus` | tables read by the validator (terms, avoid, fixed lists, recorded facts) | `p-anonymity`, `p-form`, `p-size`, `p-terms`, `p-prior` |
 | `artifacts` | `02-artifacts.md` | writer | `brief`, `canon` | table with the six columns of this page; its Gates column is the one source of the map from gate to artifact, which the gate table mirrors | `p-references`, `p-anonymity`, `p-form`, `p-size`, `p-terms`, `p-canon-link`, `p-contract-shape`, `p-declared` |
