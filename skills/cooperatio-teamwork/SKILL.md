@@ -12,7 +12,7 @@ to each other, how quality is measured, and when to stop.
 **Status: a working hypothesis, with a documentary validator; the gates of
 a target's domain enter as results the cell's own code produces and the
 validator checks; one executed instance, documentary, by the owner,
-auditable.** The method (version 0.7.1) stands on that one execution and
+auditable.** The method (version 0.7.2) stands on that one execution and
 three designed sketches, not executed;
 it holds for a target with a declarable brief and stop, a discrete
 assemblable artifact, separable sources of truth per content type, and an
@@ -21,7 +21,9 @@ first review round does that. The terms follow the
 [canon](../../02-reflexive-application/01-canon.md) of the reflexive
 application.
 
-This folder holds the procedure (this file), the scaffold (`scripts/`) and
+This folder holds the procedure (this file), the scaffold and the installer
+(`scripts/`; `scripts/install.py` links this folder into every agent harness
+it finds, see the README of the material) and
 the templates (`references/`), but not the instrument: the validator, the
 sensitivity test and the contracts of the notes, of their state and of the
 round record live in the cooperatio

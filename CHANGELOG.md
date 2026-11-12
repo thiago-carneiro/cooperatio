@@ -2,6 +2,34 @@
 
 One entry per version of the method. Version is state; dates are not.
 
+## 0.7.2
+
+A maintenance round with no change to the method: an installer for the
+skill.
+
+- **`skills/cooperatio-teamwork/scripts/install.py`.** Detects the agent
+  harnesses installed for the user by their configuration folders (25 in its
+  table: Claude Code, GitHub Copilot, pi, OpenCode, Codex, Gemini CLI,
+  Cursor, Windsurf, Droid, Goose, Kiro CLI, Qwen Code, Cline, Kimi Code CLI,
+  Roo Code, Amp, Continue, Crush, Augment, Kilo Code, Junie, OpenHands, Trae,
+  Mistral Vibe, Devin), and links the skill folder into each one's user-level
+  skills folder; harnesses that share the `.agents/skills` folder of the home
+  directory get one entry. The
+  skills paths follow the list of the vercel-labs/skills project and each
+  harness's documentation where one was found; a path a harness changes
+  later is a row of the table to fix. A link, not a copy, by default: the
+  scaffold resolves its own path to reach the validator, so a link keeps the
+  copied instrument, and a pull updates every harness. It never replaces an
+  entry it did not make (a conflict exits 1), creates no configuration
+  folder of a harness it did not find unless named with `--harness`, and
+  removes with `--uninstall` only its own links and marked copies. Standard
+  library only, Python 3.9 or later.
+- **`test_install.py`.** 14 tests on a temporary home: detection, a second
+  run, a shared folder, conflicts with a foreign folder and a foreign link,
+  uninstall, copy mode, the switch between link and copy, a named harness,
+  dry run, no harness, the list, `CLAUDE_CONFIG_DIR`, an unknown name.
+- **Migration note.** No cell has to change a file.
+
 ## 0.7.1
 
 A maintenance round, not a production under the method: the record of

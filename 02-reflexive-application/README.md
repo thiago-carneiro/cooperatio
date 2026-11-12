@@ -90,7 +90,8 @@ python3 80-validator/validator.py --folder . \
     --allow-pending p-anonymity --determinism --output 80-validator/report.md
 python3 80-validator/validator.py --self-test
 python3 -B -m pytest -p no:cacheprovider 80-validator/test_validator.py \
-    ../skills/cooperatio-teamwork/scripts/test_scaffold.py
+    ../skills/cooperatio-teamwork/scripts/test_scaffold.py \
+    ../skills/cooperatio-teamwork/scripts/test_install.py
 ```
 
 The scripts need Python 3.9 or later and the standard library; the suites
