@@ -123,7 +123,7 @@ flowchart TB
 | **Canon** | single source of numbers, names, terms to avoid, accepted variants, rules; each section with an owner and a version | a figure stated one way in one section and differently in another |
 | **Validator** | a verifier that reads all artifacts against the canon and emits notes by itself | an old version of an asset cited by the canon while the sections used the new one |
 | **Independent review with a fixed rubric** | another agent, with no access to the producers' reasoning, measures the product with the same grid each round; three verdicts | the team approving its own work; rounds that cannot be compared |
-| **Instrument fixed at the root** | a false positive becomes a fix to the rule, with a test that reproduces the case, and the previous round is redone | an automatic reviewer of which 10 of 12 notes were false, in the second pilot of the first instance `[prior:000-av-production]` |
+| **Instrument fixed at the root** | a false positive becomes a fix to the rule, with a test that reproduces the case, and the previous round is redone | `[hypothesis]`: no recorded execution in the material measures the cost of an instrument fixed downstream |
 | **Stopping criterion** | the owner declares when to stop: the review of the last version becomes a list of open notes, not a new version | endless rounds |
 | **Gate sensitivity test** | before trusting a gate, inject a known defect and check that it rejects | a gate that checked numbers while the non-negotiable was about statements; the sensitivity test found a validator that read line by line and missed numbers in broken sentences |
 
@@ -586,27 +586,29 @@ canon's prior-statement trigger phrases ("reference case", "prior
 instance", "of the case", "the executed instance", "instance 0") without
 the mark is a finding of `p-prior-mark`.
 
-The registry at 0.6.0:
+The registry at 0.7.2:
 
 | Id | Status | Document | Locator | Method version |
 | --- | --- | --- | --- | --- |
-| `000-av-production` | executed | the owner's method document, pinned by sha256 | owner-held, not distributable | — |
 | `001-car`, `002-text-2027`, `003-hpc` | designed | none | none | — |
 | `004-adoption-guide` | executed | `metodo-de-producao.md`, pinned by sha256 | `instances/004-adoption-guide` | 0.2.2 |
 
 An executed entry carries `document`, `sha256`, `locator` and
 `number_format` (`point-decimal` or `comma-decimal`), none of them null; a
 designed entry keeps the four null, so it can never pass for a pinned
-prior. The entry of `000-av-production` also declares a `heading_style`
-(the shape of its section, subsection and step headings), which the
-synthetic prior of the sensitivity test follows (chapter 14).
+prior. An entry may also declare a `heading_style` (the shape of its
+section, subsection and step headings), which the synthetic prior of the
+sensitivity test follows (chapter 14); the instrument keeps that mechanism
+for a cell whose prior is held outside its material, which this material
+no longer uses.
 
 Numbers about a prior do not enter the documents before they have a row in
 the canon's "Recorded facts" table, which names the number, its context
 (with the mark) and the sections of the prior's document where it lives.
 The canon also commits, by sha256, to the text of each cited section of
-the owner-held document, so that a later rewrite of a cited section is
-detectable without publishing the text (chapter 15).
+the prior's document (at 0.7.2, the four cited sections of
+`004-adoption-guide`), so that a later rewrite of a cited section is
+detectable even where the text is not published (chapter 15).
 
 ## Claims of efficacy and their labels
 
@@ -643,18 +645,41 @@ lesson, and a provenance table. Only an executed experiment backs a claim.
 | E1 | executed | does the reviewer with the frozen rubric name two injected defects, and does a reviewer of another family differ? | both executors named 2 of 2 and gave `rejected` on the perturbed copy; one control run ended for length and is a tool failure, not a verdict |
 | E2 | designed | the counterfactual: the same target produced with and without the method | not run; two productions per target |
 | E3 | executed | the same reviewers without the rubric and the reviewer card | both still named 2 of 2, but classed the invented fact `high` and accepted with conditions: the apparatus turned the finding into a verdict |
-| E4 | designed | seeded escape: does the apparatus let fewer of ten seeded defects escape than a careful baseline, and does another family find more? | protocol and predictions written; awaits the owner's thresholds and budget |
+| E4 | executed (0.7.1) | seeded escape: does the apparatus let fewer seeded defects escape than a careful checklist review, for how many added input tokens, and does another family find more? | 39 reviews in a document part and a code part; with the failed runs counted as all escaped, 79 escapes against 67 for +136 % added input tokens; with the family measured in every run alone, 21 against 21 for +135 %; the claim of the apparatus is withdrawn, the comparison of families is not decidable |
 | E5 | designed | can a third party set up a cell for a target with domain measurements and reach a verdict without improvising instrument? | awaits the owner finding the third party |
 
 ## What would promote or withdraw a claim
 
 Written before the data, as the gates are (`01-principle.md`, section 9),
 so that the material leaves the state of a working hypothesis by a
-measurement and not by a decision. The thresholds are the owner's to
-accept or adjust before E4 runs:
+measurement and not by a decision. The owner fixed the thresholds of the
+review apparatus at 0.7.0, before any run of E4: half the escapes and half
+the added input tokens to promote it; more added tokens without a
+proportional drop in escapes to withdraw it.
 
-| Claim | Promoted when | Withdrawn when |
-| --- | --- | --- |
-| a reviewer of another family adds to one of the producer's family | in E4 or an equivalent design, the arm of the other family finds at least 1 more defect per 10 seeded, in at least 2 of 3 repetitions | the difference is nil in 3 repetitions |
-| the review apparatus adds to a careful review without it | in E4, the escape rate of arm A is lower than that of arm B by at least 20 points | the difference is under 5 points |
-| the method is portable outside the documentary domain | one execution outside it, by someone who is not the owner, with its domain gates read by the validator and a verdict of the canon | that execution cannot reach a verdict without improvising instrument |
+| Claim | Promoted when | Withdrawn when | State after the data |
+| --- | --- | --- | --- |
+| a reviewer of another family adds to one of the producer's family | in E4 or an equivalent design, the arm of the other family finds at least 1 more defect per 10 seeded, in at least 2 of 3 repetitions | the difference is nil in 3 repetitions | open: 11 of the 16 reviews of the producer's family were tool failures (the generation hit its output limit), too few valid runs to compare |
+| the review apparatus (validator and review with a frozen rubric) adds to a careful review without it | in E4, pooled over families, in at least 2 of 3 repetitions, arm A lets at most half as many seeded defects escape as arm B and consumes at most half its additional input tokens | in E4, pooled over families and repetitions, arm A consumes more additional input tokens than arm B and its relative reduction of escapes is smaller than its relative increase in those tokens | **withdrawn** by E4 in both readings: 79 escapes against 67 (-18 %) for +136 % added input tokens; with the family measured in every run alone, 21 against 21 (0 %) for +135 % `[against:E4]` |
+| the method is portable outside the documentary domain | one execution outside it, by someone who is not the owner, with its domain gates read by the validator and a verdict of the canon | that execution cannot reach a verdict without improvising instrument | open: E5 is designed and not run |
+
+The withdrawal holds for what E4 measured: one design, the review stage
+only, seeded defects of classes its designer chose, and added input tokens
+by the owner's definition, which favored the arm with fewer files by
+construction. On escapes alone the family measured in every run found 21
+against 21, so the withdrawal does not rest on the tokens `[against:E4]`.
+What E4 showed besides:
+
+- **the noise floor**: one defect set repeated gave differences of 1 or 2
+  escapes per run, within run-to-run variation;
+- **clean copies**: every valid review of an unseeded copy still produced
+  8 to 14 findings and, but for one, a negative verdict, so the verdict did
+  not separate a clean copy from a seeded one, in either arm;
+- **the instrument alone**: the document validator reported 4 or 5 of the
+  10 seeded classes per set; the static report of the code part named the
+  lines of 6, 0 and 2 of the 12 defects per program;
+- **by class**: in the code part, readability and design defects escaped
+  less with the apparatus, logic defects no less.
+
+The frozen rubric still does what E1 and E3 showed: it keeps two rounds
+comparable and turns a finding into a verdict.

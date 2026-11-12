@@ -3,6 +3,182 @@
 
 # Quick start
 
+## Installing the skill
+
+The skill is the folder `skills/cooperatio-teamwork/`. An agent harness
+(Claude Code, GitHub Copilot, OpenCode, Codex, Gemini CLI and the others)
+finds a skill when that folder, or a link to it, sits in the harness's
+skills folder; the agent then reads `SKILL.md` when a request matches its
+description. The installer puts a link in every harness it finds on the
+machine.
+
+### Before installing
+
+- A checkout of the material, kept where it is: the installer links to the
+  folder inside the checkout, so moving or deleting the checkout breaks the
+  links (run `--uninstall` first).
+- Python 3.9 or later; the installer uses the standard library only.
+- At least one harness already installed and run once, so that its
+  configuration folder exists in the home folder.
+
+### Install
+
+From the root of the material:
+
+```bash
+python3 skills/cooperatio-teamwork/scripts/install.py --list     # known, found
+python3 skills/cooperatio-teamwork/scripts/install.py --dry-run  # would do
+python3 skills/cooperatio-teamwork/scripts/install.py            # do it
+```
+
+`--list` prints one line per known harness: its name, `detected` or
+`absent`, the state of the skill there (`absent`, `ours-link`,
+`ours-copy` or `foreign`) and the full path of the entry. The install
+prints one line per entry it touched:
+
+```text
+claude-code: linked: <home>/.claude/skills/cooperatio-teamwork
+opencode: linked: <home>/.config/opencode/skills/cooperatio-teamwork
+codex, cline: linked: <home>/.agents/skills/cooperatio-teamwork
+```
+
+A second run changes nothing and says `already installed`. Open a new
+session of each harness afterwards: a harness reads its skills folder when
+a session starts.
+
+```mermaid
+%% name: installer-flow
+%% caption: What the installer does for each known harness.
+flowchart TB
+  start["for each harness in the table<br/>(or only those named with --harness)"]
+  detected{"its configuration folder<br/>exists in the home folder?"}
+  skip["skipped: never creates the<br/>configuration of a harness not found"]
+  entry{"the skills folder already has<br/>an entry named cooperatio-teamwork?"}
+  make["create the skills folder if missing;<br/>link to the skill (or copy with --copy)"]
+  ours{"is it a link to this skill,<br/>or a copy carrying the marker?"}
+  done["already installed<br/>(a marked copy is refreshed with --copy)"]
+  conflict["conflict, left untouched;<br/>exit 1 at the end"]
+  start --> detected
+  detected -- no --> skip
+  detected -- yes --> entry
+  entry -- no --> make
+  entry -- yes --> ours
+  ours -- yes --> done
+  ours -- no --> conflict
+```
+
+### The harnesses it knows
+
+A harness is detected by its configuration folder. Paths that start with
+`~` are in the home folder; those under `~/.config` follow
+`XDG_CONFIG_HOME` when it is set, and Claude Code follows
+`CLAUDE_CONFIG_DIR`.
+
+| Harness | Detected by | The skill goes to |
+| --- | --- | --- |
+| `claude-code` | `~/.claude` | `~/.claude/skills/` |
+| `github-copilot` | `~/.copilot` | `~/.copilot/skills/` |
+| `pi` | `~/.pi/agent` | `~/.pi/agent/skills/` |
+| `opencode` | `~/.config/opencode` | `~/.config/opencode/skills/` |
+| `codex` | `~/.codex` | `~/.agents/skills/` |
+| `gemini-cli` | `~/.gemini` | `~/.gemini/skills/` |
+| `cursor` | `~/.cursor` | `~/.cursor/skills/` |
+| `windsurf` | `~/.codeium/windsurf` | `~/.codeium/windsurf/skills/` |
+| `droid` | `~/.factory` | `~/.factory/skills/` |
+| `goose` | `~/.config/goose` | `~/.config/goose/skills/` |
+| `kiro-cli` | `~/.kiro` | `~/.kiro/skills/` |
+| `qwen-code` | `~/.qwen` | `~/.qwen/skills/` |
+| `cline` | `~/.cline` | `~/.agents/skills/` |
+| `kimi-code-cli` | `~/.kimi` | `~/.agents/skills/` |
+| `roo` | `~/.roo` | `~/.roo/skills/` |
+| `amp` | `~/.config/amp` | `~/.config/agents/skills/` |
+| `continue` | `~/.continue` | `~/.continue/skills/` |
+| `crush` | `~/.config/crush` | `~/.config/crush/skills/` |
+| `augment` | `~/.augment` | `~/.augment/skills/` |
+| `kilo` | `~/.kilo` | `~/.kilo/skills/` |
+| `junie` | `~/.junie` | `~/.junie/skills/` |
+| `openhands` | `~/.openhands` | `~/.openhands/skills/` |
+| `trae` | `~/.trae` | `~/.trae/skills/` |
+| `mistral-vibe` | `~/.vibe` | `~/.vibe/skills/` |
+| `devin` | `~/.config/devin` | `~/.config/devin/skills/` |
+
+The skills folders follow the list kept by the vercel-labs/skills project
+and each harness's own documentation where one was found. They were
+verified on a machine for Claude Code, GitHub Copilot, pi and OpenCode
+only; the others are as documented, not tested `[hypothesis]`. Harnesses
+change their paths: when one moves, the fix is one row of the table at the
+top of `install.py`, and `--harness NAME` with a hand-made link covers the
+gap meanwhile.
+
+### Link or copy
+
+The default is a symbolic link to the skill folder inside the material, for
+two reasons. The scaffold reaches the validator, the sensitivity test and
+the contracts through the path it resolves, so a linked skill still creates
+cells with the instrument; and a `git pull` of the material updates every
+harness at once.
+
+`--copy` writes an independent copy instead, for a harness that does not
+follow links or a machine where the material will not stay. The copy
+carries a marker file, `.cooperatio-install`, by which a later `--copy`
+refreshes it and `--uninstall` removes it. A copied skill creates cells
+without the validator, says so, and the cell has no validator until one is
+copied in. To switch an entry between link and copy, uninstall it first;
+the installer refuses to switch by itself.
+
+### Options
+
+| Option | Effect |
+| --- | --- |
+| `--list` | show every known harness, whether it is detected, and the state of the skill there |
+| `--dry-run` | say what would change, change nothing |
+| `--harness NAME` | only this harness, detected or not (repeatable); a named harness gets its skills folder even when its configuration folder is missing |
+| `--copy` | copy the folder instead of linking it |
+| `--uninstall` | remove the links and marked copies this installer made; anything else is a conflict, left untouched |
+| `--home FOLDER` | use another home folder (for tests, or to prepare another account's folders) |
+
+Exit codes: 0 done, or nothing to do; 1 at least one conflict or I/O error
+(the other entries are still installed); 2 invalid input, or Python below
+3.9; 3 no known harness detected.
+
+### When something goes wrong
+
+| Symptom | Cause | What to do |
+| --- | --- | --- |
+| `no known harness detected`, exit 3 | no configuration folder of a known harness in the home folder | run the harness once, or name it with `--harness NAME` |
+| `conflict: ... exists and was not installed by this script` | an entry of the same name that this installer did not make: an older hand-made copy, or a link to another checkout | look at it; remove it by hand if it is yours to remove, then run again |
+| the agent lists the skill twice | some harnesses also read the folders of others (OpenCode and Cursor read `~/.claude/skills`; several read `~/.agents/skills`) | `install.py --uninstall --harness NAME` for the duplicate |
+| the agent does not see the skill | the session started before the install, or the harness reads another folder than the table says | open a new session; check the harness's documentation and use `--harness` or a hand-made link |
+| a new cell has no validator | the skill was copied, or the checkout behind the link moved | reinstall as a link from the checkout |
+
+### Installing by hand, or for one project
+
+Linking the folder by hand works as well:
+
+```bash
+ln -s "$PWD/skills/cooperatio-teamwork" ~/.claude/skills/cooperatio-teamwork
+```
+
+Most harnesses also read a project-level skills folder (`.claude/skills/`,
+`.agents/skills/`, `.opencode/skills/` and so on, at the root of a
+repository). The installer handles only the user-level folders; for one
+project, link or copy the folder into that project's skills folder by hand.
+
+### Using it from an agent
+
+With the skill installed, ask the agent in plain words; the description in
+`SKILL.md` is what makes the agent load it:
+
+```text
+Set up the cooperatio teamwork for the quarterly report: roles writer,
+verifier and reviewer; the brief is in notes/brief.md.
+```
+
+The agent follows `SKILL.md`: it asks for what the brief lacks, runs the
+scaffold, fills the files, and stops at the points the owner decides (the
+non-negotiables, the stop, the freeze of the rubric). The rest of this
+chapter is the same path done by hand.
+
 ## The ten-minute path
 
 The root `README.md` gives a four-step path; here it is with the commands
@@ -49,8 +225,8 @@ anything that exists; of the folders it creates, `09-engine/` and
 
 ## The first run is red, by design
 
-Verified on a cell scaffolded with three roles at 0.6.0: the self-test
-passes (185 checks), and the first validator run
+Verified on a cell scaffolded with three roles at 0.7.2 (the same counts
+as at 0.6.0): the self-test passes (185 checks), and the first validator run
 
 ```bash
 python3 08-validator/validator.py --folder . --layout layout.json \
@@ -349,60 +525,43 @@ From `02-reflexive-application/` (its README, "How to run the validator"):
 
 ```bash
 python3 80-validator/sensitivity.py --folder . \
-    --case PRIOR_000_DOCUMENT_PATH \
     --case ../instances/004-adoption-guide/metodo-de-producao.md \
     --rubric-hash 90-review/rubric.sha256 --notes 90-review/notes.json \
     --work SCRATCH_FOLDER --output 80-validator/sensitivity.md
 python3 80-validator/validator.py --folder . \
-    --case PRIOR_000_DOCUMENT_PATH \
     --case ../instances/004-adoption-guide/metodo-de-producao.md \
     --rubric-hash 90-review/rubric.sha256 --notes 90-review/notes.json \
     --allow-pending p-anonymity --determinism --output 80-validator/report.md
 python3 80-validator/validator.py --self-test
 python3 -B -m pytest -p no:cacheprovider 80-validator/test_validator.py \
-    ../skills/cooperatio-teamwork/scripts/test_scaffold.py
+    ../skills/cooperatio-teamwork/scripts/test_scaffold.py \
+    ../skills/cooperatio-teamwork/scripts/test_install.py
 ```
 
-The published report is made with exactly that command; at 0.6.0 it
+The published report is made with exactly that command; at 0.7.2 it
 exits 0 with no notes, 27 rows of `p-anonymity` pending and accepted (the
 identifier half, with no forbidden list), `m-determinism` passed, the
 self-test at 185 checks; the sensitivity report reads 65 of 65 caught, 0
-noisy, 50 of 182 pairs; the test suites pass 280 tests.
+noisy, 54 of 182 pairs; the test suites pass 294 tests.
 
 ## The clone run
 
-The method document of instance 000 stays with the owner, so a clone of
-the material does not have it. The clone passes the document of 004 and
-accepts by name the gates that need the owner's:
+Since 0.7.0 the one executed prior of the material is distributed, so a
+clone runs the commands of the corpus as they are: the pin, the numbers
+and the committed sections of `004-adoption-guide` are measured (its
+edited document, or an invented number about it, is a blocking note,
+exit 1), and the sensitivity report can be regenerated by anyone who edits
+the instrument. The clone run and the owner's run are one command.
 
-```bash
-python3 80-validator/validator.py --folder . \
-    --case ../instances/004-adoption-guide/metodo-de-producao.md \
-    --rubric-hash 90-review/rubric.sha256 --notes 90-review/notes.json \
-    --allow-pending p-anonymity,p-prior,p-prior-pin --determinism
-```
-
-Expected: exit 0, no notes, the report on the standard output, the three
-gates listed as pending accepted by the caller, the pin and the numbers of
-004 measured (its edited document, or an invented number about it, is a
-blocking note, exit 1), and the rows of 000 saying "owner-held evidence,
-not measured here". Without any `--case` the same run still exits 0, but
-measures neither pin.
-
-A clone that edits the instrument cannot regenerate the sensitivity report
-with the owner's document; it regenerates one with a synthetic prior:
-
-```bash
-python3 80-validator/sensitivity.py --folder . \
-    --case ../instances/004-adoption-guide/metodo-de-producao.md \
-    --synthetic-prior 000-av-production \
-    --rubric-hash 90-review/rubric.sha256 --notes 90-review/notes.json \
-    --work SCRATCH_FOLDER --output 80-validator/sensitivity.md
-```
-
-and then adds `p-sensitivity-synthetic` to `--allow-pending` of the clone
-run. The report stays pending until the owner regenerates it with the
-document (chapter 14).
+A cell whose prior is held outside its material uses the mechanism the
+instrument keeps for it (chapter 14): the registry entry carries the
+reserved locator `owner-held, not distributable`; a run without the
+document leaves that prior's rows pending with the notice "owner-held
+evidence, not measured here", accepted only with `--allow-pending
+p-prior,p-prior-pin`; and a maintainer without the document regenerates
+the sensitivity report with `--synthetic-prior PRIOR_ID`, then adds
+`p-sensitivity-synthetic` to `--allow-pending`. That report stays pending
+until whoever holds the document regenerates it.
 
 ## Reading a report
 
@@ -511,7 +670,7 @@ taught and what became code, contract or gate), and a line goes to
 `state/round-record.jsonl`:
 
 ```text
-{"method_version": "0.6.0", "round": "v2", "kind": "production",
+{"method_version": "0.7.2", "round": "v2", "kind": "production",
  "models": [{"role": "writer", "model": "family A, high effort"},
             {"role": "reviewer", "model": "family B, high effort"}],
  "reviewer_relation": "another family",
@@ -661,6 +820,9 @@ order:
 | 0.4.2 | replace a copy of the validator from before 0.4.2 (it wrote a bytecode cache); run pytest with `-B -p no:cacheprovider` |
 | 0.5.0 | give its artifact records a `gates` list and keep the gate table in step; fill the canon's lists or accept their pending by name; remove placeholders; write cards in bold fields; add `contract_version` to its contracts; give each note a line in the state ledger; copy `sensitivity.py`, write `perturbations.json`, name it in the layout and regenerate the report |
 | 0.6.0 | list its Markdown documents outside the artifact list in the canon; give every literal path a file; write its `d-*` gates as result files under `domain-results`; use `[lessons:<title>]` and a provenance table for each cited experiment; freeze its rubric and pass `--notes` (their pending can no longer be accepted); regenerate the report (map, specificity, pairs); copy `perturbation_set.py`; give its non-negotiables ids and keep the owner's decisions in `state/owner-decisions.jsonl`; schedule, dispute or close the open notes older than three rounds; declare `"version": "v1"` in its JSON canon |
+| 0.7.0 | nothing, if it registers a prior of its own; a cell that cited this material's removed prior removes the citation or registers its own source, since the numbers it stated about that prior have no support here any longer |
+| 0.7.1 | nothing; a cell that adopted the review apparatus expecting it to find more than a careful review reads E4, which withdrew that claim; a cell that reuses the benchmark follows its README and checks its manifest first |
+| 0.7.2 | nothing; the installer is optional |
 
 ## The tests
 
@@ -668,19 +830,23 @@ order:
 python3 02-reflexive-application/80-validator/validator.py --self-test
 python3 -B -m pytest -p no:cacheprovider \
     02-reflexive-application/80-validator/test_validator.py \
-    skills/cooperatio-teamwork/scripts/test_scaffold.py
+    skills/cooperatio-teamwork/scripts/test_scaffold.py \
+    skills/cooperatio-teamwork/scripts/test_install.py
 ```
 
 The suite runs the self-test, one passing and one failing case per rule,
 the regression tests of the probes the panels found (a repointed file, a
 mark outside its grammar, a number between backticks, a deleted report
-accepted by name, a domain regression the validator never read), and the
-scaffold's integration test, which asserts that a fresh cell fails high.
+accepted by name, a domain regression the validator never read), the
+scaffold's integration test, which asserts that a fresh cell fails high,
+and the installer's 14 tests on a temporary home folder.
 
 ## The freeze policy, restated
 
 After 0.6.0 the instrument changes only for a failure that changes a
-verdict, or for a new execution. A maintainer who finds a false green adds
+verdict, or for a new execution; 0.7.0 lifted the freeze once, by the
+owner's decision, for data and comments only. The installer is not part
+of the instrument: it changes no verdict and is not copied into a cell. A maintainer who finds a false green adds
 a row to the table of false greens, a regression test and, where it is a
 defect of a document, a perturbation — and declares the change in the
 changelog with its migration note.

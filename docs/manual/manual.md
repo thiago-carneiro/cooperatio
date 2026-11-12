@@ -1,6 +1,6 @@
 ---
 title: "Cooperatio Manual"
-subtitle: "Architecture, capabilities and purpose of the method and of its instrument — method version 0.6.0"
+subtitle: "Architecture, capabilities and purpose of the method and of its instrument — method version 0.7.2"
 lang: en-US
 ---
 
@@ -26,10 +26,30 @@ is stated with more precision in the file it comes from, and the manual
 names that file. Where the manual and the material disagree, the material
 wins; please report the disagreement as a note.
 
-**Version.** The manual describes method version 0.6.0, as recorded in
+**Version.** The manual describes method version 0.7.2, as recorded in
 `VERSION`. The counts it quotes (gates, perturbations, tests, files) were
-measured on that version; later versions change them, and the "Migration
-note" of each entry in `CHANGELOG.md` says what a cell has to change.
+measured on that version unless a sentence names another one; later
+versions change them, and the "Migration note" of each entry in
+`CHANGELOG.md` says what a cell has to change.
+
+**What changed since the first edition (0.6.0).** Four things a reader of
+the earlier manual needs to know:
+
+- **One executed instance.** Version 0.7.0 removed from the living material
+  the prior the owner held and did not distribute, and its registry entry.
+  The evidence now rests on one execution, `004-adoption-guide`:
+  documentary, by the owner, auditable from the material. A rule whose only
+  support was the removed prior keeps its text with `[hypothesis]`, or says
+  that no recorded execution supports it.
+- **The value test ran, and withdrew a claim.** Experiment E4 measured the
+  review apparatus against a careful checklist review on seeded defects,
+  under thresholds the owner fixed before the runs. The claim that the
+  apparatus adds to a careful review without it is **withdrawn**
+  `[against:E4]` (chapter 10).
+- **A benchmark.** The seeded material of E4 and its answer keys are kept in
+  `benchmark/`, so that a later run compares with it.
+- **An installer.** `skills/cooperatio-teamwork/scripts/install.py` links
+  the skill into every agent harness it finds on the machine (chapter 17).
 
 **Conventions.** File names and identifiers appear in `monospace`; paths
 are relative to the root of the material, or to the folder of the
@@ -50,7 +70,8 @@ description and differ only in layout.
 **Status of the method, in the material's own words.** A working
 hypothesis, with a documentary validator; the gates of a target's domain
 enter as results the cell's own code produces and the validator checks;
-two executed instances, one of them auditable from the material. The
+one executed instance, documentary, by the owner, auditable from the
+material. The
 manual repeats this on purpose wherever a reader could take a described
 capability for a measured one.
 
@@ -102,7 +123,7 @@ by the owner before the last round.
 
 ## What the material distributes
 
-The material is a folder under version control. At version 0.6.0 it holds:
+The material is a folder under version control. At version 0.7.2 it holds:
 
 | Part | Path | What it is for |
 | --- | --- | --- |
@@ -110,8 +131,10 @@ The material is a folder under version control. At version 0.6.0 it holds:
 | The reflexive application | `02-reflexive-application/` | the method applied to itself: a brief, a canon, an artifact graph, four role cards, a gate table with a frozen rubric, a generic recipe in fifteen steps, three designed instances, the experiments about the method, the review of its first round, the lessons of every round, and the instrument |
 | The instrument | `02-reflexive-application/80-validator/` | `validator.py` (the gates and the self-test), `sensitivity.py` (the gate on the gates), `perturbation_set.py` (the known defects), `test_validator.py` (the pytest suite), and the two published reports |
 | The contracts | `02-reflexive-application/05-contracts/` | six JSON Schemas: note, state of a note, instance registry, round record, domain result, owner decision |
-| The skill | `skills/cooperatio-teamwork/` | an agent skill that creates the teamwork files for a target, with a scaffold script, templates and a review checklist |
-| The instances | `instances/` | `registry.json`, the record of the known instances pinned by sha256, and `004-adoption-guide/`, the cell of the second executed instance, distributed as a record |
+| The skill | `skills/cooperatio-teamwork/` | an agent skill that creates the teamwork files for a target, with a scaffold script, an installer for the agent harnesses, templates and a review checklist |
+| The instances | `instances/` | `registry.json`, the record of the known instances pinned by sha256, and `004-adoption-guide/`, the cell of the one executed instance, distributed as a record |
+| The benchmark | `benchmark/` | the seeded material of experiment E4 and its annotated answer keys: a guide with three seeded copies, and three anonymized open-source program excerpts (Python, C, C++) with their seeded copies, licenses and notices, under a sha256 manifest; it holds the answers and is never given to a reviewer |
+| The manual | `docs/manual/` | this manual, and `docs/history/`, a curated record of the sessions that produced the material |
 | The owner records | `VERSION`, `CHANGELOG.md`, `LICENSE`, `.gitattributes` | the version of the method, its history with a migration note per version, the Apache License 2.0, and the rule that every text file checks out with LF line breaks |
 
 ```mermaid
@@ -126,13 +149,15 @@ flowchart LR
   contracts["05-contracts/<br/>six JSON Schemas"]
   review["90-review/<br/>frozen records of round 1"]
   state["state/<br/>three chained ledgers"]
-  skill["skills/cooperatio-teamwork/<br/>SKILL · scaffold · templates · checklist"]
+  skill["skills/cooperatio-teamwork/<br/>SKILL · scaffold · installer · templates · checklist"]
   inst["instances/<br/>registry.json · 004-adoption-guide/"]
+  bench["benchmark/<br/>seeded copies · answer keys · manifest"]
   man["docs/manual/<br/>this manual"]
   root --- principle
   root --- ra
   root --- skill
   root --- inst
+  root --- bench
   root --- man
   ra --- docs
   ra --- code
@@ -161,23 +186,26 @@ review have to come from outside the producing run.
 The material calls itself a working hypothesis and says exactly what that
 covers. The reader of this manual should carry three facts throughout:
 
-1. **Two executed instances, both documentary, both by the same owner.**
-   Instance `000-av-production`, an audiovisual production method held by
-   the owner and not distributable, from which the method was generalized;
-   and instance `004-adoption-guide`, the adoption guide of the method
-   itself, whose cell is distributed under `instances/` and whose method
-   document is pinned by sha256. The three other instances in the registry
-   (a car, a book about 2027, an HPC library) are designed sketches, not
-   executions.
+1. **One executed instance, documentary, by the owner.** Instance
+   `004-adoption-guide`, the adoption guide of the method itself, whose
+   cell is distributed under `instances/` and whose method document is
+   pinned by sha256. The method was first generalized from a production the
+   owner ran and did not distribute; since 0.7.0 the material cites nothing
+   from it. The three other instances in the registry (a car, a book about
+   2027, an HPC library) are designed sketches, not executions.
 2. **One part of the scheme has never been exercised: the recompilation by
    hash.** In neither execution did an engine rebuild a stale artifact from
    the hash of its inputs; the validator resolves the command an artifact
    declares against the paths it names and does not run it.
-3. **Efficacy is one-armed.** Everything the method found, it found under
-   the method; no production of the same target ran without the gates, so
-   there is no escape rate to compare. The counterfactual is experiment E2,
-   designed and not run; the cheaper seeded-escape design is E4, designed
-   and awaiting the owner's budget (chapter 10).
+3. **Efficacy is one-armed, and the one measurement of the review went
+   against it.** No production of the same target ran without the gates,
+   so there is no escape rate of a whole production to compare; that
+   counterfactual is experiment E2, designed and not run. The cheaper
+   seeded-escape design, E4, ran at 0.7.1 on the review stage: reviewers
+   with the validator report, the frozen rubric and the reviewer card let
+   no fewer seeded defects escape than reviewers with a checklist, for more
+   than twice the added input tokens, and the claim that the apparatus adds
+   to a careful review is withdrawn `[against:E4]` (chapter 10).
 
 The principle keeps a table, written before any data, of what would promote
 each kind of claim to a result and what would withdraw it (section 9,
@@ -232,12 +260,14 @@ in experiments E1 and E3 of `02-reflexive-application/60-experiments.md`:
 | E1 | Y, another family | not separable per call | not separable | about 4 minutes, indicative |
 | E3 (without the rubric and the card) | X | about 56,000 | 41,000 to 46,000 | 10 to 13 minutes |
 | E3 | Y | not separable | not separable | about 4 minutes, indicative |
+| E4 (per review run, added input only) | D, the family measured in every run | document part: about 3,250 added by the apparatus against 2,320 by the checklist; code part: about 5,100 against 1,230 | not part of the owner's measure | not reported |
 
 The material is careful about these numbers: minutes taken in two sessions
 of different throughput are not comparable, so the measure is the tokens of
 each call, and a wall time is reported only beside the throughput of the
-same run. The cost of a production round and of the instruments has not
-been measured.
+same run. E4 measured, at the owner's request, only the input tokens each
+arm adds to what both arms read, output and reasoning apart. The cost of a
+production round and of the instruments has not been measured.
 
 The method pays off when being wrong is expensive `[hypothesis]`; stated as
 a condition still unmeasured, the probability of an error times its cost
@@ -270,9 +300,10 @@ The root `README.md` gives three entry points:
 - to apply it to a new target, read
   `02-reflexive-application/10-generic-recipe.md`; the three instances
   there show what an artifact, a gate and a rubric are in each domain;
-- to have an agent create the files, install the skill in
-  `skills/cooperatio-teamwork/` and ask it to set up teamwork for the
-  target.
+- to have an agent create the files, install the skill with
+  `python3 skills/cooperatio-teamwork/scripts/install.py` (it links the
+  skill into every agent harness it finds; chapter 17) and ask the agent to
+  set up teamwork for the target.
 
 Its "ten-minute path" is reproduced, with the commands verified, in
 chapter 17.
@@ -282,8 +313,8 @@ chapter 17.
 The material separates the two. The fixed cost of a cell is the set of
 files the scaffold writes (24 with two roles; chapter 17 lists them), among
 them the instrument it copies: three Python scripts the adopter runs and
-does not have to read, about 5,700 lines at version 0.6.0 (`validator.py`
-4,859, `sensitivity.py` 550, `perturbation_set.py` 333, measured by line
+does not have to read, about 5,700 lines at version 0.7.2 (`validator.py`
+4,857, `sensitivity.py` 550, `perturbation_set.py` 336, measured by line
 count), plus one review per round. The history that matters to an adopter
 is the "Migration note" of each version in `CHANGELOG.md`; the rest of the
 changelog — the panels, the probes, the reworks — is the research.
@@ -310,9 +341,12 @@ never by model identifier.
 
 After 0.6.0 the instrument is frozen: the validator, the sensitivity test
 and the scaffold change only for a failure that changes a verdict, or for a
-new execution. The next budget goes to measuring value (experiment E4) and
-portability (an execution outside the documentary domain by someone who is
-not the owner, experiment E5), not to more instrument.
+new execution (0.7.0 lifted the freeze once, by the owner's decision, for
+data and comments only). The budget of 0.7.1 went to measuring value
+(experiment E4, which withdrew a claim); what stays open is portability (an
+execution outside the documentary domain by someone who is not the owner,
+experiment E5). Versions 0.7.0 to 0.7.2 are maintenance rounds, not
+productions under the method: each says so in its changelog entry.
 
 ## License
 
@@ -442,7 +476,7 @@ flowchart TB
 | **Canon** | single source of numbers, names, terms to avoid, accepted variants, rules; each section with an owner and a version | a figure stated one way in one section and differently in another |
 | **Validator** | a verifier that reads all artifacts against the canon and emits notes by itself | an old version of an asset cited by the canon while the sections used the new one |
 | **Independent review with a fixed rubric** | another agent, with no access to the producers' reasoning, measures the product with the same grid each round; three verdicts | the team approving its own work; rounds that cannot be compared |
-| **Instrument fixed at the root** | a false positive becomes a fix to the rule, with a test that reproduces the case, and the previous round is redone | an automatic reviewer of which 10 of 12 notes were false, in the second pilot of the first instance `[prior:000-av-production]` |
+| **Instrument fixed at the root** | a false positive becomes a fix to the rule, with a test that reproduces the case, and the previous round is redone | `[hypothesis]`: no recorded execution in the material measures the cost of an instrument fixed downstream |
 | **Stopping criterion** | the owner declares when to stop: the review of the last version becomes a list of open notes, not a new version | endless rounds |
 | **Gate sensitivity test** | before trusting a gate, inject a known defect and check that it rejects | a gate that checked numbers while the non-negotiable was about statements; the sensitivity test found a validator that read line by line and missed numbers in broken sentences |
 
@@ -905,27 +939,29 @@ canon's prior-statement trigger phrases ("reference case", "prior
 instance", "of the case", "the executed instance", "instance 0") without
 the mark is a finding of `p-prior-mark`.
 
-The registry at 0.6.0:
+The registry at 0.7.2:
 
 | Id | Status | Document | Locator | Method version |
 | --- | --- | --- | --- | --- |
-| `000-av-production` | executed | the owner's method document, pinned by sha256 | owner-held, not distributable | — |
 | `001-car`, `002-text-2027`, `003-hpc` | designed | none | none | — |
 | `004-adoption-guide` | executed | `metodo-de-producao.md`, pinned by sha256 | `instances/004-adoption-guide` | 0.2.2 |
 
 An executed entry carries `document`, `sha256`, `locator` and
 `number_format` (`point-decimal` or `comma-decimal`), none of them null; a
 designed entry keeps the four null, so it can never pass for a pinned
-prior. The entry of `000-av-production` also declares a `heading_style`
-(the shape of its section, subsection and step headings), which the
-synthetic prior of the sensitivity test follows (chapter 14).
+prior. An entry may also declare a `heading_style` (the shape of its
+section, subsection and step headings), which the synthetic prior of the
+sensitivity test follows (chapter 14); the instrument keeps that mechanism
+for a cell whose prior is held outside its material, which this material
+no longer uses.
 
 Numbers about a prior do not enter the documents before they have a row in
 the canon's "Recorded facts" table, which names the number, its context
 (with the mark) and the sections of the prior's document where it lives.
 The canon also commits, by sha256, to the text of each cited section of
-the owner-held document, so that a later rewrite of a cited section is
-detectable without publishing the text (chapter 15).
+the prior's document (at 0.7.2, the four cited sections of
+`004-adoption-guide`), so that a later rewrite of a cited section is
+detectable even where the text is not published (chapter 15).
 
 ## Claims of efficacy and their labels
 
@@ -962,21 +998,44 @@ lesson, and a provenance table. Only an executed experiment backs a claim.
 | E1 | executed | does the reviewer with the frozen rubric name two injected defects, and does a reviewer of another family differ? | both executors named 2 of 2 and gave `rejected` on the perturbed copy; one control run ended for length and is a tool failure, not a verdict |
 | E2 | designed | the counterfactual: the same target produced with and without the method | not run; two productions per target |
 | E3 | executed | the same reviewers without the rubric and the reviewer card | both still named 2 of 2, but classed the invented fact `high` and accepted with conditions: the apparatus turned the finding into a verdict |
-| E4 | designed | seeded escape: does the apparatus let fewer of ten seeded defects escape than a careful baseline, and does another family find more? | protocol and predictions written; awaits the owner's thresholds and budget |
+| E4 | executed (0.7.1) | seeded escape: does the apparatus let fewer seeded defects escape than a careful checklist review, for how many added input tokens, and does another family find more? | 39 reviews in a document part and a code part; with the failed runs counted as all escaped, 79 escapes against 67 for +136 % added input tokens; with the family measured in every run alone, 21 against 21 for +135 %; the claim of the apparatus is withdrawn, the comparison of families is not decidable |
 | E5 | designed | can a third party set up a cell for a target with domain measurements and reach a verdict without improvising instrument? | awaits the owner finding the third party |
 
 ## What would promote or withdraw a claim
 
 Written before the data, as the gates are (`01-principle.md`, section 9),
 so that the material leaves the state of a working hypothesis by a
-measurement and not by a decision. The thresholds are the owner's to
-accept or adjust before E4 runs:
+measurement and not by a decision. The owner fixed the thresholds of the
+review apparatus at 0.7.0, before any run of E4: half the escapes and half
+the added input tokens to promote it; more added tokens without a
+proportional drop in escapes to withdraw it.
 
-| Claim | Promoted when | Withdrawn when |
-| --- | --- | --- |
-| a reviewer of another family adds to one of the producer's family | in E4 or an equivalent design, the arm of the other family finds at least 1 more defect per 10 seeded, in at least 2 of 3 repetitions | the difference is nil in 3 repetitions |
-| the review apparatus adds to a careful review without it | in E4, the escape rate of arm A is lower than that of arm B by at least 20 points | the difference is under 5 points |
-| the method is portable outside the documentary domain | one execution outside it, by someone who is not the owner, with its domain gates read by the validator and a verdict of the canon | that execution cannot reach a verdict without improvising instrument |
+| Claim | Promoted when | Withdrawn when | State after the data |
+| --- | --- | --- | --- |
+| a reviewer of another family adds to one of the producer's family | in E4 or an equivalent design, the arm of the other family finds at least 1 more defect per 10 seeded, in at least 2 of 3 repetitions | the difference is nil in 3 repetitions | open: 11 of the 16 reviews of the producer's family were tool failures (the generation hit its output limit), too few valid runs to compare |
+| the review apparatus (validator and review with a frozen rubric) adds to a careful review without it | in E4, pooled over families, in at least 2 of 3 repetitions, arm A lets at most half as many seeded defects escape as arm B and consumes at most half its additional input tokens | in E4, pooled over families and repetitions, arm A consumes more additional input tokens than arm B and its relative reduction of escapes is smaller than its relative increase in those tokens | **withdrawn** by E4 in both readings: 79 escapes against 67 (-18 %) for +136 % added input tokens; with the family measured in every run alone, 21 against 21 (0 %) for +135 % `[against:E4]` |
+| the method is portable outside the documentary domain | one execution outside it, by someone who is not the owner, with its domain gates read by the validator and a verdict of the canon | that execution cannot reach a verdict without improvising instrument | open: E5 is designed and not run |
+
+The withdrawal holds for what E4 measured: one design, the review stage
+only, seeded defects of classes its designer chose, and added input tokens
+by the owner's definition, which favored the arm with fewer files by
+construction. On escapes alone the family measured in every run found 21
+against 21, so the withdrawal does not rest on the tokens `[against:E4]`.
+What E4 showed besides:
+
+- **the noise floor**: one defect set repeated gave differences of 1 or 2
+  escapes per run, within run-to-run variation;
+- **clean copies**: every valid review of an unseeded copy still produced
+  8 to 14 findings and, but for one, a negative verdict, so the verdict did
+  not separate a clean copy from a seeded one, in either arm;
+- **the instrument alone**: the document validator reported 4 or 5 of the
+  10 seeded classes per set; the static report of the code part named the
+  lines of 6, 0 and 2 of the 12 defects per program;
+- **by class**: in the code part, readability and design defects escaped
+  less with the apparatus, logic defects no less.
+
+The frozen rubric still does what E1 and E3 showed: it keeps two rounds
+comparable and turns a finding into a verdict.
 
 # Part III — The material and the instrument {- .part}
 
@@ -1334,9 +1393,9 @@ flowchart TB
 
 `--allow-pending` accepts only four names: `p-anonymity`, `p-prior` and
 `p-prior-pin` (the halves that need an input the material does not
-distribute: the forbidden list, the owner-held prior document) and
-`p-sensitivity-synthetic` (a sensitivity report a clone regenerated with a
-synthetic prior). Any other name is exit 2, `p-sensitivity` included; a
+distribute: the forbidden list, or a prior document a cell keeps outside
+its material) and `p-sensitivity-synthetic` (a sensitivity report
+regenerated with a synthetic prior); this corpus needs only `p-anonymity`. Any other name is exit 2, `p-sensitivity` included; a
 missing sensitivity report is blocking; and `p-anonymity-language` (a
 language the brief declares without month names) cannot be accepted
 either. The history behind the closed list: the panel that reviewed v0.5.0
@@ -1354,11 +1413,11 @@ UTF-8 to the console whatever its code page.
 
 ## The self-test and the test suite
 
-`validator.py --self-test` runs 185 checks (at 0.6.0) embedded in the
+`validator.py --self-test` runs 185 checks (at 0.7.2) embedded in the
 script, with no inputs; the runbook and every cell use it without pytest,
 and the report prints its count. The pytest suite
-(`80-validator/test_validator.py`, 280 tests together with the scaffold's
-`test_scaffold.py` at 0.6.0) runs the self-test and one case per rule:
+(`80-validator/test_validator.py`, 294 tests together with the scaffold's
+`test_scaffold.py` and the installer's `test_install.py` at 0.7.2) runs the self-test and one case per rule:
 one that passes and one that is rejected. Both are run with `python3 -B
 -m pytest -p no:cacheprovider`, because pytest imports the files before
 their own code can switch the bytecode cache off.
@@ -1378,7 +1437,7 @@ writes.
 # The gate catalogue
 
 This chapter is the reference of the gates the validator implements at
-version 0.6.0: 17 builtin gates measured per document, 4 global gates
+version 0.7.2 (unchanged since 0.6.0): 17 builtin gates measured per document, 4 global gates
 measured once per run, one measurement of the instrument, and the family
 of domain gates a cell supplies. For each gate: the artifacts the
 reflexive application assigns it to, what it reads, its limit, when it is
@@ -1660,8 +1719,8 @@ declared semantics of `06-gate-semantics.md`.
   covers (blocking); an open note older than 3 rounds and not scheduled
   (low).
 - **Limit:** 0. `[hypothesis]`: a note aimed at an artifact the graph
-  does not know is undeliverable; the note router of the first instance
-  rejected such a target `[prior:000-av-production]`.
+  does not know is undeliverable, and no recorded execution measured the
+  cost of letting one through; here the contract is checked by code.
 - **Pending:** without `--notes`; that pending cannot be accepted.
 
 ### `p-frozen-rubric` — the rubric and the frozen records
@@ -1720,8 +1779,8 @@ cannot fail a document. It is the equality of the report's sha256 across
 two consecutive runs on the same input, the second with another hash seed
 and the C locale; measured only with `--determinism`, and a difference is
 a high note. `[hypothesis]`: a report that changes by itself is not
-evidence; the continuity ledger the validator of the first instance wrote
-was deterministic `[prior:000-av-production]`.
+evidence, and no recorded measurement stands behind this limit beyond that
+reasoning.
 
 ## Domain gates
 
@@ -1802,7 +1861,7 @@ flowchart TB
 ## A perturbation
 
 The corpus keeps its set in `perturbation_set.py` (65 perturbations at
-0.6.0), a module the validator reads without importing the sensitivity
+0.7.2), a module the validator reads without importing the sensitivity
 script; a cell keeps its own as data, `08-validator/perturbations.json`,
 named by the layout key `artifacts.perturbations`. The fields:
 
@@ -1823,9 +1882,9 @@ Two examples from the corpus's set:
 Perturbation("avoid-word inserted", "10-generic-recipe.md",
              "## The orchestrator in pseudocode",
              "## The orchestrator of the pipeline", "p-terms")
-Perturbation("prior number altered", "10-generic-recipe.md",
-             "the validator gave 38", "the validator gave 39", "p-prior",
-             needs_case=True, prior="000-av-production")
+Perturbation("prior number altered", "../01-principle.md",
+             "produced a guide of 1054 words", "produced a guide of 1055 words",
+             "p-prior", needs_case=True, prior=PRIOR_004)
 ```
 
 ## The copy is the material
@@ -1854,8 +1913,8 @@ assigns, except `p-sensitivity`, the measurements and the domain gates,
 has at least one perturbation) and by pair (the (document, gate) rows of
 the baseline report that at least one measured perturbation targets). The
 magnitude reads "k of n gates covered, p of q pairs (r %), 0 missed of m,
-0 noisy"; at 0.6.0 the corpus reads 20 of 20 gates and 50 of 182 pairs
-(27 %). An assigned gate without a perturbation, or fewer than 25 % of
+0 noisy"; at 0.7.2 the corpus reads 20 of 20 gates and 54 of 182 pairs
+(29 %). An assigned gate without a perturbation, or fewer than 25 % of
 the pairs, leaves `p-sensitivity` pending with the reason, never a pass;
 the floor is a hypothesis, the first this version commits to, raised and
 never lowered. The three generic perturbations of a new cell cover three
@@ -1882,12 +1941,15 @@ before the next run, or `p-sensitivity` fails on provenance. Deleting the
 report does not help: a missing report is blocking, and `p-sensitivity`
 cannot be accepted by name.
 
-## The synthetic prior, for a clone
+## The synthetic prior, for a prior held elsewhere
 
-Five rows of the corpus's set need the method document of the first
-prior, which the owner keeps. A maintainer who edits the instrument
-without it regenerates a full report with `--synthetic-prior
-000-av-production`: the script generates a document from the canon's
+Since 0.7.0 the one executed prior of this material is distributed, so a
+clone regenerates the report with the real document and needs none of
+this section. The instrument keeps the mechanism for a cell whose prior is
+held outside its material: its registry entry carries the reserved locator
+`owner-held, not distributable`, and a maintainer who edits the instrument
+without that document regenerates a full report with `--synthetic-prior
+PRIOR_ID`: the script generates a document from the canon's
 recorded facts (one numbered section per label the facts cite, holding
 the facts' numbers in the prior's number format), in the `heading_style`
 the registry declares for the real document, passes it as `--case`, and
@@ -1913,10 +1975,11 @@ then the report records, for each document it was made with, a `case
 attestation`: the sha256 of the document's text followed by the validator,
 gates, canon and map digests of the report, which only whoever holds the
 text can compute. A run that passes the document recomputes it and refuses
-a mismatch; that is the owner's run for `000` and every run for `004`.
-What it leaves, declared: a run without the document compares nothing, so
-**in a clone the forged line still passes**, and a frozen record re-pinned
-in the canon shows there only in the diff against a signed version.
+a mismatch; for this material, whose prior document is distributed, that
+is every run. What it leaves, declared: for a prior held elsewhere, a run
+without the document compares nothing, so **in a clone of such a cell the
+forged line still passes**, and a frozen record re-pinned in the canon
+shows there only in the diff against a signed version.
 
 # Ledgers, records and integrity
 
@@ -2013,17 +2076,16 @@ letters and a salted commitment.
 
 ```mermaid
 %% name: trust-chain
-%% caption: What pins what: the integrity structure of the material at version 0.6.0.
+%% caption: What pins what: the integrity structure of the material at version 0.7.2.
 flowchart TB
   subgraph owner["outside the material: the owner"]
-    doc000["method document of 000 (owner-held)"]
     familymap["family map + salt"]
     forbidden["forbidden identifiers list"]
   end
   subgraph material["inside the material"]
     registry["registry.json: sha256 pin per executed prior"]
     doc004["method document of 004 (distributed)"]
-    canon["canon: section commitments of 000<br/>+ frozen records table"]
+    canon["canon: section commitments of 004<br/>+ frozen records table"]
     frozen["90-review/* and the lessons' history (never edited)"]
     rubricpin["rubric.sha256"]
     sens["sensitivity.md header: validator, gates, canon, map;<br/>case sha256 + case attestation per prior"]
@@ -2032,10 +2094,8 @@ flowchart TB
     commitment["family_map_commitment on each chained round line"]
   end
   tag["a signed tag per version<br/>(the anchor outside the tree; not yet made)"]
-  doc000 -->|pinned by| registry
   doc004 -->|pinned by| registry
-  doc000 -->|committed section by section| canon
-  doc000 -->|"attested (owner's run)"| sens
+  doc004 -->|committed section by section| canon
   doc004 -->|"attested (every run)"| sens
   validator -->|provenance| sens
   canon -->|provenance| sens
@@ -2050,14 +2110,15 @@ flowchart TB
 
 | A clone verifies | Only the owner verifies |
 | --- | --- |
-| every gate on every document; the pin and the numbers of `004`, whose document is distributed; the frozen rubric; the provenance of the sensitivity report, the sha256 of each prior document included; the hash chain of the three ledgers | the numbers stated about `000`, whose document is owner-held (its cited sections are committed by sha256, so it cannot be swapped unseen, but a clone cannot read them); that the sensitivity report was made with that document, by regenerating it |
+| every gate on every document; the pin, the numbers and the committed sections of `004`, whose document is distributed; the frozen rubric; the provenance of the sensitivity report, its attestation included; the hash chain of the three ledgers | nothing about the numbers since 0.7.0: every number stated about a prior is checkable in a clone |
 | that a ledger line written since v0.6.0 was not edited without recomputing the chain | an edit that recomputed the chain; the lines before the chain; the history of the lessons and the record of the experiments' raw files |
 | the family letter each round line records, and the form of its salted commitment | the map from a family letter to a family, and its salt |
 
-The residual risks the material declares, as they stand at 0.6.0:
+The residual risks the material declares, as they stand at 0.7.2:
 
-- in a clone without the owner's document, a forged `case sha256` line
-  passes;
+- for a cell whose prior is held elsewhere, a forged `case sha256` line
+  passes in a clone without that document (this material no longer has
+  such a prior);
 - the 8 distinct words of a `no_gate` reason measure form, not content;
 - the attestation does not prove the perturbations actually ran, only
   that the report was made over those inputs;
@@ -2068,33 +2129,20 @@ The residual risks the material declares, as they stand at 0.6.0:
 
 # The instances
 
-## Instance 000: the audiovisual production method
+## Where the method came from
 
-The first executed instance, from which the method was generalized: an
-audiovisual production method, written in Brazilian Portuguese, held by
-the owner and not distributable. The registry pins its method document by
-sha256 and declares its number format (`comma-decimal`) and its heading
-style (a section `## 6.`, a subsection `### 1.1`, a step `### Passo 15.`),
-and the canon commits, section by section, to the text of the twelve
-sections the recorded facts cite. The facts the material states about it
-are the rows of the canon's "Recorded facts" table — among them 18 roles
-with a card, 49 artifacts in the graph of its first pilot, 2 maximum rounds
-per artifact, the review of v1 with 3 blocking, 4 high, 12 medium and 12
-low findings, 26 low notes open at v5, a drift gate whose wrong instrument
-read a p95 of 0.546 s at v1 and 0.10 s once fixed, and an automatic
-reviewer of which 10 of 12 notes were false `[prior:000-av-production]`.
-Several rules of the recipe carry the error of this instance that the step
-prevents, as a measured size of the error.
-
-Its historical vocabulary is recorded in the canon so that the frozen
-records of round 1 can be read: the validator was its "continuity
-checker"; the verdicts were "publishable", "publishable with minor
-corrections" and "rejected"; the production cell carried a media term;
-the quarantine mark of a bracketed word became `[prior:<id>]`.
+The method was first generalized from a production the owner ran and did
+not distribute. Until 0.6.0 the material cited it as a registered prior
+held by the owner; version 0.7.0 removed those citations and its registry
+entry, so that every statement of evidence can be checked from the
+material. A rule whose only support was that production keeps its text
+with `[hypothesis]`, or says that no recorded execution supports it. The
+canon still records the historical vocabulary of round 1, so that its
+frozen records can be read.
 
 ## Instance 004: the adoption guide
 
-The second executed instance: the adoption guide of the method itself, in
+The one executed instance: the adoption guide of the method itself, in
 Brazilian Portuguese, of 900 to 1,400 words by its brief, produced under
 method version 0.2.2 with a writer of one family and a review in a
 separate dispatch without the producer's reasoning, which gave `accepted`
@@ -2117,8 +2165,8 @@ v0.5.0, as a **record, not an example to copy**:
   distributed;
 - its `ERRATA.md` lists what the guide says that is no longer true when
   read against the material as it stands (the rubric is frozen before the
-  first review, not before the production; the registry holds two executed
-  instances; the skill copied alone creates a cell without the validator;
+  first review, not before the production; the registry holds one executed
+  instance, this one; the skill copied alone creates a cell without the validator;
   independence across families is a recommendation, not a rule);
 - its list of forbidden identifiers stayed with the owner, outside the
   material, since it contains what it forbids.
@@ -2131,8 +2179,8 @@ with its pin, `08-validator/` with its reports, `09-engine/`, `review/`
 `open-notes.json`, `priors.json`, `layout.json`, the guide, the method
 document and the errata.
 
-Whether a new cell under 0.6.0 replaces it as the example is an open owner
-decision (appendix F).
+Whether a new cell under the current version replaces it as the example
+is an open owner decision (appendix F).
 
 ## The three designed instances
 
@@ -2175,6 +2223,182 @@ number.
 # Part IV — Using the method {- .part}
 
 # Quick start
+
+## Installing the skill
+
+The skill is the folder `skills/cooperatio-teamwork/`. An agent harness
+(Claude Code, GitHub Copilot, OpenCode, Codex, Gemini CLI and the others)
+finds a skill when that folder, or a link to it, sits in the harness's
+skills folder; the agent then reads `SKILL.md` when a request matches its
+description. The installer puts a link in every harness it finds on the
+machine.
+
+### Before installing
+
+- A checkout of the material, kept where it is: the installer links to the
+  folder inside the checkout, so moving or deleting the checkout breaks the
+  links (run `--uninstall` first).
+- Python 3.9 or later; the installer uses the standard library only.
+- At least one harness already installed and run once, so that its
+  configuration folder exists in the home folder.
+
+### Install
+
+From the root of the material:
+
+```bash
+python3 skills/cooperatio-teamwork/scripts/install.py --list     # known, found
+python3 skills/cooperatio-teamwork/scripts/install.py --dry-run  # would do
+python3 skills/cooperatio-teamwork/scripts/install.py            # do it
+```
+
+`--list` prints one line per known harness: its name, `detected` or
+`absent`, the state of the skill there (`absent`, `ours-link`,
+`ours-copy` or `foreign`) and the full path of the entry. The install
+prints one line per entry it touched:
+
+```text
+claude-code: linked: <home>/.claude/skills/cooperatio-teamwork
+opencode: linked: <home>/.config/opencode/skills/cooperatio-teamwork
+codex, cline: linked: <home>/.agents/skills/cooperatio-teamwork
+```
+
+A second run changes nothing and says `already installed`. Open a new
+session of each harness afterwards: a harness reads its skills folder when
+a session starts.
+
+```mermaid
+%% name: installer-flow
+%% caption: What the installer does for each known harness.
+flowchart TB
+  start["for each harness in the table<br/>(or only those named with --harness)"]
+  detected{"its configuration folder<br/>exists in the home folder?"}
+  skip["skipped: never creates the<br/>configuration of a harness not found"]
+  entry{"the skills folder already has<br/>an entry named cooperatio-teamwork?"}
+  make["create the skills folder if missing;<br/>link to the skill (or copy with --copy)"]
+  ours{"is it a link to this skill,<br/>or a copy carrying the marker?"}
+  done["already installed<br/>(a marked copy is refreshed with --copy)"]
+  conflict["conflict, left untouched;<br/>exit 1 at the end"]
+  start --> detected
+  detected -- no --> skip
+  detected -- yes --> entry
+  entry -- no --> make
+  entry -- yes --> ours
+  ours -- yes --> done
+  ours -- no --> conflict
+```
+
+### The harnesses it knows
+
+A harness is detected by its configuration folder. Paths that start with
+`~` are in the home folder; those under `~/.config` follow
+`XDG_CONFIG_HOME` when it is set, and Claude Code follows
+`CLAUDE_CONFIG_DIR`.
+
+| Harness | Detected by | The skill goes to |
+| --- | --- | --- |
+| `claude-code` | `~/.claude` | `~/.claude/skills/` |
+| `github-copilot` | `~/.copilot` | `~/.copilot/skills/` |
+| `pi` | `~/.pi/agent` | `~/.pi/agent/skills/` |
+| `opencode` | `~/.config/opencode` | `~/.config/opencode/skills/` |
+| `codex` | `~/.codex` | `~/.agents/skills/` |
+| `gemini-cli` | `~/.gemini` | `~/.gemini/skills/` |
+| `cursor` | `~/.cursor` | `~/.cursor/skills/` |
+| `windsurf` | `~/.codeium/windsurf` | `~/.codeium/windsurf/skills/` |
+| `droid` | `~/.factory` | `~/.factory/skills/` |
+| `goose` | `~/.config/goose` | `~/.config/goose/skills/` |
+| `kiro-cli` | `~/.kiro` | `~/.kiro/skills/` |
+| `qwen-code` | `~/.qwen` | `~/.qwen/skills/` |
+| `cline` | `~/.cline` | `~/.agents/skills/` |
+| `kimi-code-cli` | `~/.kimi` | `~/.agents/skills/` |
+| `roo` | `~/.roo` | `~/.roo/skills/` |
+| `amp` | `~/.config/amp` | `~/.config/agents/skills/` |
+| `continue` | `~/.continue` | `~/.continue/skills/` |
+| `crush` | `~/.config/crush` | `~/.config/crush/skills/` |
+| `augment` | `~/.augment` | `~/.augment/skills/` |
+| `kilo` | `~/.kilo` | `~/.kilo/skills/` |
+| `junie` | `~/.junie` | `~/.junie/skills/` |
+| `openhands` | `~/.openhands` | `~/.openhands/skills/` |
+| `trae` | `~/.trae` | `~/.trae/skills/` |
+| `mistral-vibe` | `~/.vibe` | `~/.vibe/skills/` |
+| `devin` | `~/.config/devin` | `~/.config/devin/skills/` |
+
+The skills folders follow the list kept by the vercel-labs/skills project
+and each harness's own documentation where one was found. They were
+verified on a machine for Claude Code, GitHub Copilot, pi and OpenCode
+only; the others are as documented, not tested `[hypothesis]`. Harnesses
+change their paths: when one moves, the fix is one row of the table at the
+top of `install.py`, and `--harness NAME` with a hand-made link covers the
+gap meanwhile.
+
+### Link or copy
+
+The default is a symbolic link to the skill folder inside the material, for
+two reasons. The scaffold reaches the validator, the sensitivity test and
+the contracts through the path it resolves, so a linked skill still creates
+cells with the instrument; and a `git pull` of the material updates every
+harness at once.
+
+`--copy` writes an independent copy instead, for a harness that does not
+follow links or a machine where the material will not stay. The copy
+carries a marker file, `.cooperatio-install`, by which a later `--copy`
+refreshes it and `--uninstall` removes it. A copied skill creates cells
+without the validator, says so, and the cell has no validator until one is
+copied in. To switch an entry between link and copy, uninstall it first;
+the installer refuses to switch by itself.
+
+### Options
+
+| Option | Effect |
+| --- | --- |
+| `--list` | show every known harness, whether it is detected, and the state of the skill there |
+| `--dry-run` | say what would change, change nothing |
+| `--harness NAME` | only this harness, detected or not (repeatable); a named harness gets its skills folder even when its configuration folder is missing |
+| `--copy` | copy the folder instead of linking it |
+| `--uninstall` | remove the links and marked copies this installer made; anything else is a conflict, left untouched |
+| `--home FOLDER` | use another home folder (for tests, or to prepare another account's folders) |
+
+Exit codes: 0 done, or nothing to do; 1 at least one conflict or I/O error
+(the other entries are still installed); 2 invalid input, or Python below
+3.9; 3 no known harness detected.
+
+### When something goes wrong
+
+| Symptom | Cause | What to do |
+| --- | --- | --- |
+| `no known harness detected`, exit 3 | no configuration folder of a known harness in the home folder | run the harness once, or name it with `--harness NAME` |
+| `conflict: ... exists and was not installed by this script` | an entry of the same name that this installer did not make: an older hand-made copy, or a link to another checkout | look at it; remove it by hand if it is yours to remove, then run again |
+| the agent lists the skill twice | some harnesses also read the folders of others (OpenCode and Cursor read `~/.claude/skills`; several read `~/.agents/skills`) | `install.py --uninstall --harness NAME` for the duplicate |
+| the agent does not see the skill | the session started before the install, or the harness reads another folder than the table says | open a new session; check the harness's documentation and use `--harness` or a hand-made link |
+| a new cell has no validator | the skill was copied, or the checkout behind the link moved | reinstall as a link from the checkout |
+
+### Installing by hand, or for one project
+
+Linking the folder by hand works as well:
+
+```bash
+ln -s "$PWD/skills/cooperatio-teamwork" ~/.claude/skills/cooperatio-teamwork
+```
+
+Most harnesses also read a project-level skills folder (`.claude/skills/`,
+`.agents/skills/`, `.opencode/skills/` and so on, at the root of a
+repository). The installer handles only the user-level folders; for one
+project, link or copy the folder into that project's skills folder by hand.
+
+### Using it from an agent
+
+With the skill installed, ask the agent in plain words; the description in
+`SKILL.md` is what makes the agent load it:
+
+```text
+Set up the cooperatio teamwork for the quarterly report: roles writer,
+verifier and reviewer; the brief is in notes/brief.md.
+```
+
+The agent follows `SKILL.md`: it asks for what the brief lacks, runs the
+scaffold, fills the files, and stops at the points the owner decides (the
+non-negotiables, the stop, the freeze of the rubric). The rest of this
+chapter is the same path done by hand.
 
 ## The ten-minute path
 
@@ -2222,8 +2446,8 @@ anything that exists; of the folders it creates, `09-engine/` and
 
 ## The first run is red, by design
 
-Verified on a cell scaffolded with three roles at 0.6.0: the self-test
-passes (185 checks), and the first validator run
+Verified on a cell scaffolded with three roles at 0.7.2 (the same counts
+as at 0.6.0): the self-test passes (185 checks), and the first validator run
 
 ```bash
 python3 08-validator/validator.py --folder . --layout layout.json \
@@ -2522,60 +2746,43 @@ From `02-reflexive-application/` (its README, "How to run the validator"):
 
 ```bash
 python3 80-validator/sensitivity.py --folder . \
-    --case PRIOR_000_DOCUMENT_PATH \
     --case ../instances/004-adoption-guide/metodo-de-producao.md \
     --rubric-hash 90-review/rubric.sha256 --notes 90-review/notes.json \
     --work SCRATCH_FOLDER --output 80-validator/sensitivity.md
 python3 80-validator/validator.py --folder . \
-    --case PRIOR_000_DOCUMENT_PATH \
     --case ../instances/004-adoption-guide/metodo-de-producao.md \
     --rubric-hash 90-review/rubric.sha256 --notes 90-review/notes.json \
     --allow-pending p-anonymity --determinism --output 80-validator/report.md
 python3 80-validator/validator.py --self-test
 python3 -B -m pytest -p no:cacheprovider 80-validator/test_validator.py \
-    ../skills/cooperatio-teamwork/scripts/test_scaffold.py
+    ../skills/cooperatio-teamwork/scripts/test_scaffold.py \
+    ../skills/cooperatio-teamwork/scripts/test_install.py
 ```
 
-The published report is made with exactly that command; at 0.6.0 it
+The published report is made with exactly that command; at 0.7.2 it
 exits 0 with no notes, 27 rows of `p-anonymity` pending and accepted (the
 identifier half, with no forbidden list), `m-determinism` passed, the
 self-test at 185 checks; the sensitivity report reads 65 of 65 caught, 0
-noisy, 50 of 182 pairs; the test suites pass 280 tests.
+noisy, 54 of 182 pairs; the test suites pass 294 tests.
 
 ## The clone run
 
-The method document of instance 000 stays with the owner, so a clone of
-the material does not have it. The clone passes the document of 004 and
-accepts by name the gates that need the owner's:
+Since 0.7.0 the one executed prior of the material is distributed, so a
+clone runs the commands of the corpus as they are: the pin, the numbers
+and the committed sections of `004-adoption-guide` are measured (its
+edited document, or an invented number about it, is a blocking note,
+exit 1), and the sensitivity report can be regenerated by anyone who edits
+the instrument. The clone run and the owner's run are one command.
 
-```bash
-python3 80-validator/validator.py --folder . \
-    --case ../instances/004-adoption-guide/metodo-de-producao.md \
-    --rubric-hash 90-review/rubric.sha256 --notes 90-review/notes.json \
-    --allow-pending p-anonymity,p-prior,p-prior-pin --determinism
-```
-
-Expected: exit 0, no notes, the report on the standard output, the three
-gates listed as pending accepted by the caller, the pin and the numbers of
-004 measured (its edited document, or an invented number about it, is a
-blocking note, exit 1), and the rows of 000 saying "owner-held evidence,
-not measured here". Without any `--case` the same run still exits 0, but
-measures neither pin.
-
-A clone that edits the instrument cannot regenerate the sensitivity report
-with the owner's document; it regenerates one with a synthetic prior:
-
-```bash
-python3 80-validator/sensitivity.py --folder . \
-    --case ../instances/004-adoption-guide/metodo-de-producao.md \
-    --synthetic-prior 000-av-production \
-    --rubric-hash 90-review/rubric.sha256 --notes 90-review/notes.json \
-    --work SCRATCH_FOLDER --output 80-validator/sensitivity.md
-```
-
-and then adds `p-sensitivity-synthetic` to `--allow-pending` of the clone
-run. The report stays pending until the owner regenerates it with the
-document (chapter 14).
+A cell whose prior is held outside its material uses the mechanism the
+instrument keeps for it (chapter 14): the registry entry carries the
+reserved locator `owner-held, not distributable`; a run without the
+document leaves that prior's rows pending with the notice "owner-held
+evidence, not measured here", accepted only with `--allow-pending
+p-prior,p-prior-pin`; and a maintainer without the document regenerates
+the sensitivity report with `--synthetic-prior PRIOR_ID`, then adds
+`p-sensitivity-synthetic` to `--allow-pending`. That report stays pending
+until whoever holds the document regenerates it.
 
 ## Reading a report
 
@@ -2684,7 +2891,7 @@ taught and what became code, contract or gate), and a line goes to
 `state/round-record.jsonl`:
 
 ```text
-{"method_version": "0.6.0", "round": "v2", "kind": "production",
+{"method_version": "0.7.2", "round": "v2", "kind": "production",
  "models": [{"role": "writer", "model": "family A, high effort"},
             {"role": "reviewer", "model": "family B, high effort"}],
  "reviewer_relation": "another family",
@@ -2834,6 +3041,9 @@ order:
 | 0.4.2 | replace a copy of the validator from before 0.4.2 (it wrote a bytecode cache); run pytest with `-B -p no:cacheprovider` |
 | 0.5.0 | give its artifact records a `gates` list and keep the gate table in step; fill the canon's lists or accept their pending by name; remove placeholders; write cards in bold fields; add `contract_version` to its contracts; give each note a line in the state ledger; copy `sensitivity.py`, write `perturbations.json`, name it in the layout and regenerate the report |
 | 0.6.0 | list its Markdown documents outside the artifact list in the canon; give every literal path a file; write its `d-*` gates as result files under `domain-results`; use `[lessons:<title>]` and a provenance table for each cited experiment; freeze its rubric and pass `--notes` (their pending can no longer be accepted); regenerate the report (map, specificity, pairs); copy `perturbation_set.py`; give its non-negotiables ids and keep the owner's decisions in `state/owner-decisions.jsonl`; schedule, dispute or close the open notes older than three rounds; declare `"version": "v1"` in its JSON canon |
+| 0.7.0 | nothing, if it registers a prior of its own; a cell that cited this material's removed prior removes the citation or registers its own source, since the numbers it stated about that prior have no support here any longer |
+| 0.7.1 | nothing; a cell that adopted the review apparatus expecting it to find more than a careful review reads E4, which withdrew that claim; a cell that reuses the benchmark follows its README and checks its manifest first |
+| 0.7.2 | nothing; the installer is optional |
 
 ## The tests
 
@@ -2841,19 +3051,23 @@ order:
 python3 02-reflexive-application/80-validator/validator.py --self-test
 python3 -B -m pytest -p no:cacheprovider \
     02-reflexive-application/80-validator/test_validator.py \
-    skills/cooperatio-teamwork/scripts/test_scaffold.py
+    skills/cooperatio-teamwork/scripts/test_scaffold.py \
+    skills/cooperatio-teamwork/scripts/test_install.py
 ```
 
 The suite runs the self-test, one passing and one failing case per rule,
 the regression tests of the probes the panels found (a repointed file, a
 mark outside its grammar, a number between backticks, a deleted report
-accepted by name, a domain regression the validator never read), and the
-scaffold's integration test, which asserts that a fresh cell fails high.
+accepted by name, a domain regression the validator never read), the
+scaffold's integration test, which asserts that a fresh cell fails high,
+and the installer's 14 tests on a temporary home folder.
 
 ## The freeze policy, restated
 
 After 0.6.0 the instrument changes only for a failure that changes a
-verdict, or for a new execution. A maintainer who finds a false green adds
+verdict, or for a new execution; 0.7.0 lifted the freeze once, by the
+owner's decision, for data and comments only. The installer is not part
+of the instrument: it changes no verdict and is not copied into a cell. A maintainer who finds a false green adds
 a row to the table of false greens, a regression test and, where it is a
 defect of a document, a perturbation — and declares the change in the
 changelog with its migration note.
@@ -2994,6 +3208,23 @@ in the set is a tool failure (exit 2).
 Run from inside the material, so that it finds the validator, the
 sensitivity script, the perturbation module and the contracts to copy.
 
+## `install.py`
+
+`skills/cooperatio-teamwork/scripts/install.py` links the skill into the
+user-level skills folder of every agent harness it detects (chapter 17).
+
+| Option | Meaning |
+| --- | --- |
+| `--list` | show every known harness, `detected` or `absent`, the state of the skill there and the path of the entry |
+| `--dry-run` | say what would change, change nothing |
+| `--harness NAME` | only this harness, detected or not, repeatable; the names are those of `--list` |
+| `--copy` | copy the folder (with the marker `.cooperatio-install`) instead of linking it |
+| `--uninstall` | remove the links and marked copies the installer made |
+| `--home FOLDER` | the home folder to use instead of the real one |
+
+Exit codes: 0 done or nothing to do; 1 a conflict or an I/O error; 2
+invalid input or Python below 3.9; 3 no harness detected.
+
 ## The historical validator of instance 004
 
 `instances/004-adoption-guide/08-validator/validator.py` is the instrument
@@ -3031,7 +3262,7 @@ not an exhaustive list.
 | `p-declared` | a declared path that matches nothing, a repointed file, a document no artifact declares | each literal path and each glob, the resolved map pinned in the sensitivity's provenance | file of an artifact repointed |
 
 # Appendix E — File index of the material {-}
-The 79 files the material tracks at 0.6.0, grouped.
+The 236 files the material tracks at 0.7.2, grouped: 81 of the material proper, 94 of the benchmark and 61 of the manual and the history.
 
 | Path | Contents |
 | --- | --- |
@@ -3048,26 +3279,28 @@ The 79 files the material tracks at 0.6.0, grouped.
 | `02-reflexive-application/90-review/rubric.sha256`, `auditor-report.md`, `auditor-notes.json`, `notes.json`, `replies.md` | the frozen records of round 1 |
 | `02-reflexive-application/99-lessons.md` | the lessons, one entry per round |
 | `02-reflexive-application/state/round-record.jsonl`, `notes-status.jsonl`, `owner-decisions.jsonl` | the three chained ledgers |
-| `skills/cooperatio-teamwork/SKILL.md`, `references/templates.md`, `references/review-checklist.md`, `scripts/scaffold.py`, `scripts/test_scaffold.py` | the skill |
+| `skills/cooperatio-teamwork/SKILL.md`, `references/templates.md`, `references/review-checklist.md`, `scripts/scaffold.py`, `scripts/test_scaffold.py`, `scripts/install.py`, `scripts/test_install.py` | the skill, its scaffold and its installer |
 | `instances/registry.json` | the instance registry |
-| `instances/004-adoption-guide/` | the cell of the second executed instance: brief, sources of truth, JSON canon, artifacts, four cards, two contracts, gates, rubric and pin, the validator of 0.2.2 with its rules and reports, the engine's README, the two wave reports and the round-1 notes, the state ledgers, lessons, open notes, priors, layout, the guide (`guia-de-adocao.md`), the method document (`metodo-de-producao.md`) and `ERRATA.md` |
+| `instances/004-adoption-guide/` | the cell of the one executed instance: brief, sources of truth, JSON canon, artifacts, four cards, two contracts, gates, rubric and pin, the validator of 0.2.2 with its rules and reports, the engine's README, the two wave reports and the round-1 notes, the state ledgers, lessons, open notes, priors, layout, the guide (`guia-de-adocao.md`), the method document (`metodo-de-producao.md`) and `ERRATA.md` |
+| `benchmark/` | the seeded material of E4: `README.md`, `MANIFEST.sha256`, `document/` (the clean and seeded guides, the defect sets and annotated keys, and the inputs each review received), `code/` (per program: the anonymized pristine and seeded excerpts, the answer key, the upstream license, a notice, the anonymization rules and the gates' detection table; the shared gates code, rubric, checklist, card and prompts) |
 | `docs/manual/` | this manual: `src/`, `diagrams/`, `filters/`, `Makefile`, the built `manual.md`, `manual.pdf` and `build/manual.tex` |
+| `docs/history/` | the curated record of the sessions that produced the material |
 
 # Appendix F — Open owner decisions {-}
-The lines of `02-reflexive-application/state/owner-decisions.jsonl` at
-0.6.0, all `open`; each names what it blocks. Only the owner can close
-one, with a new chained line.
+The decisions of `02-reflexive-application/state/owner-decisions.jsonl`
+at 0.7.2, by their last chained line. Only the owner can change one, with
+a new chained line.
 
-| Decision | What it blocks |
-| --- | --- |
-| sign the tag of the version (create a signing key and sign `v0.6.0`) | the anchor of integrity outside the tree |
-| publish an extract of the first prior, or not | a clone's check of the numbers about `000-av-production` |
-| accept or adjust the thresholds to promote or withdraw a claim | experiment E4 |
-| approve the budget and run E4 | the measure of value of the material |
-| find the third party for E5 | the measure of portability |
-| promote independence across families to a rule | the rule of independence |
-| open the next production of the material as a production, with its own brief, a rubric of the reviewing side and a stop | a new verdict of the canon on the material |
-| replace the cell of 004 as the example (a new cell under 0.6.0 would be the third execution) | an executable example of a cell |
+| Decision | State | What it blocks |
+| --- | --- | --- |
+| sign the tag of the version (create a signing key and sign it) | open | the anchor of integrity outside the tree |
+| find the third party for E5 | open | the measure of portability |
+| promote independence across families to a rule | open | the rule of independence |
+| open the next production of the material as a production, with its own brief, a rubric of the reviewing side and a stop | open | a new verdict of the canon on the material |
+| replace the cell of 004 as the example (a new cell would be the second execution) | open | an executable example of a cell |
+| publish an extract of the prior held by the owner, or not | decided at 0.7.0: nothing to publish; the prior left the material | — |
+| accept or adjust the thresholds to promote or withdraw a claim | decided at 0.7.0: the owner's thresholds of chapter 10 | — |
+| approve the budget and run E4 | decided at 0.7.0; E4 ran at 0.7.1 | — |
 
 # Appendix G — Building this manual {-}
 The manual lives in `docs/manual/`:

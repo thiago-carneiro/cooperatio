@@ -35,7 +35,7 @@ flowchart TB
 ## A perturbation
 
 The corpus keeps its set in `perturbation_set.py` (65 perturbations at
-0.6.0), a module the validator reads without importing the sensitivity
+0.7.2), a module the validator reads without importing the sensitivity
 script; a cell keeps its own as data, `08-validator/perturbations.json`,
 named by the layout key `artifacts.perturbations`. The fields:
 
@@ -56,9 +56,9 @@ Two examples from the corpus's set:
 Perturbation("avoid-word inserted", "10-generic-recipe.md",
              "## The orchestrator in pseudocode",
              "## The orchestrator of the pipeline", "p-terms")
-Perturbation("prior number altered", "10-generic-recipe.md",
-             "the validator gave 38", "the validator gave 39", "p-prior",
-             needs_case=True, prior="000-av-production")
+Perturbation("prior number altered", "../01-principle.md",
+             "produced a guide of 1054 words", "produced a guide of 1055 words",
+             "p-prior", needs_case=True, prior=PRIOR_004)
 ```
 
 ## The copy is the material
@@ -87,8 +87,8 @@ assigns, except `p-sensitivity`, the measurements and the domain gates,
 has at least one perturbation) and by pair (the (document, gate) rows of
 the baseline report that at least one measured perturbation targets). The
 magnitude reads "k of n gates covered, p of q pairs (r %), 0 missed of m,
-0 noisy"; at 0.6.0 the corpus reads 20 of 20 gates and 50 of 182 pairs
-(27 %). An assigned gate without a perturbation, or fewer than 25 % of
+0 noisy"; at 0.7.2 the corpus reads 20 of 20 gates and 54 of 182 pairs
+(29 %). An assigned gate without a perturbation, or fewer than 25 % of
 the pairs, leaves `p-sensitivity` pending with the reason, never a pass;
 the floor is a hypothesis, the first this version commits to, raised and
 never lowered. The three generic perturbations of a new cell cover three
@@ -115,12 +115,15 @@ before the next run, or `p-sensitivity` fails on provenance. Deleting the
 report does not help: a missing report is blocking, and `p-sensitivity`
 cannot be accepted by name.
 
-## The synthetic prior, for a clone
+## The synthetic prior, for a prior held elsewhere
 
-Five rows of the corpus's set need the method document of the first
-prior, which the owner keeps. A maintainer who edits the instrument
-without it regenerates a full report with `--synthetic-prior
-000-av-production`: the script generates a document from the canon's
+Since 0.7.0 the one executed prior of this material is distributed, so a
+clone regenerates the report with the real document and needs none of
+this section. The instrument keeps the mechanism for a cell whose prior is
+held outside its material: its registry entry carries the reserved locator
+`owner-held, not distributable`, and a maintainer who edits the instrument
+without that document regenerates a full report with `--synthetic-prior
+PRIOR_ID`: the script generates a document from the canon's
 recorded facts (one numbered section per label the facts cite, holding
 the facts' numbers in the prior's number format), in the `heading_style`
 the registry declares for the real document, passes it as `--case`, and
@@ -146,10 +149,11 @@ then the report records, for each document it was made with, a `case
 attestation`: the sha256 of the document's text followed by the validator,
 gates, canon and map digests of the report, which only whoever holds the
 text can compute. A run that passes the document recomputes it and refuses
-a mismatch; that is the owner's run for `000` and every run for `004`.
-What it leaves, declared: a run without the document compares nothing, so
-**in a clone the forged line still passes**, and a frozen record re-pinned
-in the canon shows there only in the diff against a signed version.
+a mismatch; for this material, whose prior document is distributed, that
+is every run. What it leaves, declared: for a prior held elsewhere, a run
+without the document compares nothing, so **in a clone of such a cell the
+forged line still passes**, and a frozen record re-pinned in the canon
+shows there only in the diff against a signed version.
 
 # Ledgers, records and integrity
 
@@ -246,17 +250,16 @@ letters and a salted commitment.
 
 ```mermaid
 %% name: trust-chain
-%% caption: What pins what: the integrity structure of the material at version 0.6.0.
+%% caption: What pins what: the integrity structure of the material at version 0.7.2.
 flowchart TB
   subgraph owner["outside the material: the owner"]
-    doc000["method document of 000 (owner-held)"]
     familymap["family map + salt"]
     forbidden["forbidden identifiers list"]
   end
   subgraph material["inside the material"]
     registry["registry.json: sha256 pin per executed prior"]
     doc004["method document of 004 (distributed)"]
-    canon["canon: section commitments of 000<br/>+ frozen records table"]
+    canon["canon: section commitments of 004<br/>+ frozen records table"]
     frozen["90-review/* and the lessons' history (never edited)"]
     rubricpin["rubric.sha256"]
     sens["sensitivity.md header: validator, gates, canon, map;<br/>case sha256 + case attestation per prior"]
@@ -265,10 +268,8 @@ flowchart TB
     commitment["family_map_commitment on each chained round line"]
   end
   tag["a signed tag per version<br/>(the anchor outside the tree; not yet made)"]
-  doc000 -->|pinned by| registry
   doc004 -->|pinned by| registry
-  doc000 -->|committed section by section| canon
-  doc000 -->|"attested (owner's run)"| sens
+  doc004 -->|committed section by section| canon
   doc004 -->|"attested (every run)"| sens
   validator -->|provenance| sens
   canon -->|provenance| sens
@@ -283,14 +284,15 @@ flowchart TB
 
 | A clone verifies | Only the owner verifies |
 | --- | --- |
-| every gate on every document; the pin and the numbers of `004`, whose document is distributed; the frozen rubric; the provenance of the sensitivity report, the sha256 of each prior document included; the hash chain of the three ledgers | the numbers stated about `000`, whose document is owner-held (its cited sections are committed by sha256, so it cannot be swapped unseen, but a clone cannot read them); that the sensitivity report was made with that document, by regenerating it |
+| every gate on every document; the pin, the numbers and the committed sections of `004`, whose document is distributed; the frozen rubric; the provenance of the sensitivity report, its attestation included; the hash chain of the three ledgers | nothing about the numbers since 0.7.0: every number stated about a prior is checkable in a clone |
 | that a ledger line written since v0.6.0 was not edited without recomputing the chain | an edit that recomputed the chain; the lines before the chain; the history of the lessons and the record of the experiments' raw files |
 | the family letter each round line records, and the form of its salted commitment | the map from a family letter to a family, and its salt |
 
-The residual risks the material declares, as they stand at 0.6.0:
+The residual risks the material declares, as they stand at 0.7.2:
 
-- in a clone without the owner's document, a forged `case sha256` line
-  passes;
+- for a cell whose prior is held elsewhere, a forged `case sha256` line
+  passes in a clone without that document (this material no longer has
+  such a prior);
 - the 8 distinct words of a `no_gate` reason measure form, not content;
 - the attestation does not prove the perturbations actually ran, only
   that the report was made over those inputs;

@@ -47,7 +47,7 @@ by the owner before the last round.
 
 ## What the material distributes
 
-The material is a folder under version control. At version 0.6.0 it holds:
+The material is a folder under version control. At version 0.7.2 it holds:
 
 | Part | Path | What it is for |
 | --- | --- | --- |
@@ -55,8 +55,10 @@ The material is a folder under version control. At version 0.6.0 it holds:
 | The reflexive application | `02-reflexive-application/` | the method applied to itself: a brief, a canon, an artifact graph, four role cards, a gate table with a frozen rubric, a generic recipe in fifteen steps, three designed instances, the experiments about the method, the review of its first round, the lessons of every round, and the instrument |
 | The instrument | `02-reflexive-application/80-validator/` | `validator.py` (the gates and the self-test), `sensitivity.py` (the gate on the gates), `perturbation_set.py` (the known defects), `test_validator.py` (the pytest suite), and the two published reports |
 | The contracts | `02-reflexive-application/05-contracts/` | six JSON Schemas: note, state of a note, instance registry, round record, domain result, owner decision |
-| The skill | `skills/cooperatio-teamwork/` | an agent skill that creates the teamwork files for a target, with a scaffold script, templates and a review checklist |
-| The instances | `instances/` | `registry.json`, the record of the known instances pinned by sha256, and `004-adoption-guide/`, the cell of the second executed instance, distributed as a record |
+| The skill | `skills/cooperatio-teamwork/` | an agent skill that creates the teamwork files for a target, with a scaffold script, an installer for the agent harnesses, templates and a review checklist |
+| The instances | `instances/` | `registry.json`, the record of the known instances pinned by sha256, and `004-adoption-guide/`, the cell of the one executed instance, distributed as a record |
+| The benchmark | `benchmark/` | the seeded material of experiment E4 and its annotated answer keys: a guide with three seeded copies, and three anonymized open-source program excerpts (Python, C, C++) with their seeded copies, licenses and notices, under a sha256 manifest; it holds the answers and is never given to a reviewer |
+| The manual | `docs/manual/` | this manual, and `docs/history/`, a curated record of the sessions that produced the material |
 | The owner records | `VERSION`, `CHANGELOG.md`, `LICENSE`, `.gitattributes` | the version of the method, its history with a migration note per version, the Apache License 2.0, and the rule that every text file checks out with LF line breaks |
 
 ```mermaid
@@ -71,13 +73,15 @@ flowchart LR
   contracts["05-contracts/<br/>six JSON Schemas"]
   review["90-review/<br/>frozen records of round 1"]
   state["state/<br/>three chained ledgers"]
-  skill["skills/cooperatio-teamwork/<br/>SKILL · scaffold · templates · checklist"]
+  skill["skills/cooperatio-teamwork/<br/>SKILL · scaffold · installer · templates · checklist"]
   inst["instances/<br/>registry.json · 004-adoption-guide/"]
+  bench["benchmark/<br/>seeded copies · answer keys · manifest"]
   man["docs/manual/<br/>this manual"]
   root --- principle
   root --- ra
   root --- skill
   root --- inst
+  root --- bench
   root --- man
   ra --- docs
   ra --- code
@@ -106,23 +110,26 @@ review have to come from outside the producing run.
 The material calls itself a working hypothesis and says exactly what that
 covers. The reader of this manual should carry three facts throughout:
 
-1. **Two executed instances, both documentary, both by the same owner.**
-   Instance `000-av-production`, an audiovisual production method held by
-   the owner and not distributable, from which the method was generalized;
-   and instance `004-adoption-guide`, the adoption guide of the method
-   itself, whose cell is distributed under `instances/` and whose method
-   document is pinned by sha256. The three other instances in the registry
-   (a car, a book about 2027, an HPC library) are designed sketches, not
-   executions.
+1. **One executed instance, documentary, by the owner.** Instance
+   `004-adoption-guide`, the adoption guide of the method itself, whose
+   cell is distributed under `instances/` and whose method document is
+   pinned by sha256. The method was first generalized from a production the
+   owner ran and did not distribute; since 0.7.0 the material cites nothing
+   from it. The three other instances in the registry (a car, a book about
+   2027, an HPC library) are designed sketches, not executions.
 2. **One part of the scheme has never been exercised: the recompilation by
    hash.** In neither execution did an engine rebuild a stale artifact from
    the hash of its inputs; the validator resolves the command an artifact
    declares against the paths it names and does not run it.
-3. **Efficacy is one-armed.** Everything the method found, it found under
-   the method; no production of the same target ran without the gates, so
-   there is no escape rate to compare. The counterfactual is experiment E2,
-   designed and not run; the cheaper seeded-escape design is E4, designed
-   and awaiting the owner's budget (chapter 10).
+3. **Efficacy is one-armed, and the one measurement of the review went
+   against it.** No production of the same target ran without the gates,
+   so there is no escape rate of a whole production to compare; that
+   counterfactual is experiment E2, designed and not run. The cheaper
+   seeded-escape design, E4, ran at 0.7.1 on the review stage: reviewers
+   with the validator report, the frozen rubric and the reviewer card let
+   no fewer seeded defects escape than reviewers with a checklist, for more
+   than twice the added input tokens, and the claim that the apparatus adds
+   to a careful review is withdrawn `[against:E4]` (chapter 10).
 
 The principle keeps a table, written before any data, of what would promote
 each kind of claim to a result and what would withdraw it (section 9,
@@ -177,12 +184,14 @@ in experiments E1 and E3 of `02-reflexive-application/60-experiments.md`:
 | E1 | Y, another family | not separable per call | not separable | about 4 minutes, indicative |
 | E3 (without the rubric and the card) | X | about 56,000 | 41,000 to 46,000 | 10 to 13 minutes |
 | E3 | Y | not separable | not separable | about 4 minutes, indicative |
+| E4 (per review run, added input only) | D, the family measured in every run | document part: about 3,250 added by the apparatus against 2,320 by the checklist; code part: about 5,100 against 1,230 | not part of the owner's measure | not reported |
 
 The material is careful about these numbers: minutes taken in two sessions
 of different throughput are not comparable, so the measure is the tokens of
 each call, and a wall time is reported only beside the throughput of the
-same run. The cost of a production round and of the instruments has not
-been measured.
+same run. E4 measured, at the owner's request, only the input tokens each
+arm adds to what both arms read, output and reasoning apart. The cost of a
+production round and of the instruments has not been measured.
 
 The method pays off when being wrong is expensive `[hypothesis]`; stated as
 a condition still unmeasured, the probability of an error times its cost
@@ -215,9 +224,10 @@ The root `README.md` gives three entry points:
 - to apply it to a new target, read
   `02-reflexive-application/10-generic-recipe.md`; the three instances
   there show what an artifact, a gate and a rubric are in each domain;
-- to have an agent create the files, install the skill in
-  `skills/cooperatio-teamwork/` and ask it to set up teamwork for the
-  target.
+- to have an agent create the files, install the skill with
+  `python3 skills/cooperatio-teamwork/scripts/install.py` (it links the
+  skill into every agent harness it finds; chapter 17) and ask the agent to
+  set up teamwork for the target.
 
 Its "ten-minute path" is reproduced, with the commands verified, in
 chapter 17.
@@ -227,8 +237,8 @@ chapter 17.
 The material separates the two. The fixed cost of a cell is the set of
 files the scaffold writes (24 with two roles; chapter 17 lists them), among
 them the instrument it copies: three Python scripts the adopter runs and
-does not have to read, about 5,700 lines at version 0.6.0 (`validator.py`
-4,859, `sensitivity.py` 550, `perturbation_set.py` 333, measured by line
+does not have to read, about 5,700 lines at version 0.7.2 (`validator.py`
+4,857, `sensitivity.py` 550, `perturbation_set.py` 336, measured by line
 count), plus one review per round. The history that matters to an adopter
 is the "Migration note" of each version in `CHANGELOG.md`; the rest of the
 changelog — the panels, the probes, the reworks — is the research.
@@ -255,9 +265,12 @@ never by model identifier.
 
 After 0.6.0 the instrument is frozen: the validator, the sensitivity test
 and the scaffold change only for a failure that changes a verdict, or for a
-new execution. The next budget goes to measuring value (experiment E4) and
-portability (an execution outside the documentary domain by someone who is
-not the owner, experiment E5), not to more instrument.
+new execution (0.7.0 lifted the freeze once, by the owner's decision, for
+data and comments only). The budget of 0.7.1 went to measuring value
+(experiment E4, which withdrew a claim); what stays open is portability (an
+execution outside the documentary domain by someone who is not the owner,
+experiment E5). Versions 0.7.0 to 0.7.2 are maintenance rounds, not
+productions under the method: each says so in its changelog entry.
 
 ## License
 

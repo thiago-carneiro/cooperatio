@@ -355,9 +355,9 @@ flowchart TB
 
 `--allow-pending` accepts only four names: `p-anonymity`, `p-prior` and
 `p-prior-pin` (the halves that need an input the material does not
-distribute: the forbidden list, the owner-held prior document) and
-`p-sensitivity-synthetic` (a sensitivity report a clone regenerated with a
-synthetic prior). Any other name is exit 2, `p-sensitivity` included; a
+distribute: the forbidden list, or a prior document a cell keeps outside
+its material) and `p-sensitivity-synthetic` (a sensitivity report
+regenerated with a synthetic prior); this corpus needs only `p-anonymity`. Any other name is exit 2, `p-sensitivity` included; a
 missing sensitivity report is blocking; and `p-anonymity-language` (a
 language the brief declares without month names) cannot be accepted
 either. The history behind the closed list: the panel that reviewed v0.5.0
@@ -375,11 +375,11 @@ UTF-8 to the console whatever its code page.
 
 ## The self-test and the test suite
 
-`validator.py --self-test` runs 185 checks (at 0.6.0) embedded in the
+`validator.py --self-test` runs 185 checks (at 0.7.2) embedded in the
 script, with no inputs; the runbook and every cell use it without pytest,
 and the report prints its count. The pytest suite
-(`80-validator/test_validator.py`, 280 tests together with the scaffold's
-`test_scaffold.py` at 0.6.0) runs the self-test and one case per rule:
+(`80-validator/test_validator.py`, 294 tests together with the scaffold's
+`test_scaffold.py` and the installer's `test_install.py` at 0.7.2) runs the self-test and one case per rule:
 one that passes and one that is rejected. Both are run with `python3 -B
 -m pytest -p no:cacheprovider`, because pytest imports the files before
 their own code can switch the bytecode cache off.

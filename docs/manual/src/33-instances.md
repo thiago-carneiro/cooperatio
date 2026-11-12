@@ -1,33 +1,20 @@
 
 # The instances
 
-## Instance 000: the audiovisual production method
+## Where the method came from
 
-The first executed instance, from which the method was generalized: an
-audiovisual production method, written in Brazilian Portuguese, held by
-the owner and not distributable. The registry pins its method document by
-sha256 and declares its number format (`comma-decimal`) and its heading
-style (a section `## 6.`, a subsection `### 1.1`, a step `### Passo 15.`),
-and the canon commits, section by section, to the text of the twelve
-sections the recorded facts cite. The facts the material states about it
-are the rows of the canon's "Recorded facts" table — among them 18 roles
-with a card, 49 artifacts in the graph of its first pilot, 2 maximum rounds
-per artifact, the review of v1 with 3 blocking, 4 high, 12 medium and 12
-low findings, 26 low notes open at v5, a drift gate whose wrong instrument
-read a p95 of 0.546 s at v1 and 0.10 s once fixed, and an automatic
-reviewer of which 10 of 12 notes were false `[prior:000-av-production]`.
-Several rules of the recipe carry the error of this instance that the step
-prevents, as a measured size of the error.
-
-Its historical vocabulary is recorded in the canon so that the frozen
-records of round 1 can be read: the validator was its "continuity
-checker"; the verdicts were "publishable", "publishable with minor
-corrections" and "rejected"; the production cell carried a media term;
-the quarantine mark of a bracketed word became `[prior:<id>]`.
+The method was first generalized from a production the owner ran and did
+not distribute. Until 0.6.0 the material cited it as a registered prior
+held by the owner; version 0.7.0 removed those citations and its registry
+entry, so that every statement of evidence can be checked from the
+material. A rule whose only support was that production keeps its text
+with `[hypothesis]`, or says that no recorded execution supports it. The
+canon still records the historical vocabulary of round 1, so that its
+frozen records can be read.
 
 ## Instance 004: the adoption guide
 
-The second executed instance: the adoption guide of the method itself, in
+The one executed instance: the adoption guide of the method itself, in
 Brazilian Portuguese, of 900 to 1,400 words by its brief, produced under
 method version 0.2.2 with a writer of one family and a review in a
 separate dispatch without the producer's reasoning, which gave `accepted`
@@ -50,8 +37,8 @@ v0.5.0, as a **record, not an example to copy**:
   distributed;
 - its `ERRATA.md` lists what the guide says that is no longer true when
   read against the material as it stands (the rubric is frozen before the
-  first review, not before the production; the registry holds two executed
-  instances; the skill copied alone creates a cell without the validator;
+  first review, not before the production; the registry holds one executed
+  instance, this one; the skill copied alone creates a cell without the validator;
   independence across families is a recommendation, not a rule);
 - its list of forbidden identifiers stayed with the owner, outside the
   material, since it contains what it forbids.
@@ -64,8 +51,8 @@ with its pin, `08-validator/` with its reports, `09-engine/`, `review/`
 `open-notes.json`, `priors.json`, `layout.json`, the guide, the method
 document and the errata.
 
-Whether a new cell under 0.6.0 replaces it as the example is an open owner
-decision (appendix F).
+Whether a new cell under the current version replaces it as the example
+is an open owner decision (appendix F).
 
 ## The three designed instances
 

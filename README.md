@@ -36,6 +36,7 @@ for more input tokens [against:E4] (the principle, sections 2, 7 and 9).
 | [`skills/cooperatio-teamwork/`](skills/cooperatio-teamwork/) | An agent skill that creates the teamwork files (brief, canon, artifact graph, role cards, gates, rubric, notes) for a target whose quality documents can carry, or whose domain measurements the cell's own code can write as results; its scaffold copies the validator and the sensitivity test of this material into the new cell |
 | [`benchmark/`](benchmark/) | The seeded material of experiment E4 and its annotated answer keys, kept unchanged so that a later run compares with it: a guide with three seeded copies, and three anonymized open-source program excerpts with their seeded copies, licenses and notices. It holds the answers: never give it to a reviewer (see its `README.md`) |
 | [`instances/`](instances/) | The registry of the known instances (`registry.json`) and the cell of the one executed instance (`004-adoption-guide/`), the record of an execution under method version 0.2.2: read its [`ERRATA.md`](instances/004-adoption-guide/ERRATA.md) first; it is not an example to copy. Its list of forbidden identifiers stayed with the owner, outside the material, since it contains what it forbids |
+| [`docs/`](docs/) | The manual of the method and of its instrument (`docs/manual/manual.pdf`, its Markdown source and diagrams), with a chapter on installing the skill, and a curated record of the sessions that produced the material (`docs/history/`); where the manual and the material disagree, the material wins |
 | `VERSION`, `CHANGELOG.md`, `LICENSE`, `.gitattributes` | The version of the method, its history, the license, and the rule that checks every text file out with LF line breaks (the hash policy of the material) |
 
 ## Where to start
@@ -45,6 +46,8 @@ for more input tokens [against:E4] (the principle, sections 2, 7 and 9).
   [`02-reflexive-application/10-generic-recipe.md`](02-reflexive-application/10-generic-recipe.md);
   the three instances there are designed sketches that show what an
   artifact, a gate and a rubric are in each domain, not executions.
+- For a guided reading of all of it, with diagrams and the commands
+  verified, read the manual, `docs/manual/manual.pdf`.
 - To have an agent create the files for you, install the skill in
   [`skills/cooperatio-teamwork/`](skills/cooperatio-teamwork/) (see its
   `SKILL.md`) and ask it to set up teamwork for your target.

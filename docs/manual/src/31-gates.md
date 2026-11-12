@@ -2,7 +2,7 @@
 # The gate catalogue
 
 This chapter is the reference of the gates the validator implements at
-version 0.6.0: 17 builtin gates measured per document, 4 global gates
+version 0.7.2 (unchanged since 0.6.0): 17 builtin gates measured per document, 4 global gates
 measured once per run, one measurement of the instrument, and the family
 of domain gates a cell supplies. For each gate: the artifacts the
 reflexive application assigns it to, what it reads, its limit, when it is
@@ -284,8 +284,8 @@ declared semantics of `06-gate-semantics.md`.
   covers (blocking); an open note older than 3 rounds and not scheduled
   (low).
 - **Limit:** 0. `[hypothesis]`: a note aimed at an artifact the graph
-  does not know is undeliverable; the note router of the first instance
-  rejected such a target `[prior:000-av-production]`.
+  does not know is undeliverable, and no recorded execution measured the
+  cost of letting one through; here the contract is checked by code.
 - **Pending:** without `--notes`; that pending cannot be accepted.
 
 ### `p-frozen-rubric` — the rubric and the frozen records
@@ -344,8 +344,8 @@ cannot fail a document. It is the equality of the report's sha256 across
 two consecutive runs on the same input, the second with another hash seed
 and the C locale; measured only with `--determinism`, and a difference is
 a high note. `[hypothesis]`: a report that changes by itself is not
-evidence; the continuity ledger the validator of the first instance wrote
-was deterministic `[prior:000-av-production]`.
+evidence, and no recorded measurement stands behind this limit beyond that
+reasoning.
 
 ## Domain gates
 

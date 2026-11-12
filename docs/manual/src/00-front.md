@@ -1,6 +1,6 @@
 ---
 title: "Cooperatio Manual"
-subtitle: "Architecture, capabilities and purpose of the method and of its instrument — method version 0.6.0"
+subtitle: "Architecture, capabilities and purpose of the method and of its instrument — method version 0.7.2"
 lang: en-US
 ---
 
@@ -26,10 +26,30 @@ is stated with more precision in the file it comes from, and the manual
 names that file. Where the manual and the material disagree, the material
 wins; please report the disagreement as a note.
 
-**Version.** The manual describes method version 0.6.0, as recorded in
+**Version.** The manual describes method version 0.7.2, as recorded in
 `VERSION`. The counts it quotes (gates, perturbations, tests, files) were
-measured on that version; later versions change them, and the "Migration
-note" of each entry in `CHANGELOG.md` says what a cell has to change.
+measured on that version unless a sentence names another one; later
+versions change them, and the "Migration note" of each entry in
+`CHANGELOG.md` says what a cell has to change.
+
+**What changed since the first edition (0.6.0).** Four things a reader of
+the earlier manual needs to know:
+
+- **One executed instance.** Version 0.7.0 removed from the living material
+  the prior the owner held and did not distribute, and its registry entry.
+  The evidence now rests on one execution, `004-adoption-guide`:
+  documentary, by the owner, auditable from the material. A rule whose only
+  support was the removed prior keeps its text with `[hypothesis]`, or says
+  that no recorded execution supports it.
+- **The value test ran, and withdrew a claim.** Experiment E4 measured the
+  review apparatus against a careful checklist review on seeded defects,
+  under thresholds the owner fixed before the runs. The claim that the
+  apparatus adds to a careful review without it is **withdrawn**
+  `[against:E4]` (chapter 10).
+- **A benchmark.** The seeded material of E4 and its answer keys are kept in
+  `benchmark/`, so that a later run compares with it.
+- **An installer.** `skills/cooperatio-teamwork/scripts/install.py` links
+  the skill into every agent harness it finds on the machine (chapter 17).
 
 **Conventions.** File names and identifiers appear in `monospace`; paths
 are relative to the root of the material, or to the folder of the
@@ -50,6 +70,7 @@ description and differ only in layout.
 **Status of the method, in the material's own words.** A working
 hypothesis, with a documentary validator; the gates of a target's domain
 enter as results the cell's own code produces and the validator checks;
-two executed instances, one of them auditable from the material. The
+one executed instance, documentary, by the owner, auditable from the
+material. The
 manual repeats this on purpose wherever a reader could take a described
 capability for a measured one.

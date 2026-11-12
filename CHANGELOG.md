@@ -28,6 +28,16 @@ skill.
   run, a shared folder, conflicts with a foreign folder and a foreign link,
   uninstall, copy mode, the switch between link and copy, a named harness,
   dry run, no harness, the list, `CLAUDE_CONFIG_DIR`, an unknown name.
+- **The manual, brought to 0.7.2.** `docs/manual/` described 0.6.0. It now
+  says what changed since (the removed prior, E4 and the withdrawn claim,
+  the benchmark, the installer), drops the removed prior from the
+  registry, the integrity chain, the runbook and the clone run, gives the
+  owner's thresholds with the state after the data and the owner's
+  decisions as they stand, updates the counts it quotes, and gains a
+  section on installing the skill (the harnesses it knows, link or copy,
+  options, exit codes, troubleshooting, installing by hand) with a diagram,
+  and the installer in its command-line reference. The root README points
+  to it.
 - **Migration note.** No cell has to change a file.
 
 ## 0.7.1
