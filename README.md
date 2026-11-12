@@ -5,7 +5,7 @@ a target's domain enter as results the cell's own code produces and the
 validator checks; one executed instance, documentary, by the owner,
 auditable from this material.** See "Status" below for what that covers and what it does not.
 
-Method version 0.7.0 (see `VERSION`; the history of the changes, in
+Method version 0.7.1 (see `VERSION`; the history of the changes, in
 `CHANGELOG.md`). The terms follow the
 [canon](02-reflexive-application/01-canon.md) of the reflexive application.
 
@@ -20,9 +20,12 @@ produce, with a rubric frozen before it, so that rounds are comparable; turn
 every error that escapes into a new gate; and stop at a criterion declared in
 advance. A reviewer of another family than the producer's is recommended, a
 hypothesis with a cost (a second provider), not a rule: the one datum is
-against it as a rule, and what a pilot did show is that a frozen rubric with a
-mechanical verdict rule turned a finding into a verdict (the principle,
-sections 2 and 9).
+against it as a rule. A pilot showed a frozen rubric with a mechanical
+verdict rule turning a finding into a verdict; the one measurement of the
+review apparatus that followed, experiment E4, withdrew the claim that it
+adds to a careful review: on seeded defects, reviewers with the validator
+and the frozen rubric let no fewer escape than reviewers with a checklist,
+for more input tokens [against:E4] (the principle, sections 2, 7 and 9).
 
 ## Contents
 
@@ -31,6 +34,7 @@ sections 2 and 9).
 | [`01-principle.md`](01-principle.md) | The method: the idea, the scheme, the components, the golden rules, what changes by domain, how to instantiate it, warning signs, limits, what would promote or withdraw a claim, and ontological assumptions |
 | [`02-reflexive-application/`](02-reflexive-application/) | The method applied to itself: a generic recipe, three designed sketches of instances (a physical product, a long text, a software library; designed, not executed), the role cards, the gates and rubric, a validator and a sensitivity test written as code, the experiments about the method, the review of its first round and the lessons of every round |
 | [`skills/cooperatio-teamwork/`](skills/cooperatio-teamwork/) | An agent skill that creates the teamwork files (brief, canon, artifact graph, role cards, gates, rubric, notes) for a target whose quality documents can carry, or whose domain measurements the cell's own code can write as results; its scaffold copies the validator and the sensitivity test of this material into the new cell |
+| [`benchmark/`](benchmark/) | The seeded material of experiment E4 and its annotated answer keys, kept unchanged so that a later run compares with it: a guide with three seeded copies, and three anonymized open-source program excerpts with their seeded copies, licenses and notices. It holds the answers: never give it to a reviewer (see its `README.md`) |
 | [`instances/`](instances/) | The registry of the known instances (`registry.json`) and the cell of the one executed instance (`004-adoption-guide/`), the record of an execution under method version 0.2.2: read its [`ERRATA.md`](instances/004-adoption-guide/ERRATA.md) first; it is not an example to copy. Its list of forbidden identifiers stayed with the owner, outside the material, since it contains what it forbids |
 | `VERSION`, `CHANGELOG.md`, `LICENSE`, `.gitattributes` | The version of the method, its history, the license, and the rule that checks every text file out with LF line breaks (the hash policy of the material) |
 
@@ -155,11 +159,13 @@ of v0.6.0; the canonical form is in `02-reflexive-application/06-gate-semantics.
 After 0.6.0 the instrument (the validator, the sensitivity test, the
 scaffold) changes only for a failure that changes a verdict, for a new
 execution, or by a decision of the owner recorded in the changelog (0.7.0
-changed its data and comments that way, and no reading of a gate). The next
-budget goes to measuring value (experiment E4, the
-seeded-escape design of `02-reflexive-application/60-experiments.md`) and
-portability (an execution outside the documentary domain by someone who is
-not the owner), not to more instrument.
+changed its data and comments that way, and no reading of a gate). The
+budget of 0.7.1 went to measuring value: experiment E4, the seeded-escape
+design of `02-reflexive-application/60-experiments.md`, ran and withdrew the
+claim that the review apparatus adds to a careful review without it
+[against:E4], and its seeded material is kept in `benchmark/`. What is left
+to measure is portability (an execution outside the documentary domain by
+someone who is not the owner), not more instrument.
 
 ## License
 
@@ -185,7 +191,9 @@ assumption, not a result, and a rule the material states has at most that
 one execution and the rounds of this material behind it. Claims
 tagged `[hypothesis]` are assumptions awaiting confirmation on executed
 instances, and the principle says, in a table written before the data, what
-would promote or withdraw each kind of claim.
+would promote or withdraw each kind of claim; one of them, that the review
+apparatus adds to a careful review without it, was withdrawn by experiment
+E4 in 0.7.1, and the other two are open.
 
 That execution ran under method version 0.2.2; no production has run under
 0.4, 0.5, 0.6 or 0.7, and the cell of `004-adoption-guide` does not run under

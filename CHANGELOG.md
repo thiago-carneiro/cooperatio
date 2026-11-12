@@ -2,6 +2,72 @@
 
 One entry per version of the method. Version is state; dates are not.
 
+## 0.7.1
+
+A maintenance round, not a production under the method: the record of
+experiment E4, which the owner had approved and ran, and the benchmark it
+leaves, executed by an orchestrator and a coder of family B, with no review.
+
+- **Experiment E4, executed.** 39 single-shot reviews in two parts: the
+  document part of the design (one guide, three seeded copies of ten
+  defects each) and a code part the owner added before any seeded copy
+  existed (three anonymized open-source programs, in Python, C and C++,
+  twelve seeded classes each, the programs' own tests removed and the
+  programs anonymized at the owner's request). 28 runs were valid and 11 were
+  tool failures, all of family A, the producer's family, whose generation hit
+  its output limit. By the owner's criteria, fixed before the runs: P1a and
+  P1b refuted, P1c holds in both readings (with the failed runs counted as
+  all escaped, 79 escapes against 67, -18 %, for +136 % added input tokens;
+  with family D alone, 21 against 21, 0 %, for +135 %). P2 is not decidable
+  (family A could not be measured); P3 was not computed (the confirmation
+  about class 10 is not recorded). The record gains its executors, the
+  execution, the results (per repetition, per part, the noise floor, the
+  clean copies, the auxiliary arm, the instrument alone, the table by class,
+  the agreement of the adjudicators), what it shows and does not show, the
+  deviations, the cost and a provenance table of 16 files; the rest stays in
+  the owner's working record. The question, the protocol and the predictions
+  were not edited.
+- **The claim withdrawn.** The principle's table "What would promote or
+  withdraw a claim" gains a column "State after the data": the row of the
+  review apparatus is withdrawn by E4, with both readings, the family row is
+  open (not decidable), the portability row is open (E5 not run); a
+  paragraph after the table bounds the withdrawal to what was measured. The
+  living statements that presented the claim as open or likely now say it is
+  withdrawn, with `[against:E4]`: the principle (sections 2, 7 in step 6,
+  and 9: the costs, the baseline, the one-armed evidence, the reviews across
+  families), the root README (the summary, the freeze policy, the status),
+  the generic recipe ("When not to use"), the skill ("Several models") and
+  the gate semantics (the mitigation of the lexical efficacy gate). The
+  manual under `docs/` describes version 0.6.0, says the material wins, and
+  was not edited.
+- **The benchmark.** New folder `benchmark/` at the root: the clean guide,
+  the three seeded guides, their defect sets as JSON and as annotated
+  Markdown, the brief, canon, blind principle, blind method document of the
+  prior, rubric, checklist, reviewer card, reports and prompts the reviewers
+  received; for each program the anonymized pristine and seeded excerpts,
+  the anonymized answer key in JSON and Markdown, the upstream license, a
+  notice, the anonymization rules and the gates' detection table; the shared
+  gates code (its absolute paths of the run read from the environment in the
+  copy), the code rubric, checklist, reviewer card, brief and prompts; a
+  README and `MANIFEST.sha256`. Every reviewer input was checked byte for
+  byte against what a run received. It holds the answers and is never given
+  to a reviewer. It is not in the artifact table: `p-declared` covers the
+  documents of the reflexive application's folder, and the seeded copies
+  hold, by design, defects the gates would report.
+- **Size range.** `60-experiments.md` from 8500 to 11500 words, declared
+  before writing (the record grows by experiment; it stood at 7541).
+- **Open notes.** None was due at 0.7.1. This round edited the generic
+  recipe for E4 only; a chained line restates `notes:8` (the recipe) as open,
+  not addressed, due 0.8.0.
+- **The owner's ledger.** Nothing appended: the two decisions about E4, the
+  thresholds and the budget, were decided in 0.7.0 and did not change.
+- **Migration note.** No cell has to change a file. A cell that adopted the
+  review apparatus expecting it to find more than a careful review reads the
+  new row of the principle's table and E4: that claim is withdrawn, for one
+  design at the review stage; the frozen rubric still keeps rounds
+  comparable. A cell that reuses the benchmark follows its README and checks
+  its manifest before any run.
+
 ## 0.7.0
 
 A maintenance round, not a production under the method: three decisions of

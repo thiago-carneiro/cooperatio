@@ -99,7 +99,7 @@ measured, because its input was not provided; it is neither a pass nor a fail.
 | `06-gate-semantics.md` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
 | `06-gate-semantics.md` | `p-canon-link` | 1 resolved, 0 unresolved | ≥ 1 resolved, 0 unresolved | pass |
 | `06-gate-semantics.md` | `p-form` | 0 | 0 | pass |
-| `06-gate-semantics.md` | `p-size` | 9148 | 400 to 9800 | pass |
+| `06-gate-semantics.md` | `p-size` | 9199 | 400 to 9800 | pass |
 | `06-gate-semantics.md` | `p-terms` | 0 | 0 | pass |
 | `10-generic-recipe.md` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
 | `10-generic-recipe.md` | `p-canon-link` | 2 resolved, 0 unresolved | ≥ 1 resolved, 0 unresolved | pass |
@@ -108,7 +108,7 @@ measured, because its input was not provided; it is neither a pass nor a fail.
 | `10-generic-recipe.md` | `p-prior` | 0 labels, 0 unregistered, 0 numbers and 0 section references checked, 0 unverified | 0 | pass |
 | `10-generic-recipe.md` | `p-prior-mark` | 0 | 0 | pass |
 | `10-generic-recipe.md` | `p-recipe` | 15 steps, 0 missing | ≥ 12 steps, 0 missing | pass |
-| `10-generic-recipe.md` | `p-size` | 4661 | 3000 to 7500 | pass |
+| `10-generic-recipe.md` | `p-size` | 4773 | 3000 to 7500 | pass |
 | `10-generic-recipe.md` | `p-terms` | 0 | 0 | pass |
 | `20-instance-car.md` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
 | `20-instance-car.md` | `p-canon-link` | 1 resolved, 0 unresolved | ≥ 1 resolved, 0 unresolved | pass |
@@ -158,7 +158,7 @@ measured, because its input was not provided; it is neither a pass nor a fail.
 | `60-experiments.md` | `p-form` | 0 | 0 | pass |
 | `60-experiments.md` | `p-prior` | 2 labels, 0 unregistered, 2 numbers and 0 section references checked, 0 unverified | 0 | pass |
 | `60-experiments.md` | `p-prior-mark` | 0 | 0 | pass |
-| `60-experiments.md` | `p-size` | 7541 | 400 to 8500 | pass |
+| `60-experiments.md` | `p-size` | 10814 | 400 to 11500 | pass |
 | `60-experiments.md` | `p-terms` | 0 | 0 | pass |
 | `80-validator/sensitivity.md` | `p-sensitivity` | 20 of 20 gates covered, 54 of 182 pairs (29 %), 0 missed of 65, 0 noisy | every gate covered, ≥ 25 % of pairs, 0 missed, 0 noisy | pass |
 | `90-review/auditor-notes.json` | `p-frozen-rubric` | equal | equal | pass |
@@ -177,21 +177,21 @@ measured, because its input was not provided; it is neither a pass nor a fail.
 | `99-lessons.md` | `p-form` | 0 | 0 | pass |
 | `99-lessons.md` | `p-frozen-rubric` | equal | equal | pass |
 | `99-lessons.md` | `p-prior` | 0 labels, 0 unregistered, 0 numbers and 0 section references checked, 0 unverified | 0 | pass |
-| `99-lessons.md` | `p-size` | 3716 | 300 to 4800 | pass |
+| `99-lessons.md` | `p-size` | 4012 | 300 to 4800 | pass |
 | `99-lessons.md` | `p-terms` | 0 | 0 | pass |
 | `README.md` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
 | `README.md` | `p-canon-link` | 1 resolved, 0 unresolved | ≥ 1 resolved, 0 unresolved | pass |
 | `README.md` | `p-efficacy-mark` | 0 | 0 | pass |
 | `README.md` | `p-form` | 0 | 0 | pass |
-| `README.md` | `p-size` | 1793 | 150 to 3200 | pass |
+| `README.md` | `p-size` | 1826 | 150 to 3200 | pass |
 | `README.md` | `p-terms` | 0 | 0 | pass |
 | `state/notes-status.jsonl` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
-| `state/notes-status.jsonl` | `p-contract-shape` | 174 lines, 0 violations | 0 | pass |
+| `state/notes-status.jsonl` | `p-contract-shape` | 175 lines, 0 violations | 0 | pass |
 | `state/notes-status.jsonl` | `p-notes` | 17 open, 96 fixed, 0 disputed, 3 out of scope; 0 invalid | every note tracked, 0 invalid | pass |
 | `state/owner-decisions.jsonl` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
 | `state/owner-decisions.jsonl` | `p-contract-shape` | 11 lines, 0 violations | 0 | pass |
 | `state/round-record.jsonl` | `p-anonymity` | 0 paths and dates; identifiers not measured (no list) | 0 | pending |
-| `state/round-record.jsonl` | `p-contract-shape` | 12 lines, 0 violations | 0 | pass |
+| `state/round-record.jsonl` | `p-contract-shape` | 13 lines, 0 violations | 0 | pass |
 
 Pending accepted by the caller (--allow-pending): `p-anonymity` (27 rows).
 Pending not accepted: none.

@@ -1,6 +1,6 @@
 # The principle behind the method, generalized
 
-Method version 0.7.0 (see `VERSION`; the history of the changes, in
+Method version 0.7.1 (see `VERSION`; the history of the changes, in
 `CHANGELOG.md`).
 
 **Status: a working hypothesis, with a documentary validator; the gates
@@ -93,9 +93,16 @@ the first reason above asks for.
   experiment E1 the producer's own model, in another session, caught 2 of 2
   injected defects, as the model of another family did, one run per cell
   [against:E1]; and no recorded production round met it with a frozen
-  rubric (section 9). What a pilot did show is the part a team can adopt
-  without a second provider: a rubric frozen beforehand with a mechanical
-  verdict rule turned a finding into a verdict [experiment:E3]. The round
+  rubric (section 9). A pilot showed a rubric frozen beforehand with a
+  mechanical verdict rule turning a finding into a verdict [experiment:E3];
+  the seeded-escape test that followed, experiment E4, found that the review
+  apparatus (the validator and the review with the frozen rubric) let no
+  fewer seeded defects escape than a careful review with a checklist, for
+  more input tokens, and that its verdict did not tell a clean copy from a
+  seeded one: the claim that it adds to a careful review is withdrawn
+  [against:E4]. E4 could not decide the family: 11 of the 16 reviews of the
+  producer's family were tool failures, the generation hitting its output
+  limit, so the comparison of families was not measured. The round
   record states, line by line, the reviewer's relation to the producer
   (`reviewer_relation`), so the recommendation can be checked against what
   was done. Section 9 says what would promote it to a rule.
@@ -318,7 +325,19 @@ In order, and each step produces a file:
    verdict rule, the reviewer card, the gates file and the framing of the
    dispatch), is what turned the finding into a verdict [experiment:E3].
    That the severity table and the mechanical rule are the parts that did
-   it is a hypothesis the design does not separate [hypothesis].
+   it is a hypothesis the design does not separate [hypothesis]. What the
+   apparatus adds was then measured once, in experiment E4, at the review
+   stage, on seeded defects of classes its designer chose, in one guide and
+   three program excerpts: reviewers with the validator's report, the
+   rubric and the card let no fewer defects escape than reviewers with a
+   checklist (21 against 21 for the family measured in every run; 79
+   against 67 with the failed runs of the other family counted as all
+   escaped), for more input tokens, and the mechanical verdict rejected
+   clean copies as it rejected seeded ones; the claim that the apparatus
+   adds to a careful review is withdrawn [against:E4]. What stays is the
+   reason this step gives: a grid written before the first review keeps
+   rounds comparable; that it makes a review find more is not supported
+   [against:E4].
 7. **Validator**: the list of what it checks against the canon
    (terms, numbers, names, asset versions) and with what severity.
 8. **Assembly engine**: the code that composes the artifacts into the target,
@@ -355,7 +374,7 @@ In order, and each step produces a file:
 
 - It costs: per round, one production plus one independent review plus the
   maintenance of instruments. The costs measured so far are those of review
-  runs, in experiments E1 and E3 of the reflexive application. In E1: about
+  runs, in experiments E1, E3 and E4 of the reflexive application. In E1: about
   58,000 input tokens (most of them the method document of a prior held by
   the owner, not distributed, which the reviewer checks against; the
   reviewed guide has about a thousand words), 55,000 to
@@ -364,7 +383,12 @@ In order, and each step produces a file:
   an executor of another family [experiment:E1]. In E3, without the rubric
   and the card: about 56,000 input tokens, 41,000 to 46,000 output tokens
   and 10 to 13 minutes for the first executor, and again about 4 minutes,
-  indicative, for the other [experiment:E3]. The cost of a production
+  indicative, for the other [experiment:E3]. In E4, a review of a guide of
+  about 3,500 words read about 20,000 input tokens and wrote 24,000 to
+  61,000, and a review of a program excerpt read 35,000 to 54,000 and wrote
+  24,000 to 55,000; the rubric, the card and the report added about 3,200
+  to 6,300 input tokens to a run, the checklist about 1,200 to 2,300
+  [experiment:E4]. The cost of a production
   round and of the instruments was not measured. Minutes taken in two
   sessions of different throughput are not comparable with each other; the
   minutes above are indicative. The measure is the tokens of each call
@@ -378,14 +402,19 @@ In order, and each step produces a file:
   probability of an error times its cost has to exceed the cost per round
   times the rounds until the stop. The baseline to beat (a strong model with
   a checklist and continuous integration) is the control arm of experiment
-  E2, designed and not run.
-- **Evidence of efficacy is one-armed.** Everything the method found, it
-  found under the method: no production of the same target ran without the
-  gates, so there is no escape rate to compare, and the reflexive
-  application cannot say what a careful reviewer without the method would
-  have missed. The counterfactual is experiment E2, designed and not run;
-  until it runs, the claim that the method finds more than its absence is a
-  hypothesis [hypothesis].
+  E2, designed and not run. At the review stage, E4 ran a part of that
+  baseline, a careful review with a checklist and no tools, and the review
+  apparatus did not beat it on seeded defects [against:E4].
+- **Evidence of efficacy is one-armed for a production, and two-armed and
+  against at the review stage.** Everything the method found in a
+  production, it found under the method: no production of the same target
+  ran without the gates, so there is no escape rate of a production to
+  compare. The counterfactual of a production is experiment E2, designed and
+  not run; until it runs, the claim that the method finds more than its
+  absence is a hypothesis [hypothesis]. At the review stage there is a
+  second arm: in E4, on seeded defects of chosen classes, a careful reviewer
+  with a checklist let as few escape as a reviewer with the apparatus, so
+  that part of the claim was tested once and did not hold [against:E4].
 - It depends on there being separate sources of truth per type of content.
   Where only opinion exists, the gate becomes a contract and the method
   degrades to "peer review with a rubric", which is still better than
@@ -421,8 +450,10 @@ In order, and each step produces a file:
   [prior:004-adoption-guide]
   [lessons:The v0.4.1 round: a verdict needs its rubric, and a family needs a check].
 - The only reviews across families in the reviewer role, with a frozen
-  rubric, are the runs of executor Y in experiment E1 [experiment:E1];
-  experiment E3 ran the same executor without the rubric [experiment:E3].
+  rubric, are the runs of executor Y in experiment E1 [experiment:E1] and
+  the runs of family D in arm A of experiment E4, on seeded copies of a
+  product of family A [experiment:E4]; experiment E3 ran the executor Y of
+  E1 without the rubric [experiment:E3].
   The critical panels that reviewed this material (the panels that reviewed
   v0.1.0, v0.2.0 and v0.2.3) had seats of several families, but no frozen
   rubric, no verdict rule and no line in the round record
@@ -465,16 +496,26 @@ Written before the data, as the gates are, so that the material leaves the
 state of a working hypothesis by a measurement and not by a decision. The
 owner accepted the thresholds of the review apparatus's row and set them
 before experiment E4 (the seeded-escape design of
-`02-reflexive-application/60-experiments.md`) runs; the family and
+`02-reflexive-application/60-experiments.md`) ran; the family and
 portability rows keep the proposed ones. Between promotion and withdrawal
 the result is inconclusive. Together, the three rows are the measure of
-success of the material.
+success of the material; the last column, added after the data, says where
+each row stands.
 
-| Claim | Promoted when | Withdrawn when |
-| --- | --- | --- |
-| A reviewer of another family adds to one of the producer's family | in E4 or an equivalent design, the arm of the other family finds at least 1 more defect per 10 seeded, in at least 2 of 3 repetitions | the difference is nil in 3 repetitions |
-| The review apparatus (validator and review with a frozen rubric) adds to a careful review without it | in E4, pooled over families, in at least 2 of 3 repetitions, arm A lets at most half as many seeded defects escape as arm B, and consumes at most half the additional input tokens of arm B | in E4, pooled over families and repetitions, arm A consumes more additional input tokens than arm B and its relative reduction of escapes is smaller than its relative increase in those tokens |
-| The method is portable outside the documentary domain | one execution outside it, by someone who is not the owner, with its domain gates read by the validator and a verdict of the canon | that execution cannot reach a verdict without improvising instrument |
+| Claim | Promoted when | Withdrawn when | State after the data |
+| --- | --- | --- | --- |
+| A reviewer of another family adds to one of the producer's family | in E4 or an equivalent design, the arm of the other family finds at least 1 more defect per 10 seeded, in at least 2 of 3 repetitions | the difference is nil in 3 repetitions | open: E4 could not decide it, since 11 of the 16 reviews of the producer's family were tool failures (the generation hit its output limit) and its valid runs are too few for the comparison |
+| The review apparatus (validator and review with a frozen rubric) adds to a careful review without it | in E4, pooled over families, in at least 2 of 3 repetitions, arm A lets at most half as many seeded defects escape as arm B, and consumes at most half the additional input tokens of arm B | in E4, pooled over families and repetitions, arm A consumes more additional input tokens than arm B and its relative reduction of escapes is smaller than its relative increase in those tokens | withdrawn by E4, in both readings: with the failed runs counted as all escaped, 79 escapes against 67 (a reduction of -18 %) for +136 % added input tokens; with the family measured in every run alone, 21 against 21 (0 %) for +135 % [against:E4] |
+| The method is portable outside the documentary domain | one execution outside it, by someone who is not the owner, with its domain gates read by the validator and a verdict of the canon | that execution cannot reach a verdict without improvising instrument | open: experiment E5 is designed and not run |
+
+The row of the review apparatus is withdrawn for what E4 measured: one
+design, the review stage only, seeded defects of classes its designer chose,
+and the added input tokens by the owner's definition, which favored the arm
+with fewer files by construction; on escapes alone the family measured in
+every run found 21 against 21, so the withdrawal does not rest on the tokens
+[against:E4]. The row of the family stays open, and so does the claim that
+a whole production under the method finds more than one without it
+(experiment E2).
 
 ## 10. Ontological assumptions
 

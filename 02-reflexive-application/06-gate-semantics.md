@@ -513,8 +513,12 @@ labels, outside code spans (since v0.5.0, the reading of the other mark
 gates: a label between backticks is notation). It is lexical: a claim that
 the method works written in other words escapes it ("narrow roles make
 fewer mistakes" passes where "err less" fails), and no list closes that
-gap. The mitigation is a review with a frozen rubric, not the gate; the
-maintenance rounds of this material had none, so for them the gap is open
+gap. The mitigation is a careful reading of the prose, not the gate; a
+frozen rubric does not make that reading find more, as far as E4 measured
+(the seeded claim of efficacy passed the gate on three copies, and reviewers
+with the rubric let no fewer seeded defects escape than reviewers with a
+checklist) [against:E4]. The gap stays open for the maintenance rounds of
+this material, read by a review in some rounds and by none in others
 (declared). A claim labeled `[hypothesis]` that states a number or a
 universal quantifier ("every", "always", "none", a percentage) is a low
 note since v0.6.0: the label stays valid, and the row passes. The founding

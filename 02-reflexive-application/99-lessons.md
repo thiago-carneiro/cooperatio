@@ -348,3 +348,32 @@ living documents and set the thresholds of E4. What it taught:
   E4 favors the arm that adds fewer files, by construction. Writing that
   beside the prediction, before any run, keeps a later reading honest, and
   leaves the decision to the owner, where it belongs.
+
+## The v0.7.1 round: a claim measured once, and withdrawn where it lived
+
+A maintenance round, not a production: the record of experiment E4, which
+withdrew the claim that the review apparatus adds to a careful review, and
+the benchmark it leaves. What it taught:
+
+- **A withdrawal is written where the claim lived, not only where it was
+  tested.** The row of the principle's table changed in one line; the
+  sentences that leaned on it were in five documents, and a search for the
+  experiment's id finds the ones that cite it, not the ones that assume it.
+  Each was read for what it promised, and now says the claim is withdrawn,
+  with the label of the result against it [against:E4].
+- **A comparison of families needs runs of both families that end.** Most
+  runs of the producer's family hit their output limit; the rule that counts
+  a failed run as all escaped would then have made the other family win by
+  default. A rule for failures keeps a count honest, and a reading that
+  leaves the failures out, beside it, keeps the conclusion honest
+  [experiment:E4].
+- **Blindness is decided per role, before the first session.** The reviewers
+  received blind copies, after a first batch was stopped for seeing the
+  test; the authors of the rubric and the seeder received the principle that
+  names it. Who must not know what is a column of the plan, written before
+  anyone is dispatched.
+- **Keep the questions and the answers apart, and keep both.** A benchmark
+  that is not kept cannot be rerun, and one kept beside its inputs can be
+  handed to a reviewer by mistake. The benchmark keeps the answers in one
+  folder that says so, with a manifest, and every reviewer input checked
+  against what a run received.

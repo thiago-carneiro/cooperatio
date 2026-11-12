@@ -52,7 +52,10 @@ instance, distributed with the material since v0.5.0. That cell ran under
 method version 0.2.2 and is a record, not an example: it does not run under
 the current validator without a migration (the migration note of the
 changelog), its own validator refuses to run without `--historical`, and
-its `ERRATA.md` lists what its guide says that is no longer true.
+its `ERRATA.md` lists what its guide says that is no longer true. Also at
+the root, since v0.7.1, `../benchmark/`: the seeded material and the
+annotated answer keys of experiment E4, kept unchanged for later runs; it
+holds the answers and is never a reviewer's input.
 
 ## Status
 

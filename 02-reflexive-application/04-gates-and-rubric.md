@@ -81,7 +81,7 @@ Declared before writing, in words.
 | `20-instance-car.md` | 3500 | 8500 |
 | `21-instance-text-2027.md` | 3500 | 8500 |
 | `22-instance-hpc.md` | 3500 | 8500 |
-| `60-experiments.md` | 400 | 8500 |
+| `60-experiments.md` | 400 | 11500 |
 | `99-lessons.md` | 300 | 4800 |
 
 ### Gate rounds

@@ -572,20 +572,29 @@ maintenance of the instruments; measure it in tokens per call (input,
 output, reasoning, cached, and how the generation ended), and give a wall
 time only beside the throughput of the same run, since minutes from two
 sessions are not comparable (the minutes below are indicative); the costs measured so far, those of review
-runs, are recorded with experiments E1 and E3 in `60-experiments.md`. In E1,
+runs, are recorded with experiments E1, E3 and E4 in `60-experiments.md`. In E1,
 about 58,000 input tokens (most of them the method document of a prior held by
 the owner, not distributed, which the reviewer checks against, not the guide of about a thousand words under review),
 55,000 to 66,000 output tokens and 8 to 10 minutes for one executor, about 4
 minutes (indicative) for one of another family [experiment:E1].
 In E3, without the rubric and the card, about 56,000 input tokens, 41,000
 to 46,000 output tokens and 10 to 13 minutes for the first executor
-[experiment:E3].
+[experiment:E3]. In E4, the rubric, the reviewer card and the validator's
+report added about 3,200 to 6,300 input tokens to a review run, the
+checklist of the baseline about 1,200 to 2,300 [experiment:E4].
 
 It pays off when erring is expensive [hypothesis]. Stated as a condition,
 still unmeasured: the probability of an error times its cost has to exceed
 the cost per round times the rounds until the stop; and the baseline to
 beat, a strong model with a checklist and continuous integration, is the
 control arm of experiment E2, designed and not run.
+
+For the review step alone, do not adopt the method expecting its apparatus to find more than a
+careful review: in experiment E4, on seeded defects of chosen classes, the
+validator with the frozen rubric let no fewer defects escape than a careful
+review with a checklist, for more input tokens, and the claim that it adds
+to such a review is withdrawn [against:E4]. The rubric of step 8 stays for
+what that step asks of it, comparable rounds.
 
 For a throwaway draft, use only steps 1, 3 and 11 (brief, canon, one version
 and a read from outside); if the draft becomes a real target, resume from
