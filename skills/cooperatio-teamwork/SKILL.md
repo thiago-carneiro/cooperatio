@@ -12,7 +12,7 @@ to each other, how quality is measured, and when to stop.
 **Status: a working hypothesis, with a documentary validator; the gates of
 a target's domain enter as results the cell's own code produces and the
 validator checks; one executed instance, documentary, by the owner,
-auditable.** The method (version 0.7.2) stands on that one execution and
+auditable.** The method (version 0.7.3) stands on that one execution and
 three designed sketches, not executed;
 it holds for a target with a declarable brief and stop, a discrete
 assemblable artifact, separable sources of truth per content type, and an
@@ -21,9 +21,11 @@ first review round does that. The terms follow the
 [canon](../../02-reflexive-application/01-canon.md) of the reflexive
 application.
 
-This folder holds the procedure (this file), the scaffold and the installer
-(`scripts/`; `scripts/install.py` links this folder into every agent harness
-it finds, see the README of the material) and
+This folder holds the procedure (this file), the scaffold, the installer
+and the vault (`scripts/`; `scripts/install.py` links this folder into every
+agent harness it finds, see the README of the material; `scripts/vault.py`
+is the one write path of a cell where several agents write, see "Several
+agents writing in one cell") and
 the templates (`references/`), but not the instrument: the validator, the
 sensitivity test and the contracts of the notes, of their state and of the
 round record live in the cooperatio
@@ -355,6 +357,70 @@ more input tokens, and its verdict did not tell a clean copy from a seeded one
 [against:E4]. Freeze the rubric so that rounds compare, and do not promise
 the people you set up that it finds more. An alias or a route is not a family:
 check what each name maps to.
+
+## Several agents writing in one cell
+
+The artifact list gives each artifact one owner, and by itself that is a
+convention: nothing in the files stops a role from writing another's
+artifact. In one production cell outside this material, run with four
+designer agents, one designer ran a formatter over every JSON file of the
+cell and rewrote the artifacts of the other designers. That is one
+observation, the reason for this tool, not a measured rate.
+
+When several agents write in the same cell, make `scripts/vault.py` the only
+entry point for creating and editing an artifact. An owners file maps each
+artifact id, exact or a prefix ending in `*`, to the role that owns it (the
+owners of the artifact list; an exact id wins over a prefix); `init` gives
+each role a key, stores only salted hashes of the keys, and writes the keys
+once to a file outside the cell, readable by its owner only. Only the
+owner's key writes an artifact; every role reads every artifact, with
+`read` or in the read-only exports. Every write is a new version that is
+never overwritten, addressed by the sha256 of its content, with its author
+and reason (`history`, `read --version N`, `diff`, `revert`); the journal is
+append-only and each line carries the sha256 of the line before it; `verify`
+exits 1 when an export was edited outside the vault, a file in the export is
+not the vault's, or the chain is broken. The cell's administrator, the
+person who owns the cell, holds a key of their own, made once with
+`new-admin` and written outside the cell like the role keys; it is not a
+role's key and writes no artifact. Only that key adds a role (`add-role`),
+gives an id with no version yet its owner (`assign`), changes the owner of
+an id that has versions (`change-owner`), or deletes an artifact
+(`delete`, whose versions stay in the store); each of these goes in the
+journal, with the reason where the command takes one.
+
+```text
+{"roles": ["writer", "verifier"], "owners": {"draft-*": "writer", "canon": "verifier"},
+ "export_to": "artifacts", "suffix": ".json"}
+
+python3 SKILL_FOLDER/scripts/vault.py self-test
+python3 SKILL_FOLDER/scripts/vault.py init --owners owners.json --keys-out OUTSIDE_FOLDER/keys.json
+python3 SKILL_FOLDER/scripts/vault.py write draft-1 FILE --key-file OUTSIDE_FOLDER/writer.key \
+    --reason "first draft"
+python3 SKILL_FOLDER/scripts/vault.py history draft-1
+python3 SKILL_FOLDER/scripts/vault.py verify
+python3 SKILL_FOLDER/scripts/vault.py new-admin --key-out OUTSIDE_FOLDER/admin.key
+python3 SKILL_FOLDER/scripts/vault.py change-owner draft-1 verifier --key-file OUTSIDE_FOLDER/admin.key \
+    --reason "handed over"
+python3 SKILL_FOLDER/scripts/vault.py delete draft-1 --key-file OUTSIDE_FOLDER/admin.key \
+    --reason "superseded"
+```
+
+Run them from the cell folder (or pass `--cell`); the store is `.vault` in
+the cell. Give each agent a file with its own key and nothing else, and
+have it pass `--key-file`, never `--key`, so that no key lands in a
+transcript; no agent gets the administrator's key. Run `verify` before the
+validator; the validator reads the exports like any other file and does not
+read the vault.
+
+It is obfuscation, not security. The store is compressed, scrambled with a
+stream keyed by each file's name and encoded, under hashed names: enough
+that an agent does not edit an artifact around the tool on its own
+initiative [hypothesis], not enough to stop anyone who reads the script or
+holds the cell. A stronger confirmation of a destructive action, such as a
+second factor held only by the owner, is outside the method and belongs to
+the operator's environment. The store records a timestamp per version and
+per journal line: keep it out of a material distributed for anonymity. The
+scaffold does not copy the vault into a new cell.
 
 ## Quality check before handing over
 

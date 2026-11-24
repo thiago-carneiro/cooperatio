@@ -5,7 +5,7 @@ a target's domain enter as results the cell's own code produces and the
 validator checks; one executed instance, documentary, by the owner,
 auditable from this material.** See "Status" below for what that covers and what it does not.
 
-Method version 0.7.2 (see `VERSION`; the history of the changes, in
+Method version 0.7.3 (see `VERSION`; the history of the changes, in
 `CHANGELOG.md`). The terms follow the
 [canon](02-reflexive-application/01-canon.md) of the reflexive application.
 

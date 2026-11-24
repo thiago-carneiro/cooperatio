@@ -2,6 +2,92 @@
 
 One entry per version of the method. Version is state; dates are not.
 
+## 0.7.3
+
+A maintenance round with no change to the method's rules: a tool that
+enforces the single owner of an artifact, by a decision of the owner.
+
+- **Why.** In a production cell outside this material, run with four
+  designer agents, one designer ran a formatter over every JSON file of the
+  cell and rewrote the artifacts of the other designers. The rule that each
+  artifact has a single owner was a convention: nothing enforced it. The
+  owner identified this as an architectural gap and decided on a tool with
+  four properties: the only entry point for creating and editing each
+  role's files, with read access for every other role, its store obfuscated
+  just enough that an agent does not bypass it on its own initiative
+  (explicitly not strong security); access tied to a key per role; deleting
+  an artifact or changing its owner reserved to the cell's administrator;
+  every file versioned. The incident is one observation, not registered and
+  not auditable from this material; no rate is claimed.
+- **`skills/cooperatio-teamwork/scripts/vault.py`.** The one write path of a
+  cell. An owners file maps artifact ids (exact, or a prefix ending in `*`;
+  the exact id wins, then the longest prefix) to roles; `init` makes one key
+  per role, keeps only their salted sha256, and writes the keys once to a
+  file outside the cell with mode 0600 (it refuses a path inside the cell
+  and an existing file). Only the owner writes; every role reads (`read`,
+  `list`, and read-only exports under the folder the owners file names).
+  Every write is a new immutable version addressed by the sha256 of its
+  content, with author and reason (`history`, `read --version N`, `diff`,
+  `revert`, which writes a new version equal to the old one); a cell whose
+  suffix is `.json` refuses a write that is not JSON. The journal is
+  append-only, each line chained to the one before by sha256; `verify` exits
+  1 on an export edited outside the vault, a file in the export the vault
+  does not know, an object that does not match its hash, or a broken chain.
+  The store is compressed, XORed with a stream keyed by each file's name and
+  encoded in base85, under hashed object names. The cell's administrator,
+  the person who owns the cell, has a key of their own: `new-admin` makes it
+  once (a second `new-admin` is refused), stores only its salted hash and
+  writes it with mode 0600 to a new file outside the cell; it is not a
+  role's key and writes no artifact. Only that key runs `add-role` (a new
+  role with its own key, written the same way), `assign` (the owner of an id
+  with no version yet; an id with versions is refused), `change-owner` (an
+  id that has versions) and `delete` (a deleted artifact keeps its versions
+  in the store); each goes in the journal, the last two with their reason.
+  Keys are passed with `--key-file`, so that they stay out of transcripts.
+  The cell is the current folder by default (`--cell`, or the
+  `COOPERATIO_CELL` variable), so the script runs from the skill folder; the
+  store defaults to `.vault` in the cell (`--store`, or
+  `COOPERATIO_VAULT_DIR`). Standard library only, Python 3.9 or later (exit
+  2 below it).
+- **A port, not a new design.** The script is an English port of a working
+  tool the owner had tested in that production, with one change: the cell
+  defaults to the current folder instead of the folder above the script.
+- **Tests.** The script keeps a self-test. `test_vault.py` (19 tests:
+  ownership, prefixes, versions, revert, diff, exports, the chain, the
+  obfuscation, the keys file, the administrator's key made once, outside
+  the cell, with mode 0600, a cell with no administrator, a role key that
+  cannot delete, reassign, assign or add a role, the administrator's delete
+  and change of owner with their journal lines, `add-role` and `assign`, the
+  default cell, ids, the self-test). The runbook's pytest command gains the
+  suite.
+- **Documents.** The skill gains the section "Several agents writing in one
+  cell": when to use the vault, its commands, and that it is obfuscation,
+  not security; a stronger confirmation of a destructive action, such as a
+  second factor held only by the owner, is outside the method and belongs to
+  the operator's environment. The principle gains, after the component table
+  of section 4, a paragraph that says the single owner was a convention and
+  the vault enforces it, and that the vault is not a twelfth component (the
+  eleven stay the method, and the canon's list is unchanged); and a sign in
+  section 8. Both cite the incident as one observation and tag as
+  `[hypothesis]` that the obfuscation keeps an agent from writing around the
+  tool. The manual under `docs/` describes 0.7.2 and was not edited.
+- **What did not change.** The validator, the sensitivity test, the
+  perturbation set, the scaffold, the canon, the gates and the artifact
+  table: no provenance the sensitivity report records changed, so the report
+  was not regenerated. The scaffold does not copy the vault into a new cell.
+- **Version.** 0.7.3, a patch, as 0.7.2 was for the installer: an optional
+  tool of the skill, with no change to a rule, a gate or a verdict. The open
+  notes scheduled for 0.8.0 stay scheduled for it.
+- **Migration note.** No cell has to change a file. A cell where several
+  agents write adopts the vault by writing an owners file that mirrors the
+  owners of its artifact list, running `init` with the keys outside the
+  cell, running `new-admin` once with the administrator's key outside the
+  cell too, writing each existing artifact once with its owner's key, and
+  pointing its role cards at the exports; it gives each agent a file with
+  its own key only, keeps the administrator's key with the person who owns
+  the cell, and keeps `.vault` out of a material distributed for anonymity,
+  since the store records a timestamp per version.
+
 ## 0.7.2
 
 A maintenance round with no change to the method: an installer for the
