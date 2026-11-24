@@ -2,6 +2,94 @@
 
 One entry per version of the method. Version is state; dates are not.
 
+## 0.7.3
+
+A maintenance round with no change to the method's rules: a tool that
+enforces the single owner of an artifact, by a decision of the owner.
+
+- **Why.** In a production cell outside this material, run with four
+  designer agents, one designer ran a formatter over every JSON file of the
+  cell and rewrote the artifacts of the other designers. The rule that each
+  artifact has a single owner was a convention: nothing enforced it. The
+  owner identified this as an architectural gap and decided on a tool with
+  four properties: the only entry point for creating and editing each
+  role's files, with read access for every other role, its store obfuscated
+  just enough that an agent does not bypass it on its own initiative
+  (explicitly not strong security); access tied to a key per role; deleting
+  an artifact or changing its owner confirmed by the owner with a TOTP code
+  through a small REST service; every file versioned. The incident is one
+  observation, not registered and not auditable from this material; no rate
+  is claimed.
+- **`skills/cooperatio-teamwork/scripts/vault.py`.** The one write path of a
+  cell. An owners file maps artifact ids (exact, or a prefix ending in `*`;
+  the exact id wins, then the longest prefix) to roles; `init` makes one key
+  per role, keeps only their salted sha256, and writes the keys once to a
+  file outside the cell with mode 0600 (it refuses a path inside the cell
+  and an existing file). Only the owner writes; every role reads (`read`,
+  `list`, and read-only exports under the folder the owners file names).
+  Every write is a new immutable version addressed by the sha256 of its
+  content, with author and reason (`history`, `read --version N`, `diff`,
+  `revert`, which writes a new version equal to the old one); a cell whose
+  suffix is `.json` refuses a write that is not JSON. The journal is
+  append-only, each line chained to the one before by sha256; `verify`
+  exits 1 on an export edited outside the vault, a file in the export the
+  vault does not know, an object that does not match its hash, or a broken
+  chain. The store is compressed, XORed with a stream keyed by each file's
+  name and encoded in base85, under hashed object names. Deleting an
+  artifact or changing its owner is a pending `request` that `execute` runs
+  only after an authorization of the owner, once, within five minutes; a
+  deleted artifact keeps its versions in the store. Keys are passed with
+  `--key-file`, so that they stay out of transcripts. The cell is the
+  current folder by default (`--cell`, or the `COOPERATIO_CELL` variable),
+  so the script runs from the skill folder; the store defaults to `.vault`
+  in the cell (`--store`, or `COOPERATIO_VAULT_DIR`). Standard library
+  only, Python 3.9 or later (exit 2 below it).
+- **`authorizer.py`.** A small HTTP service, on 127.0.0.1 by default:
+  `GET /pending` lists the pending requests, `POST /authorize` takes a
+  request id and a code. The codes follow RFC 6238 (SHA-1, six digits,
+  30-second steps), accepted one step either side; a code of a step already
+  used is refused, so each code works once; five wrong codes in a row lock
+  the service for five minutes. `new-secret` writes the secret and its
+  `otpauth://` line with mode 0600 outside the cell (it refuses a path
+  inside a cell that holds a vault). Standard library only.
+- **A port, not a new design.** Both scripts are an English port of a
+  working pair the owner had tested in that production, with two changes:
+  the cell defaults to the current folder instead of the folder above the
+  script, and a used code is now refused (the original refused a second
+  authorization of the same request, not the reuse of a code).
+- **Tests.** Both scripts keep a self-test. `test_vault.py` (16 tests:
+  ownership, prefixes, versions, revert, diff, exports, the chain, the
+  obfuscation, the keys file, requests, the expiry of an authorization,
+  change of owner, the default cell, ids, the self-test) and
+  `test_authorizer.py` (8 tests, 11 cases: the vectors of RFC 6238, the
+  window, the secret file, the service, the single use of a request and of
+  a code, the lockout, malformed input, the self-test). The four service
+  tests open a port on 127.0.0.1 and are skipped, with the reason, where
+  binding is not permitted. The runbook's pytest command gains both suites.
+- **Documents.** The skill gains the section "Several agents writing in one
+  cell": when to use the vault, its commands, and that it is obfuscation,
+  not security. The principle gains, after the component table of section
+  4, a paragraph that says the single owner was a convention and the vault
+  enforces it, and that the vault is not a twelfth component (the eleven
+  stay the method, and the canon's list is unchanged); and a sign in section
+  8. Both cite the incident as one observation and tag as `[hypothesis]`
+  that the obfuscation keeps an agent from writing around the tool. The
+  manual under `docs/` describes 0.7.2 and was not edited.
+- **What did not change.** The validator, the sensitivity test, the
+  perturbation set, the scaffold, the canon, the gates and the artifact
+  table: no provenance the sensitivity report records changed, so the report
+  was not regenerated. The scaffold does not copy the vault into a new cell.
+- **Version.** 0.7.3, a patch, as 0.7.2 was for the installer: an optional
+  tool of the skill, with no change to a rule, a gate or a verdict. The open
+  notes scheduled for 0.8.0 stay scheduled for it.
+- **Migration note.** No cell has to change a file. A cell where several
+  agents write adopts the vault by writing an owners file that mirrors the
+  owners of its artifact list, running `init` with the keys outside the
+  cell, writing each existing artifact once with its owner's key, and
+  pointing its role cards at the exports; it gives each agent a file with
+  its own key only, and keeps `.vault` out of a material distributed for
+  anonymity, since the store records a timestamp per version.
+
 ## 0.7.2
 
 A maintenance round with no change to the method: an installer for the

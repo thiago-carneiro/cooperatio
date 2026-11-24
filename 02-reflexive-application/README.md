@@ -91,8 +91,14 @@ python3 80-validator/validator.py --folder . \
 python3 80-validator/validator.py --self-test
 python3 -B -m pytest -p no:cacheprovider 80-validator/test_validator.py \
     ../skills/cooperatio-teamwork/scripts/test_scaffold.py \
-    ../skills/cooperatio-teamwork/scripts/test_install.py
+    ../skills/cooperatio-teamwork/scripts/test_install.py \
+    ../skills/cooperatio-teamwork/scripts/test_vault.py \
+    ../skills/cooperatio-teamwork/scripts/test_authorizer.py
 ```
+
+The four service tests of `test_authorizer.py` open a port on 127.0.0.1;
+where binding is not permitted they are skipped, with the reason, and the
+rest of the suite runs.
 
 The scripts need Python 3.9 or later and the standard library; the suites
 need `pytest`. They write no bytecode cache into the folder by themselves:

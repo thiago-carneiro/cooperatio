@@ -1,6 +1,6 @@
 # The principle behind the method, generalized
 
-Method version 0.7.2 (see `VERSION`; the history of the changes, in
+Method version 0.7.3 (see `VERSION`; the history of the changes, in
 `CHANGELOG.md`).
 
 **Status: a working hypothesis, with a documentary validator; the gates
@@ -195,6 +195,22 @@ compile(graph, brief, corpus):
 | **Stopping criterion** | The owner declares when to stop: the review of the last version becomes a list of open notes, not a new version | Endless rounds; every round finds something |
 | **Gate sensitivity test** | Before trusting a gate, inject a known defect and check that it rejects; a gate that only measures what is easy to measure lets the defect that matters through | The reflexive application of this principle: the gate checked numbers, the non-negotiable was that nothing is stated about a prior outside its method document, and a wrong statement without a number passed through everything until the independent review; the sensitivity test found, before the review, a validator that read line by line and missed numbers in broken sentences [lessons:What happened, in numbers] |
 
+The single owner of the artifact graph is, written down, a convention:
+nothing in the files stops a role from writing another role's artifact. In
+one production cell outside this material, run with four designer agents,
+one designer ran a formatter over every JSON file and rewrote the artifacts
+of the other designers; that is one observation, not registered here and not
+a rate. Since v0.7.3 the skill ships a vault (`skills/cooperatio-teamwork/scripts/vault.py`)
+for a cell where several agents write: only the owner's key writes an
+artifact, every role reads every artifact, every write is a
+version with its author and reason, and deleting an artifact or changing its
+owner waits for the owner's confirmation by a one-time code. It is not a
+twelfth component: it enforces the owner the artifact graph already
+declares.
+
+The store of the vault is obfuscated, not protected: that this keeps an
+agent from writing around it on its own initiative is [hypothesis].
+
 ## 5. The golden rules, with the reason
 
 1. **Measure what the system delivered, not what was asked for.** The
@@ -369,6 +385,12 @@ In order, and each step produces a file:
   loop is fixing symptoms.
 - Someone rebuilt by hand what the graph should have recompiled: the
   dependency hash is not being used.
+- An artifact changed and its history names no author who owns it, or a
+  role's bulk edit (a formatter, a rename, a search and replace) touched
+  artifacts of other roles: the single owner is a convention nobody
+  enforces. One observation stands behind this sign, outside this material
+  (section 4); with several agents writing in one cell, the skill's vault
+  makes the owner the only writer [hypothesis].
 
 ## 9. Limits of the method
 
