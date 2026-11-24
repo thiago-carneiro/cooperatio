@@ -11,17 +11,21 @@ Usage (from the cell folder, or with --cell; every command takes --cell and --st
     vault.py revert ID VERSION --key-file F --reason "..."  (only the owner; a new version equal to the old one)
     vault.py export [--dir D]                               (read-only copies of the latest versions)
     vault.py verify [--dir D]                               (exports equal to the vault; journal chain intact)
-    vault.py request delete|change-owner ID [--new-owner ROLE] --key-file F --reason "..."
-    vault.py execute REQUEST --key-file F                   (only after the owner authorized it with authorizer.py)
+    vault.py new-admin --key-out FILE                       (once: the key of the cell's administrator, its owner;
+                                                            FILE outside the cell, written once, 0600)
+    vault.py add-role ROLE --key-file ADMIN --key-out FILE  (administrator only: a new role with its own key)
+    vault.py assign ID ROLE --key-file ADMIN                (administrator only: the owner of an id with no version yet)
+    vault.py change-owner ID ROLE --key-file ADMIN --reason "..."  (administrator only: an id that has versions)
+    vault.py delete ID --key-file ADMIN --reason "..."      (administrator only; the versions stay in the store)
     vault.py self-test
 
 Every command that takes a key accepts --key K or --key-file F; prefer --key-file, so that a key never
-appears in a transcript. The key file holds one role's key and nothing else.
+appears in a transcript. The key file holds one key, a role's or the administrator's, and nothing else.
 
 owners.json: {"roles": ["writer", ...], "owners": {"<id or prefix*>": "<role>"},
               "export_to": "artifacts", "suffix": ".json"}
 An exact id wins over a prefix pattern, and a longer prefix over a shorter one. Once an artifact has a
-version, its owner is the one recorded in the vault, and only an authorized change-owner moves it.
+version, its owner is the one recorded in the vault, and only the administrator's change-owner moves it.
 
 It is not strong security. The store is compressed, XORed with a stream keyed by each file's name and
 encoded in base85, under hashed object names: enough that an agent does not edit an artifact around the
@@ -29,14 +33,13 @@ tool on its own initiative, not enough to stop anyone who reads this script. Eve
 artifact (read, the exports); only the owner's key writes it. Every write is a new immutable version,
 addressed by the sha256 of its content, with its author and reason; nothing is ever overwritten. The
 journal is append-only and each line carries the sha256 of the line before it. Deleting an artifact or
-changing its owner is a request that runs only after the owner authorizes it with a TOTP code
-(authorizer.py). The store records a timestamp per version and per journal line: keep it out of a material
-distributed for anonymity.
+changing its owner takes the key of the cell's administrator, not a role's key, and is journaled. The store
+records a timestamp per version and per journal line: keep it out of a material distributed for anonymity.
 
 The cell is --cell, else the COOPERATIO_CELL variable, else the current folder; the store is --store,
 else COOPERATIO_VAULT_DIR, else <cell>/.vault.
 
-Exit codes: 0 done; 1 refused (a wrong key, not the owner, not authorized, a failed verify);
+Exit codes: 0 done; 1 refused (a wrong key, not the owner, not the administrator, a failed verify);
 2 invalid input, a vault in an unexpected state, or Python below 3.9.
 """
 
@@ -67,9 +70,8 @@ except ImportError:  # Windows
     import msvcrt
 
 MIN_PYTHON = (3, 9)  # the interpreter the material is tested on (v0.6.0)
-SENSITIVE_ACTIONS = ("delete", "change-owner")
-AUTHORIZATION_VALIDITY_S = 300
 KEY_PREFIX = "vk-"
+ADMIN_KEY_PREFIX = "vk-admin-"
 ARTIFACT_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*(?:/[A-Za-z0-9][A-Za-z0-9._-]*)*")
 GENESIS = "0" * 64
 
@@ -79,7 +81,7 @@ EXIT_USAGE = 2
 
 
 class Refused(Exception):
-    """The vault refused the action: a wrong key, not the owner, not authorized."""
+    """The vault refused the action: a wrong key, not the owner, not the administrator."""
 
 
 class VaultError(Exception):
@@ -371,73 +373,103 @@ class Vault:
                 prev = sha256(line)
         return errors
 
-    def request(self, action: str, ident: str, key: str | None, reason: str | None,
-                new_owner: str | None = None) -> str:
+    # The administrator: the owner of the cell, whose key is not a role's key.
+    def require_admin(self, key: str | None) -> None:
         cfg = self.config()
-        role = self.role_for(key)
-        if action not in SENSITIVE_ACTIONS:
-            raise VaultError(f"unknown sensitive action: {action}")
+        if not cfg.get("admin"):
+            raise Refused("the cell has no administrator (vault.py new-admin)")
+        if not key:
+            raise VaultError("missing --key or --key-file")
+        if not secrets.compare_digest(cfg["admin"], sha256((cfg["salt"] + key).encode())):
+            raise Refused("this takes the key of the cell's administrator")
+
+    def _write_key(self, key_out: Path, key: str) -> None:
+        """Write one key to a new file outside the cell, readable by its owner only."""
+        if inside(Path(key_out), self.cell):
+            raise VaultError("--key-out has to be outside the cell, so that no role reads another's key")
+        try:
+            fd = os.open(key_out, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        except FileExistsError:
+            raise VaultError(f"{key_out} already exists; a key is written once") from None
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            handle.write(key + "\n")
+
+    def new_admin(self, key_out: Path) -> str:
+        self.config()
+        with self.lock():
+            cfg = self.config()
+            if cfg.get("admin"):
+                raise Refused("the cell already has an administrator")
+            key = ADMIN_KEY_PREFIX + secrets.token_urlsafe(18)
+            self._write_key(key_out, key)
+            cfg["admin"] = sha256((cfg["salt"] + key).encode())
+            self.write_state("config", cfg)
+            self.journal({"event": "new-admin"})
+        return f"administrator created; key written to {key_out} (0600)"
+
+    def add_role(self, role: str, admin_key: str | None, key_out: Path) -> str:
+        self.require_admin(admin_key)
+        if not role:
+            raise VaultError("a role needs a name")
+        with self.lock():
+            cfg = self.config()
+            if role in cfg["keys"]:
+                raise VaultError(f"the role {role} already exists")
+            key = KEY_PREFIX + secrets.token_urlsafe(18)
+            self._write_key(key_out, key)
+            cfg["keys"][role] = sha256((cfg["salt"] + key).encode())
+            self.write_state("config", cfg)
+            self.journal({"event": "add-role", "role": role})
+        return f"role {role} created; key written to {key_out} (0600)"
+
+    def assign(self, ident: str, role: str, admin_key: str | None) -> str:
+        self.require_admin(admin_key)
+        if not ARTIFACT_ID.fullmatch(ident or ""):
+            raise VaultError(f"'{ident}' is not a valid artifact id (letters, digits, '.', '_', '-', '/')")
+        with self.lock():
+            cfg = self.config()
+            if role not in cfg["keys"]:
+                raise VaultError(f"the owner has to be one of the roles: {', '.join(sorted(cfg['keys']))}")
+            if self.index().get(ident, {}).get("versions"):
+                raise Refused(f"'{ident}' already has versions; its owner changes only with change-owner")
+            cfg["owners"][ident] = role
+            self.write_state("config", cfg)
+            self.journal({"event": "assign", "id": ident, "role": role})
+        return f"'{ident}' assigned to {role}"
+
+    def change_owner(self, ident: str, role: str, admin_key: str | None, reason: str | None) -> str:
+        self.require_admin(admin_key)
         if not reason:
             raise VaultError("missing --reason")
-        self.version(ident)  # the artifact has to exist
-        if self.owner_of(ident) != role:
-            raise Refused(f"only the owner of '{ident}' requests {action}")
-        if action == "change-owner" and new_owner not in cfg["keys"]:
-            raise VaultError(f"--new-owner has to be one of the roles: {', '.join(sorted(cfg['keys']))}")
         with self.lock():
-            pending = self.read_state("pending", {})
-            rid = secrets.token_hex(3)
-            while rid in pending:
-                rid = secrets.token_hex(3)
-            pending[rid] = {"action": action, "id": ident, "role": role, "reason": reason,
-                            "new_owner": new_owner if action == "change-owner" else None,
-                            "status": "pending", "created": time.time()}
-            self.write_state("pending", pending)
-            self.journal({"event": "request", "request": rid, "action": action, "id": ident,
-                          "role": role, "reason": reason})
-        return (f"request {rid} pending: the owner authorizes it with a TOTP code at POST /authorize "
-                "of authorizer.py")
-
-    def pending(self) -> dict:
-        return {rid: {k: r[k] for k in ("action", "id", "role", "reason", "new_owner")}
-                for rid, r in self.read_state("pending", {}).items() if r["status"] == "pending"}
-
-    def authorize(self, rid: str) -> None:
-        """Mark a pending request authorized; called by the authorizer after a valid code, under the lock."""
-        pending = self.read_state("pending", {})
-        r = pending.get(rid)
-        if not r or r["status"] != "pending":
-            raise VaultError(f"request {rid} does not exist or was already handled")
-        r.update(status="authorized", authorized_at=time.time())
-        self.write_state("pending", pending)
-        self.journal({"event": "authorized", "request": rid, "action": r["action"], "id": r["id"]})
-
-    def execute(self, rid: str, key: str | None) -> str:
-        cfg = self.config()
-        role = self.role_for(key)
-        with self.lock():
-            pending = self.read_state("pending", {})
-            r = pending.get(rid)
-            if not r or r["role"] != role:
-                raise Refused("no such request, or it belongs to another role")
-            if r["status"] != "authorized" or time.time() > r.get("authorized_at", 0) + AUTHORIZATION_VALIDITY_S:
-                raise Refused(f"request {rid} is not authorized, or its authorization expired ({r['status']})")
+            cfg = self.config()
+            if role not in cfg["keys"]:
+                raise VaultError(f"the new owner has to be one of the roles: {', '.join(sorted(cfg['keys']))}")
             idx = self.index()
-            if r["id"] not in idx:
-                raise VaultError(f"'{r['id']}' is no longer in the vault")
-            if r["action"] == "delete":
-                idx[r["id"]]["deleted"] = True  # the versions stay in the vault; only the export goes
-            else:
-                if r["new_owner"] not in cfg["keys"]:
-                    raise VaultError("the new owner is not a role")
-                idx[r["id"]]["owner"] = r["new_owner"]
+            entry = idx.get(ident)
+            if not entry or not entry["versions"] or entry.get("deleted"):
+                raise VaultError(f"'{ident}' has no version in the vault (an id with no version takes assign)")
+            previous = entry["owner"]
+            entry["owner"] = role
             self.write_state("index", idx)
-            r["status"] = "executed"
-            self.write_state("pending", pending)
-            self.journal({"event": "execute", "request": rid, "action": r["action"], "id": r["id"],
-                          "role": role})
+            self.journal({"event": "change-owner", "id": ident, "from": previous, "to": role,
+                          "by": "administrator", "reason": reason})
+        return f"'{ident}': owner changed from {previous} to {role}"
+
+    def delete(self, ident: str, admin_key: str | None, reason: str | None) -> str:
+        self.require_admin(admin_key)
+        if not reason:
+            raise VaultError("missing --reason")
+        with self.lock():
+            idx = self.index()
+            entry = idx.get(ident)
+            if not entry or entry.get("deleted"):
+                raise VaultError(f"'{ident}' is not in the vault")
+            entry["deleted"] = True  # the versions stay in the store; only the export goes
+            self.write_state("index", idx)
+            self.journal({"event": "delete", "id": ident, "by": "administrator", "reason": reason})
             self.export()
-        return f"request {rid} executed: {r['action']} {r['id']}"
+        return f"'{ident}' deleted; its {len(entry['versions'])} version(s) stay in the store"
 
 
 def read_key(args) -> str | None:
@@ -505,13 +537,36 @@ def self_test() -> int:
         objects = cell / ".vault" / "objects"
         checks.append(("the store is not readable",
                        b'"x"' not in b"".join(f.read_bytes() for f in objects.iterdir())))
-        requested = run("request", "delete", "a1", *ka, "--reason", "m")
-        rid = requested.stdout.split()[1] if requested.returncode == 0 else ""
-        checks.append(("execute without authorization fails", run("execute", rid, *ka).returncode == 1))
-        Vault(cell).authorize(rid)
-        checks.append(("execute after authorization", run("execute", rid, *ka).returncode == 0
-                       and not exported.exists()))
-        checks.append(("an authorization is single use", run("execute", rid, *ka).returncode == 1))
+        kadm = ("--key-file", str(t / "admin.key"))
+        checks.append(("delete with no administrator is refused",
+                       run("delete", "a1", *ka, "--reason", "m").returncode == 1))
+        checks.append(("the administrator's key inside the cell refused",
+                       run("new-admin", "--key-out", str(cell / "admin.key")).returncode == 2
+                       and not (cell / "admin.key").exists()))
+        checks.append(("new-admin", run("new-admin", "--key-out", str(t / "admin.key")).returncode == 0
+                       and stat.S_IMODE(os.stat(t / "admin.key").st_mode) == 0o600))
+        checks.append(("a second new-admin is refused",
+                       run("new-admin", "--key-out", str(t / "admin2.key")).returncode == 1
+                       and not (t / "admin2.key").exists()))
+        checks.append(("a role key cannot delete", run("delete", "a1", *ka, "--reason", "m").returncode == 1))
+        checks.append(("a role key cannot change the owner",
+                       run("change-owner", "a1", "B", *ka, "--reason", "m").returncode == 1))
+        checks.append(("a role key cannot add a role",
+                       run("add-role", "C", *ka, "--key-out", str(t / "kc")).returncode == 1
+                       and not (t / "kc").exists()))
+        checks.append(("the administrator adds a role",
+                       run("add-role", "C", *kadm, "--key-out", str(t / "kc")).returncode == 0))
+        checks.append(("assign a new id, and its owner writes it",
+                       run("assign", "c1", "C", *kadm).returncode == 0
+                       and run("write", "c1", str(t / "v1.json"), "--key-file", str(t / "kc"),
+                               "--reason", "m").returncode == 0))
+        checks.append(("assign on an id with versions is refused", run("assign", "a1", "C", *kadm).returncode == 1))
+        checks.append(("the administrator changes the owner",
+                       run("change-owner", "a1", "B", *kadm, "--reason", "m").returncode == 0
+                       and run("write", "a1", str(t / "v2.json"), *ka, "--reason", "m").returncode == 1
+                       and run("write", "a1", str(t / "v2.json"), "--key", keys["B"], "--reason", "m").returncode == 0))
+        checks.append(("the administrator deletes", run("delete", "a1", *kadm, "--reason", "m").returncode == 0
+                       and not exported.exists() and run("history", "a1").stdout.count("\n") == 4))
         checks.append(("the journal chain holds", run("verify").returncode == 0))
     failed = [name for name, ok in checks if not ok]
     for name, ok in checks:
@@ -553,13 +608,21 @@ def parse_args(argv: list) -> argparse.Namespace:
     for name in ("export", "verify"):
         p = sub.add_parser(name, parents=[common])
         p.add_argument("--dir", help="the export folder, relative to the cell")
-    p = sub.add_parser("request", parents=[common, keyed])
-    p.add_argument("action", choices=SENSITIVE_ACTIONS)
+    p = sub.add_parser("new-admin", parents=[common])
+    p.add_argument("--key-out", required=True, type=Path)
+    p = sub.add_parser("add-role", parents=[common, keyed])
+    p.add_argument("role")
+    p.add_argument("--key-out", required=True, type=Path)
+    p = sub.add_parser("assign", parents=[common, keyed])
     p.add_argument("id")
-    p.add_argument("--new-owner")
+    p.add_argument("role")
+    p = sub.add_parser("change-owner", parents=[common, keyed])
+    p.add_argument("id")
+    p.add_argument("role")
     p.add_argument("--reason")
-    p = sub.add_parser("execute", parents=[common, keyed])
-    p.add_argument("request")
+    p = sub.add_parser("delete", parents=[common, keyed])
+    p.add_argument("id")
+    p.add_argument("--reason")
     sub.add_parser("self-test")
     return parser.parse_args(argv)
 
@@ -606,10 +669,16 @@ def run_command(args: argparse.Namespace) -> int:
         errors = vault.verify(args.dir)
         print("\n".join(errors) or "ok: the exports equal the vault and the journal chain holds")
         return EXIT_REFUSED if errors else EXIT_OK
-    elif c == "request":
-        print(vault.request(args.action, args.id, read_key(args), args.reason, args.new_owner))
-    elif c == "execute":
-        print(vault.execute(args.request, read_key(args)))
+    elif c == "new-admin":
+        print(vault.new_admin(args.key_out))
+    elif c == "add-role":
+        print(vault.add_role(args.role, read_key(args), args.key_out))
+    elif c == "assign":
+        print(vault.assign(args.id, args.role, read_key(args)))
+    elif c == "change-owner":
+        print(vault.change_owner(args.id, args.role, read_key(args), args.reason))
+    elif c == "delete":
+        print(vault.delete(args.id, read_key(args), args.reason))
     return EXIT_OK
 
 

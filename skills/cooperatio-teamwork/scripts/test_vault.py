@@ -5,7 +5,6 @@ import os
 import stat
 import subprocess
 import sys
-import time
 from pathlib import Path
 
 import pytest
@@ -162,50 +161,82 @@ def test_the_keys_are_written_once_0600_and_outside_the_cell(tmp_path: Path) -> 
     assert c.run("init", "--owners", owners, "--keys-out", str(tmp_path / "k2.json")) == vault.EXIT_USAGE
 
 
-def test_a_sensitive_action_runs_only_after_authorization(cell: Cell, capsys: pytest.CaptureFixture) -> None:
-    cell.write("draft-1", '{"x": 1}', "writer")
-    assert cell.run("request", "delete", "draft-1", *cell.key("verifier"), "--reason", "r") == vault.EXIT_REFUSED
-    capsys.readouterr()
-    assert cell.run("request", "delete", "draft-1", *cell.key("writer"), "--reason", "obsolete") == vault.EXIT_OK
-    rid = capsys.readouterr().out.split()[1]
-    v = vault.Vault(cell.path)
-    assert rid in v.pending()
-    assert cell.run("execute", rid, *cell.key("writer")) == vault.EXIT_REFUSED
-    v.authorize(rid)
-    assert cell.run("execute", rid, *cell.key("verifier")) == vault.EXIT_REFUSED
-    assert cell.run("execute", rid, *cell.key("writer")) == vault.EXIT_OK
-    assert not cell.export("draft-1").exists()
-    assert cell.run("execute", rid, *cell.key("writer")) == vault.EXIT_REFUSED
-    assert cell.run("verify") == vault.EXIT_OK
-    assert v.index()["draft-1"]["versions"], "the versions stay in the vault"
+def make_admin(cell: Cell) -> list:
+    assert cell.run("new-admin", "--key-out", str(cell.tmp / "admin.key")) == vault.EXIT_OK
+    return ["--key-file", str(cell.tmp / "admin.key")]
 
 
-def test_an_authorization_expires(cell: Cell, capsys: pytest.CaptureFixture) -> None:
+def test_new_admin_is_once_0600_and_outside_the_cell(cell: Cell) -> None:
+    assert cell.run("new-admin", "--key-out", str(cell.path / "admin.key")) == vault.EXIT_USAGE
+    assert not (cell.path / "admin.key").exists()
+    make_admin(cell)
+    assert stat.S_IMODE(os.stat(cell.tmp / "admin.key").st_mode) == 0o600
+    assert cell.run("new-admin", "--key-out", str(cell.tmp / "admin2.key")) == vault.EXIT_REFUSED
+    assert not (cell.tmp / "admin2.key").exists()
+
+
+def test_without_an_administrator_nothing_is_deleted(cell: Cell) -> None:
     cell.write("draft-1", '{"x": 1}', "writer")
-    capsys.readouterr()
-    cell.run("request", "delete", "draft-1", *cell.key("writer"), "--reason", "r")
-    rid = capsys.readouterr().out.split()[1]
-    v = vault.Vault(cell.path)
-    v.authorize(rid)
-    pending = v.read_state("pending", {})
-    pending[rid]["authorized_at"] = time.time() - vault.AUTHORIZATION_VALIDITY_S - 1
-    v.write_state("pending", pending)
-    assert cell.run("execute", rid, *cell.key("writer")) == vault.EXIT_REFUSED
+    assert cell.run("delete", "draft-1", *cell.key("writer"), "--reason", "r") == vault.EXIT_REFUSED
     assert cell.export("draft-1").exists()
 
 
-def test_change_owner_moves_the_artifact(cell: Cell, capsys: pytest.CaptureFixture) -> None:
+def test_a_role_key_cannot_delete_or_reassign(cell: Cell) -> None:
     cell.write("draft-1", '{"x": 1}', "writer")
-    assert cell.run("request", "change-owner", "draft-1", "--new-owner", "nobody",
-                    *cell.key("writer"), "--reason", "r") == vault.EXIT_USAGE
-    capsys.readouterr()
-    cell.run("request", "change-owner", "draft-1", "--new-owner", "verifier", *cell.key("writer"),
-             "--reason", "handed over")
-    rid = capsys.readouterr().out.split()[1]
-    vault.Vault(cell.path).authorize(rid)
-    assert cell.run("execute", rid, *cell.key("writer")) == vault.EXIT_OK
+    make_admin(cell)
+    for role in ("writer", "verifier"):
+        assert cell.run("delete", "draft-1", *cell.key(role), "--reason", "r") == vault.EXIT_REFUSED
+        assert cell.run("change-owner", "draft-1", "verifier", *cell.key(role),
+                        "--reason", "r") == vault.EXIT_REFUSED
+        assert cell.run("assign", "new-1", role, *cell.key(role)) == vault.EXIT_REFUSED
+        assert cell.run("add-role", "extra", *cell.key(role),
+                        "--key-out", str(cell.tmp / "extra.key")) == vault.EXIT_REFUSED
+    assert not (cell.tmp / "extra.key").exists()
+    assert cell.export("draft-1").exists()
+    assert cell.write("draft-1", '{"x": 2}', "writer") == vault.EXIT_OK
+
+
+def test_the_administrator_deletes_and_the_versions_stay(cell: Cell) -> None:
+    cell.write("draft-1", '{"x": 1}', "writer")
+    admin = make_admin(cell)
+    assert cell.run("delete", "draft-1", *admin) == vault.EXIT_USAGE  # a reason is required
+    assert cell.run("delete", "draft-1", *admin, "--reason", "obsolete") == vault.EXIT_OK
+    assert not cell.export("draft-1").exists()
+    assert cell.run("delete", "draft-1", *admin, "--reason", "again") == vault.EXIT_USAGE
+    assert cell.run("verify") == vault.EXIT_OK
+    v = vault.Vault(cell.path)
+    assert v.index()["draft-1"]["versions"], "the versions stay in the vault"
+    last = v.journal_entries()[-1]
+    assert last["event"] == "delete" and last["id"] == "draft-1" and last["reason"] == "obsolete"
+
+
+def test_the_administrator_changes_the_owner(cell: Cell) -> None:
+    cell.write("draft-1", '{"x": 1}', "writer")
+    admin = make_admin(cell)
+    assert cell.run("change-owner", "draft-1", "nobody", *admin, "--reason", "r") == vault.EXIT_USAGE
+    assert cell.run("change-owner", "never-written", "verifier", *admin, "--reason", "r") == vault.EXIT_USAGE
+    assert cell.run("change-owner", "draft-1", "verifier", *admin, "--reason", "handed over") == vault.EXIT_OK
     assert cell.write("draft-1", '{"x": 2}', "writer") == vault.EXIT_REFUSED
     assert cell.write("draft-1", '{"x": 2}', "verifier") == vault.EXIT_OK
+    entry = [e for e in vault.Vault(cell.path).journal_entries() if e["event"] == "change-owner"][0]
+    assert (entry["from"], entry["to"], entry["reason"]) == ("writer", "verifier", "handed over")
+    assert cell.run("verify") == vault.EXIT_OK
+
+
+def test_add_role_and_assign(cell: Cell) -> None:
+    cell.write("draft-1", '{"x": 1}', "writer")
+    admin = make_admin(cell)
+    assert cell.run("add-role", "editor", *admin, "--key-out", str(cell.path / "e.key")) == vault.EXIT_USAGE
+    assert cell.run("add-role", "editor", *admin, "--key-out", str(cell.tmp / "editor.key")) == vault.EXIT_OK
+    assert stat.S_IMODE(os.stat(cell.tmp / "editor.key").st_mode) == 0o600
+    assert cell.run("add-role", "editor", *admin, "--key-out", str(cell.tmp / "e2.key")) == vault.EXIT_USAGE
+    assert cell.run("assign", "notes", "nobody", *admin) == vault.EXIT_USAGE
+    assert cell.run("assign", "notes", "editor", *admin) == vault.EXIT_OK
+    assert cell.write("notes", "{}", "writer") == vault.EXIT_REFUSED
+    assert cell.write("notes", "{}", "editor") == vault.EXIT_OK
+    assert cell.run("assign", "draft-1", "editor", *admin) == vault.EXIT_REFUSED  # it has versions
+    assert cell.run("assign", "notes", "writer", *admin) == vault.EXIT_REFUSED
+    assert cell.write("draft-1", '{"x": 2}', "writer") == vault.EXIT_OK
 
 
 def test_the_cell_defaults_to_the_current_folder(cell: Cell, monkeypatch: pytest.MonkeyPatch,

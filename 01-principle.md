@@ -204,12 +204,14 @@ a rate. Since v0.7.3 the skill ships a vault (`skills/cooperatio-teamwork/script
 for a cell where several agents write: only the owner's key writes an
 artifact, every role reads every artifact, every write is a
 version with its author and reason, and deleting an artifact or changing its
-owner waits for the owner's confirmation by a one-time code. It is not a
-twelfth component: it enforces the owner the artifact graph already
+owner takes the key of the cell's administrator, who owns the cell. It is
+not a twelfth component: it enforces the owner the artifact graph already
 declares.
 
-The store of the vault is obfuscated, not protected: that this keeps an
-agent from writing around it on its own initiative is [hypothesis].
+The vault is obfuscation, not security: that it keeps an agent from writing
+around it on its own initiative is [hypothesis]. A stronger confirmation of
+a destructive action, such as a second factor held only by the owner, is
+outside the method and belongs to the operator's environment.
 
 ## 5. The golden rules, with the reason
 

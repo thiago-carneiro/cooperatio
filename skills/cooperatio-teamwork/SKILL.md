@@ -379,12 +379,14 @@ never overwritten, addressed by the sha256 of its content, with its author
 and reason (`history`, `read --version N`, `diff`, `revert`); the journal is
 append-only and each line carries the sha256 of the line before it; `verify`
 exits 1 when an export was edited outside the vault, a file in the export is
-not the vault's, or the chain is broken. Deleting an artifact or changing its
-owner is a request that runs only after the owner authorizes it:
-`scripts/authorizer.py serve` listens on the local machine and accepts, at
-`POST /authorize`, a code from an authenticator app (RFC 6238; each code
-used once; the authorization lasts five minutes; five wrong codes lock it
-for five minutes). The secret of the codes stays outside the cell.
+not the vault's, or the chain is broken. The cell's administrator, the
+person who owns the cell, holds a key of their own, made once with
+`new-admin` and written outside the cell like the role keys; it is not a
+role's key and writes no artifact. Only that key adds a role (`add-role`),
+gives an id with no version yet its owner (`assign`), changes the owner of
+an id that has versions (`change-owner`), or deletes an artifact
+(`delete`, whose versions stay in the store); each of these goes in the
+journal, with the reason where the command takes one.
 
 ```text
 {"roles": ["writer", "verifier"], "owners": {"draft-*": "writer", "canon": "verifier"},
@@ -396,26 +398,29 @@ python3 SKILL_FOLDER/scripts/vault.py write draft-1 FILE --key-file OUTSIDE_FOLD
     --reason "first draft"
 python3 SKILL_FOLDER/scripts/vault.py history draft-1
 python3 SKILL_FOLDER/scripts/vault.py verify
-python3 SKILL_FOLDER/scripts/vault.py request delete draft-1 --key-file OUTSIDE_FOLDER/writer.key \
+python3 SKILL_FOLDER/scripts/vault.py new-admin --key-out OUTSIDE_FOLDER/admin.key
+python3 SKILL_FOLDER/scripts/vault.py change-owner draft-1 verifier --key-file OUTSIDE_FOLDER/admin.key \
+    --reason "handed over"
+python3 SKILL_FOLDER/scripts/vault.py delete draft-1 --key-file OUTSIDE_FOLDER/admin.key \
     --reason "superseded"
-python3 SKILL_FOLDER/scripts/authorizer.py new-secret
-python3 SKILL_FOLDER/scripts/authorizer.py serve
-python3 SKILL_FOLDER/scripts/vault.py execute REQUEST_ID --key-file OUTSIDE_FOLDER/writer.key
 ```
 
 Run them from the cell folder (or pass `--cell`); the store is `.vault` in
 the cell. Give each agent a file with its own key and nothing else, and
 have it pass `--key-file`, never `--key`, so that no key lands in a
-transcript. Run `verify` before the validator; the validator reads the
-exports like any other file and does not read the vault.
+transcript; no agent gets the administrator's key. Run `verify` before the
+validator; the validator reads the exports like any other file and does not
+read the vault.
 
 It is obfuscation, not security. The store is compressed, scrambled with a
 stream keyed by each file's name and encoded, under hashed names: enough
 that an agent does not edit an artifact around the tool on its own
 initiative [hypothesis], not enough to stop anyone who reads the script or
-holds the cell. The store records a timestamp per version and per journal
-line: keep it out of a material distributed for anonymity. The scaffold
-does not copy the vault into a new cell.
+holds the cell. A stronger confirmation of a destructive action, such as a
+second factor held only by the owner, is outside the method and belongs to
+the operator's environment. The store records a timestamp per version and
+per journal line: keep it out of a material distributed for anonymity. The
+scaffold does not copy the vault into a new cell.
 
 ## Quality check before handing over
 
